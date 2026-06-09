@@ -3,11 +3,22 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Dashboard = () => {
-  const { tenant, employees, videos, activities, setActivePage } = useTenant();
+  const { tenant, employees, videos, activities, setActivePage, currentUser } = useTenant();
+
+  const isSupervisor = currentUser.role === 'supervisor';
+
+  // Filter employees and videos by department for supervisor
+  const displayEmployees = isSupervisor 
+    ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
+    : employees;
+
+  const displayVideos = isSupervisor
+    ? videos.filter(v => v.dept.toLowerCase() === currentUser.dept.toLowerCase())
+    : videos;
 
   // Calculate stats dynamically based on mock data
-  const totalSOPs = videos.length;
-  const activeEmployees = employees.length;
+  const totalSOPs = displayVideos.length;
+  const activeEmployees = displayEmployees.length;
   const employeeLimit = getEmployeeLimit(tenant.plan);
 
   return (
@@ -74,7 +85,7 @@ export const Dashboard = () => {
             <div className="card-action" onClick={() => setActivePage('sop')}>Lihat semua →</div>
           </div>
           <div className="card-body">
-            {videos.slice(0, 6).map((video) => (
+            {displayVideos.slice(0, 6).map((video) => (
               <div key={video.id} className="video-item">
                 <div className="thumb" style={{ background: video.color }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" width="20" height="20">
@@ -171,7 +182,7 @@ export const Dashboard = () => {
               <div className="card-action" onClick={() => setActivePage('karyawan')}>Lihat semua</div>
             </div>
             <div className="card-body">
-              {employees.slice(0, 5).map((emp, i) => {
+              {displayEmployees.slice(0, 5).map((emp, i) => {
                 const ranks = ['🥇', '🥈', '🥉', '4', '5'];
                 const avColors = ['#d97706', '#64748b', '#2563eb', '#0891b2', '#7c3aed'];
                 const initials = emp.name.split(' ').map(n => n[0]).join('');

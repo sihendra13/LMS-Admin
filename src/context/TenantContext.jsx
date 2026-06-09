@@ -21,6 +21,24 @@ export const TenantProvider = ({ children }) => {
 
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'sop' | 'sertifikasi' | 'laporan' | 'karyawan' | 'departemen' | 'upload' | 'notifikasi' | 'pengaturan'
 
+  // State for Dynamic Role Access Control
+  const [currentUser, setCurrentUser] = useState({
+    id: 1,
+    name: 'Andi Saputra',
+    role: 'admin',
+    dept: 'HRD',
+    avatar: 'AS'
+  });
+
+  const [supervisors, setSupervisors] = useState([
+    { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', dept: 'Sales', status: 'Aktif' },
+    { id: 2, name: 'Budi Pratama', email: 'budi.p@majubersama.com', dept: 'Finance', status: 'Aktif' }
+  ]);
+
+  const [invitations, setInvitations] = useState([
+    { id: 1, email: 'hendra.f@majubersama.com', dept: 'Operasional', status: 'Pending', date: 'Hari ini' }
+  ]);
+
   // Mock initial data that can be updated dynamically
   const [employees, setEmployees] = useState([
     { id: 1, name: 'Rini Wulandari', dept: 'Sales', city: 'Jakarta', score: 18 },
@@ -161,6 +179,34 @@ export const TenantProvider = ({ children }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
+  const inviteSupervisor = (email, deptName) => {
+    const newInvite = {
+      id: Date.now(),
+      email,
+      dept: deptName,
+      status: 'Pending',
+      date: 'Baru saja'
+    };
+    setInvitations(prev => [newInvite, ...prev]);
+
+    // Add activity
+    const newAct = {
+      id: Date.now(),
+      text: `Undangan supervisor untuk divisi <strong>${deptName}</strong> dikirim ke <strong>${email}</strong>`,
+      time: 'Baru saja',
+      type: 'purple'
+    };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
+  const revokeSupervisor = (id, type = 'supervisor') => {
+    if (type === 'supervisor') {
+      setSupervisors(prev => prev.filter(s => s.id !== id));
+    } else {
+      setInvitations(prev => prev.filter(s => s.id !== id));
+    }
+  };
+
   return (
     <TenantContext.Provider value={{
       tenant,
@@ -173,6 +219,12 @@ export const TenantProvider = ({ children }) => {
       addSOP,
       activities,
       quizSubmissions,
+      currentUser,
+      setCurrentUser,
+      supervisors,
+      invitations,
+      inviteSupervisor,
+      revokeSupervisor,
     }}>
       {children}
     </TenantContext.Provider>

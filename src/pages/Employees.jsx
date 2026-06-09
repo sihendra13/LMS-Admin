@@ -3,14 +3,21 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee } = useTenant();
+  const { tenant, employees, addEmployee, currentUser } = useTenant();
+  const isSupervisor = currentUser.role === 'supervisor';
+
   const [name, setName] = useState('');
-  const [dept, setDept] = useState('Sales');
+  const [dept, setDept] = useState(isSupervisor ? currentUser.dept : 'Sales');
   const [city, setCity] = useState('Jakarta');
 
   const limit = getEmployeeLimit(tenant.plan);
-  const currentCount = employees.length;
-  const isFull = currentCount >= limit;
+  
+  const displayEmployees = isSupervisor
+    ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
+    : employees;
+
+  const totalCount = employees.length;
+  const isFull = totalCount >= limit;
 
   const handleAddEmployee = (e) => {
     e.preventDefault();
@@ -24,7 +31,7 @@ export const Employees = () => {
     const newEmp = {
       id: Date.now(),
       name,
-      dept,
+      dept: isSupervisor ? currentUser.dept : dept,
       city,
       score: 0 // New employee has 0 completed SOPs initially
     };
@@ -41,7 +48,7 @@ export const Employees = () => {
         {/* EMPLOYEES LIST */}
         <div>
           <div className="section-header">
-            <div className="section-title">Daftar Karyawan Terdaftar ({currentCount} / {limit === Infinity ? '∞' : limit})</div>
+            <div className="section-title">Daftar Karyawan Terdaftar ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})</div>
           </div>
 
           <div className="card">
@@ -56,7 +63,7 @@ export const Employees = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((emp) => (
+                  {displayEmployees.map((emp) => (
                     <tr key={emp.id} style={{ borderBottom: '1px solid var(--border)' }}>
                       <td style={{ padding: '14px 20px', fontWeight: '500' }}>{emp.name}</td>
                       <td style={{ padding: '14px 20px' }}>
@@ -91,7 +98,7 @@ export const Employees = () => {
             ) : (
               <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--green)' }}>
                 <div style={{ fontSize: '12px' }}>
-                  Kuota Tersisa: <strong>{limit - currentCount} akun</strong> lagi.
+                  Kuota Tersisa: <strong>{limit - totalCount} akun</strong> lagi.
                 </div>
               </div>
             )}
@@ -111,13 +118,19 @@ export const Employees = () => {
 
               <div className="form-group">
                 <label className="form-label">Departemen</label>
-                <select className="form-select" value={dept} onChange={(e) => setDept(e.target.value)} disabled={isFull}>
-                  <option value="Sales">Sales</option>
-                  <option value="HRD">HRD</option>
-                  <option value="Operasional">Operasional</option>
-                  <option value="Finance">Finance</option>
-                  <option value="CS">Customer Service</option>
-                  <option value="IT">IT</option>
+                <select className="form-select" value={dept} onChange={(e) => setDept(e.target.value)} disabled={isFull || isSupervisor}>
+                  {isSupervisor ? (
+                    <option value={currentUser.dept}>{currentUser.dept}</option>
+                  ) : (
+                    <>
+                      <option value="Sales">Sales</option>
+                      <option value="HRD">HRD</option>
+                      <option value="Operasional">Operasional</option>
+                      <option value="Finance">Finance</option>
+                      <option value="CS">Customer Service</option>
+                      <option value="IT">IT</option>
+                    </>
+                  )}
                 </select>
               </div>
 

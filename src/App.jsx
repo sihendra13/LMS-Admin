@@ -12,6 +12,7 @@ import { Reports } from './pages/Reports';
 import { UploadSOP } from './pages/UploadSOP';
 import { HeyGen } from './pages/HeyGen';
 import { Certifications } from './pages/Certifications';
+import { Departments } from './pages/Departments';
 
 const AppContent = () => {
   const { activePage } = useTenant();
@@ -34,12 +35,7 @@ const AppContent = () => {
       case 'sertifikasi':
         return <Certifications />;
       case 'departemen':
-        return (
-          <div className="content">
-            <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Manajemen Departemen</h2>
-            <p style={{ color: 'var(--text2)' }}>Konfigurasi departemen perusahaan (Sales, HRD, Operasional, Finance, CS, IT).</p>
-          </div>
-        );
+        return <Departments />;
       case 'pengaturan':
         return (
           <div className="content">

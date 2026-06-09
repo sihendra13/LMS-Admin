@@ -3,7 +3,16 @@ import { useTenant } from '../context/TenantContext';
 import { hasFullComplianceReports } from '../utils/featureGates';
 
 export const Reports = () => {
-  const { tenant, quizSubmissions } = useTenant();
+  const { tenant, quizSubmissions, videos, currentUser } = useTenant();
+  const isSupervisor = currentUser.role === 'supervisor';
+
+  const displaySubmissions = isSupervisor
+    ? quizSubmissions.filter(sub => {
+        const videoObj = videos.find(v => v.title.toLowerCase() === sub.videoTitle.toLowerCase());
+        return videoObj && videoObj.dept.toLowerCase() === currentUser.dept.toLowerCase();
+      })
+    : quizSubmissions;
+
   const isFullReportEnabled = hasFullComplianceReports(tenant.plan);
 
   return (
@@ -92,34 +101,42 @@ export const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '14px 20px', fontWeight: '500' }}>Sales</td>
-                    <td style={{ padding: '14px 20px' }}>4 Video SOP</td>
-                    <td style={{ padding: '14px 20px' }}>89%</td>
-                    <td style={{ padding: '14px 20px' }}>85%</td>
-                    <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Sangat Aman</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '14px 20px', fontWeight: '500' }}>HRD</td>
-                    <td style={{ padding: '14px 20px' }}>3 Video SOP</td>
-                    <td style={{ padding: '14px 20px' }}>76%</td>
-                    <td style={{ padding: '14px 20px' }}>80%</td>
-                    <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Aman</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '14px 20px', fontWeight: '500' }}>Operasional</td>
-                    <td style={{ padding: '14px 20px' }}>6 Video SOP</td>
-                    <td style={{ padding: '14px 20px', color: 'var(--amber)', fontWeight: '600' }}>61%</td>
-                    <td style={{ padding: '14px 20px' }}>78%</td>
-                    <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--amber)', fontWeight: '600' }}>Butuh Perhatian</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '14px 20px', fontWeight: '500' }}>Finance</td>
-                    <td style={{ padding: '14px 20px' }}>2 Video SOP</td>
-                    <td style={{ padding: '14px 20px' }}>94%</td>
-                    <td style={{ padding: '14px 20px' }}>90%</td>
-                    <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Sangat Aman</td>
-                  </tr>
+                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'sales') && (
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>Sales</td>
+                      <td style={{ padding: '14px 20px' }}>4 Video SOP</td>
+                      <td style={{ padding: '14px 20px' }}>89%</td>
+                      <td style={{ padding: '14px 20px' }}>85%</td>
+                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Sangat Aman</td>
+                    </tr>
+                  )}
+                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'hrd') && (
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>HRD</td>
+                      <td style={{ padding: '14px 20px' }}>3 Video SOP</td>
+                      <td style={{ padding: '14px 20px' }}>76%</td>
+                      <td style={{ padding: '14px 20px' }}>80%</td>
+                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Aman</td>
+                    </tr>
+                  )}
+                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'operasional') && (
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>Operasional</td>
+                      <td style={{ padding: '14px 20px' }}>6 Video SOP</td>
+                      <td style={{ padding: '14px 20px', color: 'var(--amber)', fontWeight: '600' }}>61%</td>
+                      <td style={{ padding: '14px 20px' }}>78%</td>
+                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--amber)', fontWeight: '600' }}>Butuh Perhatian</td>
+                    </tr>
+                  )}
+                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'finance') && (
+                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>Finance</td>
+                      <td style={{ padding: '14px 20px' }}>2 Video SOP</td>
+                      <td style={{ padding: '14px 20px' }}>94%</td>
+                      <td style={{ padding: '14px 20px' }}>90%</td>
+                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Sangat Aman</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -144,7 +161,7 @@ export const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {quizSubmissions.map((sub) => {
+                  {displaySubmissions.map((sub) => {
                     const improvement = sub.postScore - sub.preScore;
                     return (
                       <tr key={sub.id} style={{ borderBottom: '1px solid var(--border)' }}>
