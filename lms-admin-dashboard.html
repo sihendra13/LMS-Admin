@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOPLearn — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1628;
+    --navy2: #112040;
+    --navy3: #1a2f54;
+    --accent: #2F7BFF;
+    --accent2: #1a5fd4;
+    --surface: #ffffff;
+    --surface2: #f5f7fa;
+    --surface3: #eef1f6;
+    --border: #e2e8f0;
+    --text1: #0f172a;
+    --text2: #475569;
+    --text3: #94a3b8;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --cyan: #06b6d4;
+    --sidebar-w: 232px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface2);
+    color: var(--text1);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--navy);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+  }
+  .logo-area {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .logo-tagline {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 3px;
+    letter-spacing: 0.03em;
+  }
+  .tenant-badge {
+    margin: 14px 20px 0;
+    background: rgba(47,123,255,0.12);
+    border: 1px solid rgba(47,123,255,0.25);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tenant-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: #fff;
+    flex-shrink: 0;
+  }
+  .tenant-name { font-size: 12px; font-weight: 500; color: #fff; }
+  .tenant-plan { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+
+  nav { padding: 16px 0; flex: 1; overflow-y: auto; }
+  .nav-section {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    padding: 10px 20px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    border-radius: 0 6px 6px 0;
+    margin-right: 12px;
+    text-decoration: none;
+  }
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,0.07); }
+  .nav-item.active {
+    color: #fff;
+    background: rgba(47,123,255,0.15);
+    border-left-color: var(--accent);
+  }
+  .nav-icon {
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .nav-icon svg { width: 16px; height: 16px; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 99px;
+  }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2F7BFF, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: #fff;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; color: #fff; font-weight: 500; }
+  .user-role { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+  /* MAIN */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .page-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px; font-weight: 600;
+    color: var(--text1);
+  }
+  .page-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .search-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    width: 220px;
+    color: var(--text3);
+    font-size: 13px;
+    cursor: text;
+  }
+  .search-wrap svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .topbar-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text2);
+    position: relative;
+  }
+  .topbar-btn svg { width: 16px; height: 16px; }
+  .notif-dot {
+    width: 7px; height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    position: absolute; top: 6px; right: 6px;
+    border: 1.5px solid white;
+  }
+
+
+  /* CONTENT */
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .stat-card.blue::before { background: var(--accent); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.purple::before { background: var(--purple); }
+  .stat-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .stat-icon svg { width: 18px; height: 18px; }
+  .stat-icon.blue { background: #eff6ff; color: var(--accent); }
+  .stat-icon.green { background: #f0fdf4; color: var(--green); }
+  .stat-icon.amber { background: #fffbeb; color: var(--amber); }
+  .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; font-weight: 500; letter-spacing: 0.02em; }
+  .stat-value {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px; font-weight: 600;
+    color: var(--text1);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-change {
+    font-size: 12px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .stat-change.up { color: var(--green); }
+  .stat-change.info { color: var(--accent); }
+  .stat-change svg { width: 12px; height: 12px; }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    color: var(--text1);
+  }
+  .card-action {
+    font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500;
+  }
+  .card-body { padding: 0; }
+
+  /* VIDEO LIST */
+  .video-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .video-item:hover { background: var(--surface2); }
+  .video-item:last-child { border-bottom: none; }
+  .thumb {
+    width: 80px; height: 50px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .thumb svg { width: 20px; height: 20px; }
+  .play-over {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .play-over svg { width: 18px; height: 18px; color: #fff; }
+  .video-item:hover .play-over { opacity: 1; }
+  .video-info { flex: 1; min-width: 0; }
+  .video-title {
+    font-size: 13px; font-weight: 500; color: var(--text1);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+  .video-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .dept-tag {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 99px;
+    letter-spacing: 0.03em;
+  }
+  .dt-sales { background: #dbeafe; color: #1d4ed8; }
+  .dt-hrd { background: #dcfce7; color: #15803d; }
+  .dt-ops { background: #fef3c7; color: #b45309; }
+  .dt-fin { background: #ede9fe; color: #6d28d9; }
+  .dt-cs { background: #cffafe; color: #0e7490; }
+  .dt-it { background: #fce7f3; color: #9d174d; }
+  .video-dur { font-size: 11px; color: var(--text3); }
+  .prog-wrap { display: flex; align-items: center; gap: 8px; }
+  .prog-bar { flex: 1; height: 4px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 99px; transition: width 0.6s; }
+  .prog-pct { font-size: 11px; color: var(--text3); min-width: 28px; text-align: right; }
+  .video-views { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+  /* SIDE PANELS */
+  .side-col { display: flex; flex-direction: column; gap: 14px; }
+
+  /* DEPT COMPLETION */
+  .dept-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dept-item:last-child { border-bottom: none; }
+  .dept-ic {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .dept-label { flex: 1; }
+  .dept-name { font-size: 13px; font-weight: 500; color: var(--text1); margin-bottom: 4px; }
+  .dept-pbar { height: 4px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .dept-pfill { height: 100%; border-radius: 99px; }
+  .dept-num { font-size: 13px; font-weight: 600; color: var(--text1); min-width: 34px; text-align: right; }
+
+  /* LEADERBOARD */
+  .lb-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.12s;
+  }
+  .lb-item:hover { background: var(--surface2); }
+  .lb-item:last-child { border-bottom: none; }
+  .lb-rank {
+    width: 22px; font-size: 12px; font-weight: 600;
+    text-align: center; color: var(--text3);
+  }
+  .lb-rank.r1 { color: #d97706; }
+  .lb-rank.r2 { color: #64748b; }
+  .lb-rank.r3 { color: #b45309; }
+  .lb-av {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0;
+  }
+  .lb-info { flex: 1; }
+  .lb-name { font-size: 13px; font-weight: 500; color: var(--text1); }
+  .lb-dept { font-size: 11px; color: var(--text3); }
+  .lb-score { font-size: 13px; font-weight: 600; color: var(--accent); }
+
+  /* ACTIVITY */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+  .activity-item {
+    display: flex; gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .act-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .act-text strong { color: var(--text1); font-weight: 500; }
+  .act-time { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* QUICK STATS MINI */
+  .mini-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .mini-stat {
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .mini-stat:nth-child(even) { border-right: none; }
+  .mini-stat:nth-last-child(-n+2) { border-bottom: none; }
+  .mini-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 500; }
+  .mini-val { font-size: 20px; font-weight: 600; color: var(--text1); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .mini-sub { font-size: 11px; margin-top: 2px; }
+
+  /* CHART FAKE */
+  .chart-area { padding: 16px 20px; }
+  .chart-bars {
+    display: flex; align-items: flex-end; gap: 6px;
+    height: 80px;
+  }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; }
+  .bar-label { font-size: 10px; color: var(--text3); }
+
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px; font-weight: 600; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo">SOP<span>Learn</span></div>
+    <div class="logo-tagline">Corporate LMS Platform</div>
+  </div>
+
+  <div class="tenant-badge">
+    <div class="tenant-avatar">MB</div>
+    <div>
+      <div class="tenant-name">PT Maju Bersama</div>
+      <div class="tenant-plan">Paket Business · Aktif</div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-section">Utama</div>
+    <a class="nav-item active" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      </span>
+      Dashboard
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </span>
+      Video SOP
+      <span class="nav-badge">42</span>
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </span>
+      Sertifikasi
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </span>
+      Laporan
+    </a>
+
+    <div class="nav-section">Manajemen</div>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
+      Karyawan
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </span>
+      Departemen
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </span>
+      Upload SOP
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      </span>
+      Notifikasi
+    </a>
+
+    <div class="nav-section">Lainnya</div>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      </span>
+      Pengaturan
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-avatar">AS</div>
+    <div>
+      <div class="user-name">Andi Saputra</div>
+      <div class="user-role">HR Manager</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Senin, 2 Juni 2025 &nbsp;·&nbsp; PT Maju Bersama Tbk</div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Cari video SOP...
+      </div>
+
+      <div class="topbar-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-dot"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS ROW -->
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </div>
+        <div class="stat-label">Total Video SOP</div>
+        <div class="stat-value">42</div>
+        <div class="stat-change info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
+          +6 video bulan ini
+        </div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="stat-label">Karyawan Aktif</div>
+        <div class="stat-value">248</div>
+        <div class="stat-change up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
+          94% login bulan ini
+        </div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="stat-label">Rata-rata Completion</div>
+        <div class="stat-value">78%</div>
+        <div class="stat-change up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
+          +12% vs bulan lalu
+        </div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <div class="stat-label">Sertifikat Diterbitkan</div>
+        <div class="stat-value">186</div>
+        <div class="stat-change info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
+          +24 minggu ini
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+      <!-- VIDEO LIST -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Video SOP Terbaru & Progress</div>
+          <div class="card-action">Lihat semua →</div>
+        </div>
+        <div class="card-body">
+
+          <div class="video-item">
+            <div class="thumb" style="background:#1e3a5f;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="play-over"><svg viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">SOP Sales: Proses Onboarding Klien Baru</div>
+              <div class="video-meta">
+                <span class="dept-tag dt-sales">Sales</span>
+                <span class="video-dur">8:24</span>
+              </div>
+              <div class="prog-wrap">
+                <div class="prog-bar"><div class="prog-fill" style="width:82%;background:#2F7BFF;"></div></div>
+                <div class="prog-pct">82%</div>
+              </div>
+            </div>
+            <div class="video-views">156 karyawan</div>
+          </div>
+
+          <div class="video-item">
+            <div class="thumb" style="background:#1a3d2b;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="play-over"><svg viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">SOP HRD: Rekrutmen & Seleksi Karyawan</div>
+              <div class="video-meta">
+                <span class="dept-tag dt-hrd">HRD</span>
+                <span class="video-dur">12:10</span>
+              </div>
+              <div class="prog-wrap">
+                <div class="prog-bar"><div class="prog-fill" style="width:65%;background:#10b981;"></div></div>
+                <div class="prog-pct">65%</div>
+              </div>
+            </div>
+            <div class="video-views">48 karyawan</div>
+          </div>
+
+          <div class="video-item">
+            <div class="thumb" style="background:#3d2200;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="play-over"><svg viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">SOP Operasional: K3 Gudang & Logistik</div>
+              <div class="video-meta">
+                <span class="dept-tag dt-ops">Operasional</span>
+                <span class="video-dur">15:30</span>
+              </div>
+              <div class="prog-wrap">
+                <div class="prog-bar"><div class="prog-fill" style="width:45%;background:#f59e0b;"></div></div>
+                <div class="prog-pct">45%</div>
+              </div>
+            </div>
+            <div class="video-views">72 karyawan</div>
+          </div>
+
+          <div class="video-item">
+            <div class="thumb" style="background:#2d1a4a;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="play-over"><svg viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">SOP Finance: Proses Reimbursement Karyawan</div>
+              <div class="video-meta">
+                <span class="dept-tag dt-fin">Finance</span>
+                <span class="video-dur">6:45</span>
+              </div>
+              <div class="prog-wrap">
+                <div class="prog-bar"><div class="prog-fill" style="width:91%;background:#8b5cf6;"></div></div>
+                <div class="prog-pct">91%</div>
+              </div>
+            </div>
+            <div class="video-views">93 karyawan</div>
+          </div>
+
+          <div class="video-item">
+            <div class="thumb" style="background:#072a30;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="play-over"><svg viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">SOP Customer Service: Handling Komplain</div>
+              <div class="video-meta">
+                <span class="dept-tag dt-cs">CS</span>
+                <span class="video-dur">10:15</span>
+              </div>
+              <div class="prog-wrap">
+                <div class="prog-bar"><div class="prog-fill" style="width:58%;background:#06b6d4;"></div></div>
+                <div class="prog-pct">58%</div>
+              </div>
+            </div>
+            <div class="video-views">38 karyawan</div>
+          </div>
+
+          <div class="video-item">
+            <div class="thumb" style="background:#2a1024;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" width="20" height="20"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div class="play-over"><svg viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">SOP IT: Keamanan Password & Akun</div>
+              <div class="video-meta">
+                <span class="dept-tag dt-it">IT</span>
+                <span class="video-dur">7:50</span>
+              </div>
+              <div class="prog-wrap">
+                <div class="prog-bar"><div class="prog-fill" style="width:33%;background:#ec4899;"></div></div>
+                <div class="prog-pct">33%</div>
+              </div>
+            </div>
+            <div class="video-views">112 karyawan</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SIDE COLUMN -->
+      <div class="side-col">
+
+        <!-- COMPLETION PER DEPT -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Completion per Departemen</div>
+          </div>
+          <div class="card-body">
+            <div class="dept-item">
+              <div class="dept-ic" style="background:#eff6ff;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2F7BFF" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              </div>
+              <div class="dept-label">
+                <div class="dept-name">Sales</div>
+                <div class="dept-pbar"><div class="dept-pfill" style="width:89%;background:#2F7BFF;"></div></div>
+              </div>
+              <div class="dept-num">89%</div>
+            </div>
+            <div class="dept-item">
+              <div class="dept-ic" style="background:#f0fdf4;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              </div>
+              <div class="dept-label">
+                <div class="dept-name">HRD</div>
+                <div class="dept-pbar"><div class="dept-pfill" style="width:76%;background:#10b981;"></div></div>
+              </div>
+              <div class="dept-num">76%</div>
+            </div>
+            <div class="dept-item">
+              <div class="dept-ic" style="background:#fffbeb;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div class="dept-label">
+                <div class="dept-name">Operasional</div>
+                <div class="dept-pbar"><div class="dept-pfill" style="width:61%;background:#f59e0b;"></div></div>
+              </div>
+              <div class="dept-num">61%</div>
+            </div>
+            <div class="dept-item">
+              <div class="dept-ic" style="background:#f5f3ff;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="dept-label">
+                <div class="dept-name">Finance</div>
+                <div class="dept-pbar"><div class="dept-pfill" style="width:94%;background:#8b5cf6;"></div></div>
+              </div>
+              <div class="dept-num">94%</div>
+            </div>
+            <div class="dept-item">
+              <div class="dept-ic" style="background:#ecfeff;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="dept-label">
+                <div class="dept-name">Customer Service</div>
+                <div class="dept-pbar"><div class="dept-pfill" style="width:70%;background:#06b6d4;"></div></div>
+              </div>
+              <div class="dept-num">70%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Top Learners Bulan Ini</div>
+            <div class="card-action">Lihat semua</div>
+          </div>
+          <div class="card-body">
+            <div class="lb-item">
+              <div class="lb-rank r1">🥇</div>
+              <div class="lb-av" style="background:#d97706;">RW</div>
+              <div class="lb-info">
+                <div class="lb-name">Rini Wulandari</div>
+                <div class="lb-dept">Sales · Jakarta</div>
+              </div>
+              <div class="lb-score">18 SOP</div>
+            </div>
+            <div class="lb-item">
+              <div class="lb-rank r2">🥈</div>
+              <div class="lb-av" style="background:#64748b;">BP</div>
+              <div class="lb-info">
+                <div class="lb-name">Budi Pratama</div>
+                <div class="lb-dept">Finance · Surabaya</div>
+              </div>
+              <div class="lb-score">15 SOP</div>
+            </div>
+            <div class="lb-item">
+              <div class="lb-rank r3">🥉</div>
+              <div class="lb-av" style="background:#2563eb;">SA</div>
+              <div class="lb-info">
+                <div class="lb-name">Sari Anggraeni</div>
+                <div class="lb-dept">HRD · Bandung</div>
+              </div>
+              <div class="lb-score">14 SOP</div>
+            </div>
+            <div class="lb-item">
+              <div class="lb-rank" style="color:#94a3b8;">4</div>
+              <div class="lb-av" style="background:#0891b2;">DK</div>
+              <div class="lb-info">
+                <div class="lb-name">Dika Kurniawan</div>
+                <div class="lb-dept">IT · Jakarta</div>
+              </div>
+              <div class="lb-score">12 SOP</div>
+            </div>
+            <div class="lb-item">
+              <div class="lb-rank" style="color:#94a3b8;">5</div>
+              <div class="lb-av" style="background:#7c3aed;">NP</div>
+              <div class="lb-info">
+                <div class="lb-name">Nina Putri</div>
+                <div class="lb-dept">CS · Medan</div>
+              </div>
+              <div class="lb-score">11 SOP</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-grid">
+
+      <!-- AKTIVITAS -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Aktivitas Terkini</div>
+          <div class="card-action">Lihat semua</div>
+        </div>
+        <div class="card-body">
+          <div class="activity-item">
+            <div class="act-dot" style="background:#10b981;"></div>
+            <div>
+              <div class="act-text"><strong>Rini W.</strong> menyelesaikan SOP Sales Onboarding</div>
+              <div class="act-time">5 menit lalu</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot" style="background:#2F7BFF;"></div>
+            <div>
+              <div class="act-text">Video baru <strong>SOP IT Security</strong> diunggah</div>
+              <div class="act-time">32 menit lalu</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot" style="background:#8b5cf6;"></div>
+            <div>
+              <div class="act-text"><strong>12 karyawan</strong> mendapat sertifikat Finance</div>
+              <div class="act-time">1 jam lalu</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot" style="background:#f59e0b;"></div>
+            <div>
+              <div class="act-text"><strong>SOP K3 Gudang</strong> deadline besok — 38 belum nonton</div>
+              <div class="act-time">2 jam lalu</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-dot" style="background:#06b6d4;"></div>
+            <div>
+              <div class="act-text"><strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95</div>
+              <div class="act-time">3 jam lalu</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEKLY PROGRESS CHART -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Video Ditonton Minggu Ini</div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-bars">
+            <div class="bar-group">
+              <div class="bar" style="height:38px;background:#dbeafe;"></div>
+              <div class="bar-label">Sen</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:55px;background:#93c5fd;"></div>
+              <div class="bar-label">Sel</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:42px;background:#93c5fd;"></div>
+              <div class="bar-label">Rab</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:70px;background:#3b82f6;"></div>
+              <div class="bar-label">Kam</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:60px;background:#2F7BFF;"></div>
+              <div class="bar-label">Jum</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:28px;background:#dbeafe;"></div>
+              <div class="bar-label">Sab</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:18px;background:#dbeafe;"></div>
+              <div class="bar-label">Min</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;">
+            <div>
+              <div style="font-size:11px;color:var(--text3);">Total minggu ini</div>
+              <div style="font-size:18px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text1);">312 <span style="font-size:12px;color:var(--green);font-weight:400;">↑ 18%</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:var(--text3);">Avg/hari</div>
+              <div style="font-size:18px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text1);">44</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Ringkasan Pelatihan</div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="mini-label">Wajib ditonton</div>
+            <div class="mini-val">18</div>
+            <div class="mini-sub" style="color:var(--accent);font-size:11px;">SOP aktif</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-label">Belum selesai</div>
+            <div class="mini-val" style="color:var(--red);">54</div>
+            <div class="mini-sub" style="color:var(--red);font-size:11px;">karyawan</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-label">Quiz lulus</div>
+            <div class="mini-val">186</div>
+            <div class="mini-sub" style="color:var(--green);font-size:11px;">dari 248</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-label">Avg. skor quiz</div>
+            <div class="mini-val">82<span style="font-size:14px;font-weight:400;">%</span></div>
+            <div class="mini-sub" style="color:var(--green);font-size:11px;">↑ baik</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
