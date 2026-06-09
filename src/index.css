@@ -733,5 +733,24 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
   background: #fef2f2;
 }
 
+/* Eye/View Certificate button styling */
+.view-cert-btn {
+  background: none;
+  border: none;
+  color: #64748b; /* Dark grey */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+.view-cert-btn:hover {
+  color: var(--accent);
+  background: #eff6ff;
+}
+
+
 
 
