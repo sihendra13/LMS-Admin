@@ -3,13 +3,23 @@ import { useTenant } from '../context/TenantContext';
 import { canUploadSOP } from '../utils/featureGates';
 
 export const SOPManager = () => {
-  const { tenant, videos, setActivePage } = useTenant();
+  const { tenant, videos, setActivePage, currentUser } = useTenant();
+  const isSupervisor = currentUser.role === 'supervisor';
 
   return (
     <div className="content">
       <div className="section-header" style={{ marginBottom: '20px' }}>
         <div className="section-title">Semua Video Training & SOP ({videos.length})</div>
-        {canUploadSOP(tenant.plan) ? (
+        {isSupervisor ? (
+          <button 
+            className="btn-primary" 
+            style={{ opacity: 0.6, cursor: 'not-allowed', background: '#cbd5e1', border: '1px solid #cbd5e1', color: '#64748b' }} 
+            disabled 
+            title="Hanya HRD Admin yang dapat mengunggah video training baru"
+          >
+            + Upload Training / SOP (🔒 Khusus HRD)
+          </button>
+        ) : canUploadSOP(tenant.plan) ? (
           <button className="btn-primary" onClick={() => setActivePage('upload')}>
             + Upload Training / SOP Baru
           </button>

@@ -16,6 +16,13 @@ export const Dashboard = () => {
     ? videos.filter(v => v.dept.toLowerCase() === currentUser.dept.toLowerCase())
     : videos;
 
+  const displayActivities = isSupervisor
+    ? activities.filter(act => {
+        const nameMatch = displayEmployees.some(emp => act.text.includes(emp.name) || act.text.includes(emp.name.split(' ')[0]));
+        return nameMatch || act.text.toLowerCase().includes(currentUser.dept.toLowerCase());
+      })
+    : activities;
+
   // Calculate stats dynamically based on mock data
   const totalSOPs = displayVideos.length;
   const activeEmployees = displayEmployees.length;
@@ -116,62 +123,93 @@ export const Dashboard = () => {
 
         {/* SIDE COLUMN */}
         <div className="side-col">
-          {/* COMPLETION PER DEPT */}
+          {/* COMPLETION PER DEPT / PROG DIVISI */}
           <div className="card">
             <div className="card-head">
-              <div className="card-title">Completion per Departemen</div>
+              <div className="card-title">
+                {isSupervisor ? `Progres Training Divisi ${currentUser.dept}` : 'Completion per Departemen'}
+              </div>
             </div>
             <div className="card-body">
-              <div className="dept-item">
-                <div className="dept-ic" style={{ background: '#eff6ff' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2F7BFF" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-                </div>
-                <div className="dept-label">
-                  <div className="dept-name">Sales</div>
-                  <div className="dept-pbar"><div class="dept-pfill" style={{ width: '89%', background: '#2F7BFF' }}></div></div>
-                </div>
-                <div className="dept-num">89%</div>
-              </div>
-              <div className="dept-item">
-                <div className="dept-ic" style={{ background: '#f0fdf4' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                </div>
-                <div className="dept-label">
-                  <div className="dept-name">HRD</div>
-                  <div className="dept-pbar"><div class="dept-pfill" style={{ width: '76%', background: '#10b981' }}></div></div>
-                </div>
-                <div className="dept-num">76%</div>
-              </div>
-              <div className="dept-item">
-                <div className="dept-ic" style={{ background: '#fffbeb' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                </div>
-                <div className="dept-label">
-                  <div className="dept-name">Operasional</div>
-                  <div className="dept-pbar"><div class="dept-pfill" style={{ width: '61%', background: '#f59e0b' }}></div></div>
-                </div>
-                <div className="dept-num">61%</div>
-              </div>
-              <div className="dept-item">
-                <div className="dept-ic" style={{ background: '#f5f3ff' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                </div>
-                <div className="dept-label">
-                  <div className="dept-name">Finance</div>
-                  <div className="dept-pbar"><div class="dept-pfill" style={{ width: '94%', background: '#8b5cf6' }}></div></div>
-                </div>
-                <div className="dept-num">94%</div>
-              </div>
-              <div className="dept-item">
-                <div className="dept-ic" style={{ background: '#ecfeff' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                </div>
-                <div className="dept-label">
-                  <div className="dept-name">Customer Service</div>
-                  <div className="dept-pbar"><div class="dept-pfill" style={{ width: '70%', background: '#06b6d4' }}></div></div>
-                </div>
-                <div className="dept-num">70%</div>
-              </div>
+              {isSupervisor ? (
+                displayVideos.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text3)' }}>
+                    Belum ada video training ditugaskan untuk divisi {currentUser.dept}.
+                  </div>
+                ) : (
+                  displayVideos.map((video) => (
+                    <div key={video.id} className="dept-item">
+                      <div className="dept-ic" style={{ background: '#eff6ff' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2F7BFF" strokeWidth="2">
+                          <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                        </svg>
+                      </div>
+                      <div className="dept-label">
+                        <div className="dept-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }} title={video.title}>
+                          {video.title.replace('SOP Sales: ', '').replace('SOP Finance: ', '').replace('SOP HRD: ', '').replace('SOP Operasional: ', '')}
+                        </div>
+                        <div className="dept-pbar">
+                          <div className="dept-pfill" style={{ width: `${video.progress}%`, background: 'var(--accent)' }}></div>
+                        </div>
+                      </div>
+                      <div className="dept-num">{video.progress}%</div>
+                    </div>
+                  ))
+                )
+              ) : (
+                <>
+                  <div className="dept-item">
+                    <div className="dept-ic" style={{ background: '#eff6ff' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2F7BFF" strokeWidth="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                    </div>
+                    <div className="dept-label">
+                      <div className="dept-name">Sales</div>
+                      <div className="dept-pbar"><div className="dept-pfill" style={{ width: '89%', background: '#2F7BFF' }}></div></div>
+                    </div>
+                    <div className="dept-num">89%</div>
+                  </div>
+                  <div className="dept-item">
+                    <div className="dept-ic" style={{ background: '#f0fdf4' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div className="dept-label">
+                      <div className="dept-name">HRD</div>
+                      <div className="dept-pbar"><div className="dept-pfill" style={{ width: '76%', background: '#10b981' }}></div></div>
+                    </div>
+                    <div className="dept-num">76%</div>
+                  </div>
+                  <div className="dept-item">
+                    <div className="dept-ic" style={{ background: '#fffbeb' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    </div>
+                    <div className="dept-label">
+                      <div className="dept-name">Operasional</div>
+                      <div className="dept-pbar"><div className="dept-pfill" style={{ width: '61%', background: '#f59e0b' }}></div></div>
+                    </div>
+                    <div className="dept-num">61%</div>
+                  </div>
+                  <div className="dept-item">
+                    <div className="dept-ic" style={{ background: '#f5f3ff' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <div className="dept-label">
+                      <div className="dept-name">Finance</div>
+                      <div className="dept-pbar"><div className="dept-pfill" style={{ width: '94%', background: '#8b5cf6' }}></div></div>
+                    </div>
+                    <div className="dept-num">94%</div>
+                  </div>
+                  <div className="dept-item">
+                    <div className="dept-ic" style={{ background: '#ecfeff' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div className="dept-label">
+                      <div className="dept-name">Customer Service</div>
+                      <div className="dept-pbar"><div className="dept-pfill" style={{ width: '70%', background: '#06b6d4' }}></div></div>
+                    </div>
+                    <div className="dept-num">70%</div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -211,7 +249,7 @@ export const Dashboard = () => {
             <div className="card-title">Aktivitas Terkini</div>
           </div>
           <div className="card-body">
-            {activities.slice(0, 5).map((act) => {
+            {displayActivities.slice(0, 5).map((act) => {
               const dots = { green: '#10b981', blue: '#2F7BFF', purple: '#8b5cf6', amber: '#f59e0b', cyan: '#06b6d4' };
               return (
                 <div key={act.id} className="activity-item">
@@ -262,14 +300,18 @@ export const Dashboard = () => {
                 <div className="bar-label">Min</div>
               </div>
             </div>
-            <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
+             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Total minggu ini</div>
-                <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>312 <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 400 }}>↑ 18%</span></div>
+                <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
+                  {isSupervisor ? 84 : 312} <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 400 }}>↑ 18%</span>
+                </div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Avg/hari</div>
-                <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>44</div>
+                <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
+                  {isSupervisor ? 12 : 44}
+                </div>
               </div>
             </div>
           </div>
@@ -283,22 +325,28 @@ export const Dashboard = () => {
           <div className="mini-stats">
             <div className="mini-stat">
               <div className="mini-label">Wajib ditonton</div>
-              <div className="mini-val">18</div>
+              <div className="mini-val">{isSupervisor ? displayVideos.length : 18}</div>
               <div className="mini-sub" style={{ color: 'var(--accent)', fontSize: '11px' }}>SOP aktif</div>
             </div>
             <div className="mini-stat">
               <div className="mini-label">Belum selesai</div>
-              <div className="mini-val" style={{ color: 'var(--red)' }}>54</div>
+              <div className="mini-val" style={{ color: 'var(--red)' }}>
+                {isSupervisor ? displayEmployees.filter(e => e.score === 0).length : 54}
+              </div>
               <div className="mini-sub" style={{ color: 'var(--red)', fontSize: '11px' }}>karyawan</div>
             </div>
             <div className="mini-stat">
               <div className="mini-label">Quiz lulus</div>
-              <div className="mini-val">186</div>
-              <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>dari 248</div>
+              <div className="mini-val">
+                {isSupervisor ? displayEmployees.filter(e => e.score > 0).length : 186}
+              </div>
+              <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>
+                {isSupervisor ? `dari ${displayEmployees.length}` : 'dari 248'}
+              </div>
             </div>
             <div className="mini-stat">
               <div className="mini-label">Avg. skor quiz</div>
-              <div className="mini-val">82<span style={{ fontSize: '14px', fontWeight: 400 }}>%</span></div>
+              <div className="mini-val">{isSupervisor ? 88 : 82}<span style={{ fontSize: '14px', fontWeight: 400 }}>%</span></div>
               <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>↑ baik</div>
             </div>
           </div>
