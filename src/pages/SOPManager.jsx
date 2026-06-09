@@ -8,14 +8,14 @@ export const SOPManager = () => {
   return (
     <div className="content">
       <div className="section-header" style={{ marginBottom: '20px' }}>
-        <div className="section-title">Semua Video SOP ({videos.length})</div>
+        <div className="section-title">Semua Video Training & SOP ({videos.length})</div>
         {canUploadSOP(tenant.plan) ? (
           <button className="btn-primary" onClick={() => setActivePage('upload')}>
-            + Upload SOP Baru
+            + Upload Training / SOP Baru
           </button>
         ) : (
           <button className="btn-primary" style={{ opacity: 0.6 }} onClick={() => setActivePage('upload')}>
-            + Upload SOP (🔒 Starter)
+            + Upload Mandiri (🔒 Starter)
           </button>
         )}
       </div>

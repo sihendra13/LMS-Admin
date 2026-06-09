@@ -8,12 +8,12 @@ export const Topbar = () => {
   const getPageTitle = () => {
     switch (activePage) {
       case 'dashboard': return 'Dashboard';
-      case 'sop': return 'Video SOP';
+      case 'sop': return 'Video Training & SOP';
       case 'sertifikasi': return 'Sertifikasi';
       case 'laporan': return 'Laporan & Compliance';
       case 'karyawan': return 'Manajemen Karyawan';
       case 'departemen': return 'Daftar Departemen';
-      case 'upload': return 'Upload Video SOP';
+      case 'upload': return 'Upload Training & SOP';
       case 'heygen': return 'Integrasi AI HeyGen';
       case 'pengaturan': return 'Pengaturan';
       default: return 'LMS Dashboard';
@@ -36,7 +36,7 @@ export const Topbar = () => {
       <div className="topbar-right">
         <div className="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Cari video SOP...
+          Cari video Training & SOP...
         </div>
 
         <div className="topbar-btn">

@@ -80,7 +80,7 @@ export const Certifications = () => {
       <div style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px' }}>Manajemen Sertifikasi</h2>
         <p style={{ color: 'var(--text3)', fontSize: '13px' }}>
-          Terbitkan sertifikat kompetensi otomatis setelah karyawan menyelesaikan video SOP & ujian dengan nilai kelulusan.
+          Terbitkan sertifikat kompetensi otomatis setelah karyawan menyelesaikan video Training / SOP & ujian dengan nilai kelulusan.
         </p>
       </div>
 

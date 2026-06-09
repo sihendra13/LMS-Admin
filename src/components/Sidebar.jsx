@@ -41,7 +41,7 @@ export const Sidebar = () => {
           <span className="nav-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
           </span>
-          Video SOP
+          Video Training & SOP
           <span className="nav-badge">{videos.length}</span>
         </a>
         <a className={getNavItemClass('sertifikasi')} href="#sertifikasi" onClick={(e) => { e.preventDefault(); setActivePage('sertifikasi'); }}>
@@ -76,7 +76,7 @@ export const Sidebar = () => {
           <span className="nav-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           </span>
-          Upload SOP {!canUploadSOP(tenant.plan) && '🔒'}
+          Upload Training & SOP {!canUploadSOP(tenant.plan) && '🔒'}
         </a>
 
         {tenant.plan === PLANS.ENTERPRISE && (

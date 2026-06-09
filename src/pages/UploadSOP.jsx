@@ -134,7 +134,7 @@ export const UploadSOP = () => {
     };
 
     addSOP(newVideo);
-    alert(`SOP Berhasil Diunggah! Video terbit bersama ${preList.length} soal Pre-Test & ${postList.length} soal Post-Test.`);
+    alert(`Video Training / SOP Berhasil Diunggah! Video terbit bersama ${preList.length} soal Pre-Test & ${postList.length} soal Post-Test.`);
     setActivePage('sop');
   };
 
@@ -145,7 +145,7 @@ export const UploadSOP = () => {
           <div className="disabled-badge">Fitur Terkunci</div>
           <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Upload Video Mandiri Tidak Tersedia</h2>
           <p style={{ color: 'var(--text2)', maxWidth: '480px', margin: '0 auto 20px', lineHeight: '1.5' }}>
-            Akun Anda saat ini berada pada <strong>Paket Starter</strong>. Berdasarkan model bisnis, Paket Starter hanya mendukung materi SOP standar yang diproduksi dan diunggah langsung oleh tim <strong>Axara</strong>.
+            Akun Anda saat ini berada pada <strong>Paket Starter</strong>. Berdasarkan model bisnis, Paket Starter hanya mendukung materi Training & SOP standar yang diproduksi dan diunggah langsung oleh tim <strong>Axara</strong>.
           </p>
           <div style={{ background: 'var(--surface2)', padding: '16px 24px', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'left', marginBottom: '20px' }}>
             <h4 style={{ fontWeight: '600', marginBottom: '8px' }}>Ingin mengunggah video kustom buatan sendiri?</h4>
@@ -168,7 +168,7 @@ export const UploadSOP = () => {
       {/* HEADER LEFT ALIGNED */}
       <div style={{ textAlign: 'left', marginBottom: '24px' }}>
         <h2 style={{ fontSize: '20px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: '600', color: '#0f172a' }}>
-          Konfigurasi Video SOP & Ujian
+          Konfigurasi Video Training & SOP
         </h2>
         <p style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '4px' }}>
           Sistematisasi pengetahuan perusahaan Anda. Unggah video instruksi dan buat parameter ujian untuk memastikan standar kualitas kerja.
@@ -212,7 +212,7 @@ export const UploadSOP = () => {
                 {/* Form Fields */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left', justifyContent: 'center' }}>
                   <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600', letterSpacing: '0.05em' }}>Judul Video SOP</label>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600', letterSpacing: '0.05em' }}>Judul Video Training / SOP</label>
                     <input
                       type="text"
                       className="form-input"
