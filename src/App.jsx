@@ -11,6 +11,7 @@ import { Employees } from './pages/Employees';
 import { Reports } from './pages/Reports';
 import { UploadSOP } from './pages/UploadSOP';
 import { HeyGen } from './pages/HeyGen';
+import { Certifications } from './pages/Certifications';
 
 const AppContent = () => {
   const { activePage } = useTenant();
@@ -31,12 +32,7 @@ const AppContent = () => {
       case 'heygen':
         return <HeyGen />;
       case 'sertifikasi':
-        return (
-          <div className="content">
-            <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Manajemen Sertifikasi</h2>
-            <p style={{ color: 'var(--text2)' }}>Fitur kelulusan kuis dan generate sertifikat otomatis untuk karyawan.</p>
-          </div>
-        );
+        return <Certifications />;
       case 'departemen':
         return (
           <div className="content">
