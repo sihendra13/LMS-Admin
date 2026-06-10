@@ -7,15 +7,9 @@ export const Settings = () => {
   
   const isHRDAdmin = currentUser.role === 'admin';
 
-  // Branding states
-  const [accentColor, setAccentColor] = useState('#002D72');
-  const [customDomain, setCustomDomain] = useState('learn.majubersama.com');
+  // Branding/Integration states
   const [syncStatus, setSyncStatus] = useState('Terakhir disinkronisasi: Hari ini, 09:30');
   const [isSyncing, setIsSyncing] = useState(false);
-
-  // Editable fields states for simulation
-  const [userName, setUserName] = useState(currentUser.name);
-  const [userEmail, setUserEmail] = useState(currentUser.role === 'admin' ? 'andi.s@majubersama.com' : `${currentUser.name.toLowerCase().replace(' ', '.')}@majubersama.com`);
 
   const handleSyncHRIS = () => {
     setIsSyncing(true);
@@ -65,7 +59,7 @@ export const Settings = () => {
                 {currentUser.avatar}
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text1)' }}>{userName}</h4>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text1)' }}>{currentUser.name}</h4>
                 <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: 'var(--text2)' }}>
                   Peran: <strong style={{ color: 'var(--accent)' }}>{currentUser.role === 'admin' ? 'HRD Admin' : 'Supervisor / Lead'}</strong>
                 </p>
@@ -75,32 +69,25 @@ export const Settings = () => {
               </div>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '24px' }}>
-              <div className="form-group">
-                <label className="form-label">Nama Lengkap</label>
-                <div style={{ position: 'relative', marginTop: '6px' }}>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={userName} 
-                    onChange={(e) => setUserName(e.target.value)} 
-                    style={{ width: '100%', paddingRight: '36px' }} 
-                  />
-                  <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '14px' }} title="Klik untuk mengedit">✏️</span>
+            {/* PROFILE DATA (READ-ONLY / SYNCED FROM HRIS TO PREVENT OUT-OF-SYNC ISSUES) */}
+            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)', marginTop: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '700', display: 'block', textTransform: 'uppercase' }}>Nama Lengkap</span>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)', display: 'block', marginTop: '6px' }}>
+                    {currentUser.name}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '700', display: 'block', textTransform: 'uppercase' }}>Alamat Email</span>
+                  <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text2)', display: 'block', marginTop: '6px' }}>
+                    {currentUser.role === 'admin' ? 'andi.s@majubersama.com' : `${currentUser.name.toLowerCase().replace(' ', '.')}@majubersama.com`}
+                  </span>
                 </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <div style={{ position: 'relative', marginTop: '6px' }}>
-                  <input 
-                    type="email" 
-                    className="form-input" 
-                    value={userEmail} 
-                    onChange={(e) => setUserEmail(e.target.value)} 
-                    style={{ width: '100%', paddingRight: '36px' }} 
-                  />
-                  <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '14px' }} title="Klik untuk mengedit">✏️</span>
-                </div>
+              
+              <div style={{ borderTop: '1px solid var(--border)', marginTop: '14px', paddingTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--green)', fontWeight: '600' }}>
+                <span>🔄 Akun terhubung dengan Mekari Talenta (HRIS)</span>
               </div>
             </div>
           </div>
