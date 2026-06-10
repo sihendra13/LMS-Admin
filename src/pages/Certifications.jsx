@@ -3,11 +3,17 @@ import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
 
 export const Certifications = () => {
-  const { tenant, quizSubmissions, changePlan } = useTenant();
+  const { 
+    tenant, 
+    quizSubmissions, 
+    changePlan,
+    passingScore,
+    setPassingScore,
+    validityMonths,
+    setValidityMonths 
+  } = useTenant();
 
   // Settings states for Business plan simulation
-  const [passingScore, setPassingScore] = useState(80);
-  const [validityMonths, setValidityMonths] = useState(12);
   const [selectedTemplate, setSelectedTemplate] = useState('modern-navy');
   const [autoEmail, setAutoEmail] = useState(true);
 

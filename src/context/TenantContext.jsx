@@ -39,6 +39,14 @@ export const TenantProvider = ({ children }) => {
     { id: 1, email: 'hendra.f@majubersama.com', dept: 'Operasional', status: 'Pending', date: 'Hari ini' }
   ]);
 
+  const [pendingEssays, setPendingEssays] = useState([
+    { id: 101, employeeName: 'Budi Pratama', dept: 'Finance', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', question: 'Mengapa kuitansi fotokopi tidak dapat diklaim?', answer: 'Kuitansi fotokopi tidak dapat diklaim karena regulasi perpajakan mewajibkan bukti fisik asli untuk diaudit, serta mencegah klaim ganda.', date: 'Hari ini' },
+    { id: 102, employeeName: 'Nina Putri', dept: 'CS', videoTitle: 'SOP Customer Service: Handling Komplain', question: 'Bagaimana langkah awal menangani pelanggan marah?', answer: 'Pertama-tama saya akan mendengarkan keluhan dengan empati tanpa memotong pembicaraannya, lalu memvalidasi emosinya dan menawarkan maaf atas ketidaknyamanan tersebut.', date: '1 hari lalu' }
+  ]);
+
+  const [passingScore, setPassingScore] = useState(80);
+  const [validityMonths, setValidityMonths] = useState(12);
+
   // Mock initial data that can be updated dynamically
   const [employees, setEmployees] = useState([
     { id: 1, name: 'Rini Wulandari', dept: 'Sales', city: 'Jakarta', score: 18 },
@@ -207,6 +215,34 @@ export const TenantProvider = ({ children }) => {
     }
   };
 
+  const gradeEssay = (id, score) => {
+    const essay = pendingEssays.find(e => e.id === id);
+    if (!essay) return;
+
+    const isPassed = score >= passingScore;
+    const newSubmission = {
+      id: Date.now(),
+      employeeName: essay.employeeName,
+      videoTitle: essay.videoTitle,
+      preScore: 30,
+      postScore: score,
+      date: 'Baru saja',
+      status: isPassed ? 'Lulus' : 'Remedi (Butuh Ujian Ulang)'
+    };
+
+    setQuizSubmissions(prev => [newSubmission, ...prev]);
+    setPendingEssays(prev => prev.filter(e => e.id !== id));
+
+    // Add activity
+    const newAct = {
+      id: Date.now(),
+      text: `Kuis esai <strong>${essay.employeeName}</strong> dinilai oleh ${currentUser.name} dengan skor <strong>${score}%</strong> (${isPassed ? 'Lulus' : 'Remedi'})`,
+      time: 'Baru saja',
+      type: isPassed ? 'green' : 'amber'
+    };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
   return (
     <TenantContext.Provider value={{
       tenant,
@@ -225,6 +261,12 @@ export const TenantProvider = ({ children }) => {
       invitations,
       inviteSupervisor,
       revokeSupervisor,
+      pendingEssays,
+      gradeEssay,
+      passingScore,
+      setPassingScore,
+      validityMonths,
+      setValidityMonths,
     }}>
       {children}
     </TenantContext.Provider>

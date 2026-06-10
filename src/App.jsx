@@ -13,6 +13,8 @@ import { UploadSOP } from './pages/UploadSOP';
 import { HeyGen } from './pages/HeyGen';
 import { Certifications } from './pages/Certifications';
 import { Departments } from './pages/Departments';
+import { QuizGrading } from './pages/QuizGrading';
+import { Settings } from './pages/Settings';
 
 const AppContent = () => {
   const { activePage } = useTenant();
@@ -36,13 +38,10 @@ const AppContent = () => {
         return <Certifications />;
       case 'departemen':
         return <Departments />;
+      case 'penilaian':
+        return <QuizGrading />;
       case 'pengaturan':
-        return (
-          <div className="content">
-            <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Pengaturan LMS</h2>
-            <p style={{ color: 'var(--text2)' }}>Pengaturan umum, integrasi API, dan profil perusahaan klien.</p>
-          </div>
-        );
+        return <Settings />;
       default:
         return <Dashboard />;
     }

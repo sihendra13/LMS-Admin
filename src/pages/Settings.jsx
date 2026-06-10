@@ -1,0 +1,303 @@
+import React, { useState } from 'react';
+import { useTenant } from '../context/TenantContext';
+import { PLANS } from '../utils/featureGates';
+
+export const Settings = () => {
+  const { tenant, currentUser, changePlan } = useTenant();
+  
+  const isHRDAdmin = currentUser.role === 'admin';
+
+  // Branding states
+  const [accentColor, setAccentColor] = useState('#002D72');
+  const [customDomain, setCustomDomain] = useState('learn.majubersama.com');
+  const [syncStatus, setSyncStatus] = useState('Terakhir disinkronisasi: Hari ini, 09:30');
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncHRIS = () => {
+    setIsSyncing(true);
+    setTimeout(() => {
+      setIsSyncing(false);
+      setSyncStatus(`Terakhir disinkronisasi: Baru saja (Sukses)`);
+    }, 1500);
+  };
+
+  return (
+    <div className="content">
+      {/* HEADER */}
+      <div style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px' }}>Pengaturan</h2>
+        <p style={{ color: 'var(--text3)', fontSize: '13px' }}>
+          {isHRDAdmin 
+            ? 'Kelola profil perusahaan, branding LMS, integrasi HRIS, dan akun supervisor.'
+            : 'Kelola informasi profil personal Anda.'
+          }
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: isHRDAdmin ? '1fr 300px' : '1fr', gap: '24px', alignItems: 'start' }}>
+        
+        {/* MAIN SETTINGS FORM */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* PROFILE CARD (VISIBLE FOR BOTH) */}
+          <div className="card" style={{ padding: '24px' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              👤 Informasi Profil Pengguna
+            </h3>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+              <div style={{ 
+                width: '64px', 
+                height: '64px', 
+                borderRadius: '50%', 
+                background: 'var(--accent)', 
+                color: '#ffffff', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '24px'
+              }}>
+                {currentUser.avatar}
+              </div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text1)' }}>{currentUser.name}</h4>
+                <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: 'var(--text2)' }}>
+                  Peran: <strong style={{ color: 'var(--accent)' }}>{currentUser.role === 'admin' ? 'HRD Admin' : 'Supervisor / Lead'}</strong>
+                </p>
+                <div style={{ display: 'inline-block', fontSize: '11px', background: '#e2e8f0', color: 'var(--text1)', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
+                  Departemen: {currentUser.dept}
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '24px' }}>
+              <div className="form-group">
+                <label className="form-label">Nama Lengkap</label>
+                <input type="text" className="form-control" defaultValue={currentUser.name} readOnly style={{ background: '#f8fafc' }} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input type="text" className="form-control" defaultValue={currentUser.role === 'admin' ? 'andi.s@majubersama.com' : `${currentUser.name.toLowerCase().replace(' ', '.')}@majubersama.com`} readOnly style={{ background: '#f8fafc' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* ADMIN-ONLY BRANDING & BILLING SETTINGS */}
+          {isHRDAdmin ? (
+            <>
+              {/* COMPANY DETAILS (LOCKED COMPANY NAME) */}
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🏢 Detail Perusahaan & Informasi Billing
+                </h3>
+                
+                {/* LOCKED ENTITY WARNING */}
+                <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '8px', padding: '12px 14px', marginBottom: '18px', display: 'flex', gap: '10px' }}>
+                  <span style={{ fontSize: '16px' }}>⚠️</span>
+                  <div style={{ fontSize: '12px', color: '#b45309', lineHeight: '1.4' }}>
+                    <strong>Entitas Hukum Terkunci:</strong> Untuk menjaga legalitas kontrak berlangganan dan kesesuaian faktur pajak, nama entitas utama perusahaan tidak dapat diubah secara langsung dari dasbor ini. Silakan hubungi Account Manager Anda jika terdapat perubahan nama hukum.
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Nama Perusahaan (Entitas Billing)</label>
+                    <div style={{ position: 'relative' }}>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value="PT Maju Bersama Tbk" 
+                        disabled 
+                        style={{ 
+                          background: '#f1f5f9', 
+                          color: '#64748b', 
+                          cursor: 'not-allowed', 
+                          fontWeight: '600',
+                          paddingRight: '40px' 
+                        }} 
+                      />
+                      <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px' }} title="Terkunci secara hukum">🔒</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Nomor Pokok Wajib Pajak (NPWP)</label>
+                      <input type="text" className="form-control" defaultValue="01.234.567.8-901.000" disabled style={{ background: '#f8fafc', color: '#64748b' }} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Alamat Kantor Pusat</label>
+                      <input type="text" className="form-control" defaultValue="Gedung Cyber 2, Lt. 18, Jakarta Selatan" disabled style={{ background: '#f8fafc', color: '#64748b' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* LMS CUSTOM BRANDING */}
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🎨 Branding & Tampilan LMS Klien
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Warna Aksen Dasbor</label>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                      {['#002D72', '#0f766e', '#7c3aed', '#db2777', '#2563eb'].map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: color,
+                            border: accentColor === color ? '3px solid #000000' : '1px solid #cbd5e1',
+                            cursor: 'pointer',
+                            outline: 'none'
+                          }}
+                          onClick={() => setAccentColor(color)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Logo LMS (Simulasi Upload)</label>
+                    <div style={{ border: '2px dashed var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', background: '#f8fafc', marginTop: '4px' }}>
+                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🖼️</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: '600', display: 'block' }}>Logo_Maju_Bersama.png</span>
+                      <span style={{ fontSize: '10px', color: 'var(--text3)' }}>PNG/JPG up to 2MB (200x50px recommended)</span>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Custom Domain (White-Label)</label>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={customDomain} 
+                        onChange={(e) => setCustomDomain(e.target.value)}
+                        placeholder="lms.perusahaan.com"
+                      />
+                      <button type="button" className="btn-sec" style={{ padding: '8px 16px', whiteSpace: 'nowrap' }}>Simpan Domain</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* HRIS SYNC INTEGRATION */}
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🔄 Sinkronisasi Karyawan (HRIS Integration)
+                </h3>
+                <p style={{ color: 'var(--text3)', fontSize: '13px', margin: '0 0 16px 0' }}>
+                  Hubungkan dengan HRIS internal Anda untuk otomatis menyinkronkan data karyawan, penugasan divisi, dan status aktif/nonaktif.
+                </p>
+
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                  <div style={{ 
+                    border: '1px solid var(--border)', 
+                    borderRadius: '8px', 
+                    padding: '12px 16px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px',
+                    background: '#f8fafc',
+                    flex: 1,
+                    minWidth: '200px'
+                  }}>
+                    <div style={{ fontSize: '24px' }}>💼</div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700' }}>Mekari Talenta</h4>
+                      <span style={{ fontSize: '11px', color: 'var(--green)', fontWeight: '600' }}>Tersambung (API Key)</span>
+                    </div>
+                  </div>
+                  <div style={{ 
+                    border: '1px solid var(--border)', 
+                    borderRadius: '8px', 
+                    padding: '12px 16px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px',
+                    background: '#f8fafc',
+                    flex: 1,
+                    minWidth: '200px'
+                  }}>
+                    <div style={{ fontSize: '24px' }}>🧩</div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700' }}>SAP SuccessFactors</h4>
+                      <span style={{ fontSize: '11px', color: 'var(--text3)' }}>Belum Terhubung</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f1f5f9', padding: '12px 16px', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: '500' }}>{syncStatus}</span>
+                  <button 
+                    type="button" 
+                    className="btn-primary" 
+                    style={{ fontSize: '12px', padding: '6px 14px', background: '#002D72', border: '1px solid #002D72' }}
+                    onClick={handleSyncHRIS}
+                    disabled={isSyncing}
+                  >
+                    {isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Sekarang'}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* SUPERVISOR VIEW ACCESS NOTE & POLICY */
+            <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--accent)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                🔒 Akses Administratif Terbatas
+              </h4>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text3)', lineHeight: '1.6' }}>
+                Halaman pengaturan tingkat lanjut seperti *Detail Entitas Perusahaan*, *Branding Warna/Logo LMS*, dan *Integrasi HRIS (Mekari Talenta/SAP)* dikunci untuk akun Supervisor/Lead. Hanya administrator utama **HRD Admin** (Andi Saputra) yang memiliki otoritas penuh untuk mengubah konfigurasi billing dan integrasi platform LMS ini.
+              </p>
+            </div>
+          )}
+
+        </div>
+
+        {/* SIDE BAR FOR BILLING STATE IN ADMIN */}
+        {isHRDAdmin && (
+          <div className="card" style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
+              💳 Paket Berlangganan
+            </h3>
+            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '14px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '600' }}>PAKET SAAT INI</div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--accent)', marginTop: '2px' }}>
+                {tenant.plan.toUpperCase()}
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--green)', fontWeight: '600', marginTop: '4px' }}>
+                Aktif · Autopay Terdaftar
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px', color: 'var(--text2)' }}>
+              <div>💳 Visa Akhiran **8890</div>
+              <div>📅 Kedaluwarsa: Des 2027</div>
+              <div>💵 Biaya: Rp 2.500.000 / bln</div>
+            </div>
+            
+            <div style={{ marginTop: '20px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+              <button 
+                type="button" 
+                className="btn-sec" 
+                style={{ width: '100%', fontSize: '12px', padding: '8px' }}
+                onClick={() => changePlan(PLANS.ENTERPRISE)}
+              >
+                Upgrade ke Enterprise
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
