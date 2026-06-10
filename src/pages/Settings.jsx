@@ -13,6 +13,10 @@ export const Settings = () => {
   const [syncStatus, setSyncStatus] = useState('Terakhir disinkronisasi: Hari ini, 09:30');
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // Editable fields states for simulation
+  const [userName, setUserName] = useState(currentUser.name);
+  const [userEmail, setUserEmail] = useState(currentUser.role === 'admin' ? 'andi.s@majubersama.com' : `${currentUser.name.toLowerCase().replace(' ', '.')}@majubersama.com`);
+
   const handleSyncHRIS = () => {
     setIsSyncing(true);
     setTimeout(() => {
@@ -61,7 +65,7 @@ export const Settings = () => {
                 {currentUser.avatar}
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text1)' }}>{currentUser.name}</h4>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text1)' }}>{userName}</h4>
                 <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: 'var(--text2)' }}>
                   Peran: <strong style={{ color: 'var(--accent)' }}>{currentUser.role === 'admin' ? 'HRD Admin' : 'Supervisor / Lead'}</strong>
                 </p>
@@ -74,11 +78,29 @@ export const Settings = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '24px' }}>
               <div className="form-group">
                 <label className="form-label">Nama Lengkap</label>
-                <input type="text" className="form-control" defaultValue={currentUser.name} readOnly style={{ background: '#f8fafc' }} />
+                <div style={{ position: 'relative', marginTop: '6px' }}>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    value={userName} 
+                    onChange={(e) => setUserName(e.target.value)} 
+                    style={{ width: '100%', paddingRight: '36px' }} 
+                  />
+                  <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '14px' }} title="Klik untuk mengedit">✏️</span>
+                </div>
               </div>
               <div className="form-group">
                 <label className="form-label">Email</label>
-                <input type="text" className="form-control" defaultValue={currentUser.role === 'admin' ? 'andi.s@majubersama.com' : `${currentUser.name.toLowerCase().replace(' ', '.')}@majubersama.com`} readOnly style={{ background: '#f8fafc' }} />
+                <div style={{ position: 'relative', marginTop: '6px' }}>
+                  <input 
+                    type="email" 
+                    className="form-input" 
+                    value={userEmail} 
+                    onChange={(e) => setUserEmail(e.target.value)} 
+                    style={{ width: '100%', paddingRight: '36px' }} 
+                  />
+                  <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '14px' }} title="Klik untuk mengedit">✏️</span>
+                </div>
               </div>
             </div>
           </div>
@@ -86,7 +108,7 @@ export const Settings = () => {
           {/* ADMIN-ONLY BRANDING & BILLING SETTINGS */}
           {isHRDAdmin ? (
             <>
-              {/* COMPANY DETAILS (LOCKED COMPANY NAME) */}
+              {/* COMPANY DETAILS (LOCKED COMPANY NAME - FLAT TEXT INSTEAD OF BOX) */}
               <div className="card" style={{ padding: '24px' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   🏢 Detail Perusahaan & Informasi Billing
@@ -100,35 +122,27 @@ export const Settings = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div className="form-group">
-                    <label className="form-label">Nama Perusahaan (Entitas Billing)</label>
-                    <div style={{ position: 'relative' }}>
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        value="PT Maju Bersama Tbk" 
-                        disabled 
-                        style={{ 
-                          background: '#f1f5f9', 
-                          color: '#64748b', 
-                          cursor: 'not-allowed', 
-                          fontWeight: '600',
-                          paddingRight: '40px' 
-                        }} 
-                      />
-                      <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px' }} title="Terkunci secara hukum">🔒</span>
-                    </div>
+                {/* FLAT TEXT VALUE CARDS TO PREVENT BOXY DEFAULT INPUT LOOKS */}
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                  <div style={{ marginBottom: '18px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '700', display: 'block', textTransform: 'uppercase' }}>Nama Perusahaan (Entitas Billing)</span>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                      PT Maju Bersama Tbk <span style={{ fontSize: '14px' }} title="Terkunci secara hukum">🔒</span>
+                    </span>
                   </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div className="form-group">
-                      <label className="form-label">Nomor Pokok Wajib Pajak (NPWP)</label>
-                      <input type="text" className="form-control" defaultValue="01.234.567.8-901.000" disabled style={{ background: '#f8fafc', color: '#64748b' }} />
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '700', display: 'block', textTransform: 'uppercase' }}>Nomor Pokok Wajib Pajak (NPWP)</span>
+                      <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text2)', display: 'block', marginTop: '6px' }}>
+                        01.234.567.8-901.000
+                      </span>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Alamat Kantor Pusat</label>
-                      <input type="text" className="form-control" defaultValue="Gedung Cyber 2, Lt. 18, Jakarta Selatan" disabled style={{ background: '#f8fafc', color: '#64748b' }} />
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '700', display: 'block', textTransform: 'uppercase' }}>Alamat Kantor Pusat</span>
+                      <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text2)', display: 'block', marginTop: '6px' }}>
+                        Gedung Cyber 2, Lt. 18, Jakarta Selatan
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -165,7 +179,7 @@ export const Settings = () => {
 
                   <div className="form-group">
                     <label className="form-label">Logo LMS (Simulasi Upload)</label>
-                    <div style={{ border: '2px dashed var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', background: '#f8fafc', marginTop: '4px' }}>
+                    <div style={{ border: '2px dashed var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', background: '#f8fafc', marginTop: '6px' }}>
                       <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🖼️</span>
                       <span style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: '600', display: 'block' }}>Logo_Maju_Bersama.png</span>
                       <span style={{ fontSize: '10px', color: 'var(--text3)' }}>PNG/JPG up to 2MB (200x50px recommended)</span>
@@ -174,14 +188,18 @@ export const Settings = () => {
 
                   <div className="form-group">
                     <label className="form-label">Custom Domain (White-Label)</label>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        value={customDomain} 
-                        onChange={(e) => setCustomDomain(e.target.value)}
-                        placeholder="lms.perusahaan.com"
-                      />
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                      <div style={{ position: 'relative', flex: 1 }}>
+                        <input 
+                          type="text" 
+                          className="form-input" 
+                          value={customDomain} 
+                          onChange={(e) => setCustomDomain(e.target.value)}
+                          placeholder="lms.perusahaan.com"
+                          style={{ width: '100%', paddingRight: '36px' }}
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '14px' }}>✏️</span>
+                      </div>
                       <button type="button" className="btn-sec" style={{ padding: '8px 16px', whiteSpace: 'nowrap' }}>Simpan Domain</button>
                     </div>
                   </div>
