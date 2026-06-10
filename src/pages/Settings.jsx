@@ -148,64 +148,6 @@ export const Settings = () => {
                 </div>
               </div>
 
-              {/* LMS CUSTOM BRANDING */}
-              <div className="card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🎨 Branding & Tampilan LMS Klien
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                  <div className="form-group">
-                    <label className="form-label">Warna Aksen Dasbor</label>
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
-                      {['#002D72', '#0f766e', '#7c3aed', '#db2777', '#2563eb'].map(color => (
-                        <button
-                          key={color}
-                          type="button"
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            background: color,
-                            border: accentColor === color ? '3px solid #000000' : '1px solid #cbd5e1',
-                            cursor: 'pointer',
-                            outline: 'none'
-                          }}
-                          onClick={() => setAccentColor(color)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Logo LMS (Simulasi Upload)</label>
-                    <div style={{ border: '2px dashed var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', background: '#f8fafc', marginTop: '6px' }}>
-                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🖼️</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: '600', display: 'block' }}>Logo_Maju_Bersama.png</span>
-                      <span style={{ fontSize: '10px', color: 'var(--text3)' }}>PNG/JPG up to 2MB (200x50px recommended)</span>
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Custom Domain (White-Label)</label>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                      <div style={{ position: 'relative', flex: 1 }}>
-                        <input 
-                          type="text" 
-                          className="form-input" 
-                          value={customDomain} 
-                          onChange={(e) => setCustomDomain(e.target.value)}
-                          placeholder="lms.perusahaan.com"
-                          style={{ width: '100%', paddingRight: '36px' }}
-                        />
-                        <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '14px' }}>✏️</span>
-                      </div>
-                      <button type="button" className="btn-sec" style={{ padding: '8px 16px', whiteSpace: 'nowrap' }}>Simpan Domain</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* HRIS SYNC INTEGRATION */}
               <div className="card" style={{ padding: '24px' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
