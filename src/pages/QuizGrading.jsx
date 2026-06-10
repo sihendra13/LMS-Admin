@@ -6,24 +6,36 @@ export const QuizGrading = () => {
   const [selectedEssay, setSelectedEssay] = useState(null);
   const [scoreInput, setScoreInput] = useState(80);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+  
+  // Search and Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sopFilter, setSopFilter] = useState('');
 
   // Filter essays by department if supervisor
   const isSupervisor = currentUser.role === 'supervisor';
   const supervisorDept = currentUser.dept;
 
-  const filteredPending = pendingEssays.filter(essay => {
+  // Base list depending on supervisor division boundary
+  const basePending = pendingEssays.filter(essay => {
     if (isSupervisor) {
       return essay.dept.toLowerCase() === supervisorDept.toLowerCase();
     }
     return true;
   });
 
+  // Extract unique SOP titles for the dropdown filter
+  const uniqueSops = Array.from(new Set(basePending.map(essay => essay.videoTitle)));
+
+  // Final filtered list based on search query and dropdown selection
+  const filteredPending = basePending.filter(essay => {
+    const matchesSearch = essay.employeeName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSop = sopFilter ? essay.videoTitle === sopFilter : true;
+    return matchesSearch && matchesSop;
+  });
+
   // Filter recently graded essays (from quizSubmissions) - only show essays or submissions relevant to role
   const filteredSubmissions = quizSubmissions.filter(sub => {
     if (isSupervisor) {
-      // Find employee dept or assume from name/dept match
-      // Submissions don't have dept directly, but let's check if the videoTitle contains department keywords or fallback
-      // Since it's a simulation, we can match employee name or filter by department if employees list is available
       return true; // Simple simulation, show all or filter if dept matches
     }
     return true;
@@ -61,6 +73,52 @@ export const QuizGrading = () => {
         </div>
       </div>
 
+      {/* FILTER SEARCH & DROPDOWN HEADER */}
+      <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
+          <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>Cari Karyawan</label>
+          <div style={{ position: 'relative' }}>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="Ketik nama karyawan..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ paddingLeft: '36px', fontSize: '13px' }}
+            />
+            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>🔍</span>
+          </div>
+        </div>
+
+        <div style={{ width: '280px', minWidth: '200px' }}>
+          <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>Saring Berdasarkan SOP</label>
+          <select 
+            className="form-select" 
+            style={{ fontSize: '13px' }}
+            value={sopFilter}
+            onChange={(e) => setSopFilter(e.target.value)}
+          >
+            <option value="">-- Semua SOP / Video ({uniqueSops.length}) --</option>
+            {uniqueSops.map((sop, i) => (
+              <option key={i} value={sop}>{sop}</option>
+            ))}
+          </select>
+        </div>
+
+        {(searchQuery || sopFilter) && (
+          <div style={{ alignSelf: 'flex-end', marginBottom: '4px' }}>
+            <button 
+              type="button" 
+              className="btn-sec" 
+              style={{ fontSize: '12px', padding: '6px 12px', background: '#f1f5f9', border: '1px solid #cbd5e1' }}
+              onClick={() => { setSearchQuery(''); setSopFilter(''); }}
+            >
+              Reset Filter
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* PENDING ESSAYS QUEUE */}
       <div className="card" style={{ marginBottom: '28px' }}>
         <div className="card-head" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -75,8 +133,8 @@ export const QuizGrading = () => {
         {filteredPending.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text3)' }}>
             <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎉</div>
-            <h4 style={{ fontWeight: '600', color: 'var(--text1)', marginBottom: '4px' }}>Semua Jawaban Sudah Dinilai</h4>
-            <p style={{ fontSize: '13px' }}>Tidak ada antrean jawaban kuis esai untuk saat ini.</p>
+            <h4 style={{ fontWeight: '600', color: 'var(--text1)', marginBottom: '4px' }}>Tidak Ada Antrean</h4>
+            <p style={{ fontSize: '13px' }}>Tidak ada jawaban kuis esai yang cocok dengan filter pencarian Anda.</p>
           </div>
         ) : (
           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -291,6 +349,32 @@ export const QuizGrading = () => {
                       onChange={(e) => setScoreInput(Math.min(100, Math.max(0, Number(e.target.value))))}
                       style={{ width: '60px', padding: '6px', textAlign: 'center', borderRadius: '6px', border: '1px solid var(--border)' }}
                     />
+                  </div>
+
+                  {/* QUICK SCORING PRESETS */}
+                  <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text3)', alignSelf: 'center', marginRight: '4px' }}>Template Nilai Cepat:</span>
+                    <button 
+                      type="button" 
+                      onClick={() => setScoreInput(50)}
+                      style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#fce8e6', color: '#c5221f', border: '1px solid #f5c2c1' }}
+                    >
+                      ❌ Salah/Kurang (50)
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setScoreInput(75)}
+                      style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}
+                    >
+                      ⚠️ Cukup (75)
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setScoreInput(100)}
+                      style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#e6f4ea', color: '#137333', border: '1px solid #c4eed0' }}
+                    >
+                      ✅ Sempurna (100)
+                    </button>
                   </div>
                   
                   {/* Realtime Passing Status Badge */}
