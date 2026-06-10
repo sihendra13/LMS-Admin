@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTenant } from '../context/TenantContext';
 
 export const QuizGrading = () => {
   const { currentUser, pendingEssays, gradeEssay, passingScore, quizSubmissions } = useTenant();
   const [selectedEssay, setSelectedEssay] = useState(null);
-  const [scoreInput, setScoreInput] = useState(80);
-  const [feedbackMsg, setFeedbackMsg] = useState('');
   
+  // Modal inner wizard states
+  const [activeQuestionId, setActiveQuestionId] = useState(null);
+  const [questionScores, setQuestionScores] = useState({}); // e.g. { 1: 85, 2: 90 }
+  const [currentScoreVal, setCurrentScoreVal] = useState(80);
+
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [sopFilter, setSopFilter] = useState('');
@@ -33,27 +36,90 @@ export const QuizGrading = () => {
     return matchesSearch && matchesSop;
   });
 
-  // Filter recently graded essays (from quizSubmissions) - only show essays or submissions relevant to role
+  // Filter recently graded essays (from quizSubmissions)
   const filteredSubmissions = quizSubmissions.filter(sub => {
-    if (isSupervisor) {
-      return true; // Simple simulation, show all or filter if dept matches
-    }
     return true;
   });
 
   const handleOpenGradeModal = (essay) => {
     setSelectedEssay(essay);
-    setScoreInput(80); // reset default to 80
-    setFeedbackMsg('');
+    
+    // Initialize scores map from the essay's questions
+    const initialScores = {};
+    essay.questions.forEach(q => {
+      initialScores[q.id] = q.score !== undefined ? q.score : null;
+    });
+    setQuestionScores(initialScores);
+
+    // Set first question as active
+    if (essay.questions && essay.questions.length > 0) {
+      const firstId = essay.questions[0].id;
+      setActiveQuestionId(firstId);
+      setCurrentScoreVal(initialScores[firstId] !== null ? initialScores[firstId] : 80);
+    }
+  };
+
+  const handleSelectQuestion = (qId) => {
+    setActiveQuestionId(qId);
+    setCurrentScoreVal(questionScores[qId] !== null ? questionScores[qId] : 80);
+  };
+
+  // Sync active question score change back to map
+  const handleScoreValueChange = (val) => {
+    const numericVal = Number(val);
+    setCurrentScoreVal(numericVal);
+    setQuestionScores(prev => ({
+      ...prev,
+      [activeQuestionId]: numericVal
+    }));
+  };
+
+  const handleQuickScore = (val) => {
+    handleScoreValueChange(val);
+  };
+
+  const getActiveQuestionObj = () => {
+    if (!selectedEssay) return null;
+    return selectedEssay.questions.find(q => q.id === activeQuestionId);
+  };
+
+  // Calculate Average score of currently input scores
+  const getAverageScore = () => {
+    const scores = Object.values(questionScores);
+    const validScores = scores.filter(s => s !== null);
+    if (validScores.length === 0) return 0;
+    const sum = validScores.reduce((acc, curr) => acc + curr, 0);
+    return Math.round(sum / validScores.length);
+  };
+
+  const isAllGraded = () => {
+    return Object.values(questionScores).every(s => s !== null);
   };
 
   const handleSubmitGrade = (e) => {
     e.preventDefault();
-    if (!selectedEssay) return;
+    if (!selectedEssay || !isAllGraded()) return;
     
-    gradeEssay(selectedEssay.id, Number(scoreInput));
+    const finalAverage = getAverageScore();
+    gradeEssay(selectedEssay.id, finalAverage);
     setSelectedEssay(null);
   };
+
+  const activeQuestion = getActiveQuestionObj();
+  const currentAverage = getAverageScore();
+  const allGraded = isAllGraded();
+
+  // Find next and previous questions
+  const getPrevAndNext = () => {
+    if (!selectedEssay || !activeQuestionId) return { prev: null, next: null };
+    const idx = selectedEssay.questions.findIndex(q => q.id === activeQuestionId);
+    return {
+      prev: idx > 0 ? selectedEssay.questions[idx - 1].id : null,
+      next: idx < selectedEssay.questions.length - 1 ? selectedEssay.questions[idx + 1].id : null
+    };
+  };
+
+  const { prev: prevQId, next: nextQId } = getPrevAndNext();
 
   return (
     <div className="content">
@@ -188,7 +254,7 @@ export const QuizGrading = () => {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
                       <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                     </svg>
-                    Beri Nilai
+                    Beri Nilai ({essay.questions?.length || 0} Soal)
                   </button>
                 </div>
 
@@ -201,19 +267,13 @@ export const QuizGrading = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '4px' }}>
-                  <div>
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text2)', display: 'block', marginBottom: '2px' }}>Pertanyaan:</span>
-                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text1)', fontStyle: 'italic', background: '#f1f5f9', padding: '8px 12px', borderRadius: '6px' }}>
-                      "{essay.question}"
-                    </p>
-                  </div>
-                  <div style={{ marginTop: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text2)', display: 'block', marginBottom: '2px' }}>Jawaban Karyawan:</span>
-                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text1)', fontWeight: '500', lineHeight: '1.5', background: '#eff6ff', borderLeft: '3px solid #3b82f6', padding: '8px 12px', borderRadius: '0 6px 6px 0' }}>
-                      {essay.answer}
-                    </p>
-                  </div>
+                {/* Question summaries */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
+                  {essay.questions?.map((q, idx) => (
+                    <span key={q.id} style={{ background: '#e2e8f0', color: 'var(--text1)', fontSize: '11px', padding: '4px 10px', borderRadius: '12px', fontWeight: '500' }}>
+                      📝 Soal {idx + 1}: {q.score !== null ? `✓ ${q.score}%` : '⏳ Menunggu'}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}
@@ -233,7 +293,7 @@ export const QuizGrading = () => {
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Karyawan</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>SOP / Materi</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Tanggal Penilaian</th>
-                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor Akhir</th>
+                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor Rata-Rata</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Status Kelulusan</th>
               </tr>
             </thead>
@@ -274,7 +334,7 @@ export const QuizGrading = () => {
         </div>
       </div>
 
-      {/* GRADING MODAL */}
+      {/* SPLIT-SCREEN WIZARD GRADING MODAL */}
       {selectedEssay && (
         <div style={{
           position: 'fixed',
@@ -293,125 +353,271 @@ export const QuizGrading = () => {
             style={{
               background: '#ffffff',
               borderRadius: '16px',
-              width: '600px',
-              maxWidth: '90vw',
-              padding: '24px',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
+              width: '950px',
+              maxWidth: '95vw',
+              height: '80vh',
+              maxHeight: '680px',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+              overflow: 'hidden'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>Beri Nilai Jawaban Esai</h3>
-            <p style={{ color: 'var(--text3)', fontSize: '13px', margin: '0 0 20px 0' }}>
-              Berikan nilai objektif berdasarkan keakuratan jawaban karyawan terhadap SOP yang berlaku.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', display: 'block', textTransform: 'uppercase' }}>Karyawan</span>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{selectedEssay.employeeName} ({selectedEssay.dept})</span>
-              </div>
-
+            {/* Modal Header */}
+            <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text2)', display: 'block', marginBottom: '4px' }}>Pertanyaan:</span>
-                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text1)', background: '#f1f5f9', padding: '10px 12px', borderRadius: '6px' }}>
-                  {selectedEssay.question}
-                </p>
+                <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text1)' }}>
+                  Penilaian Kuis: {selectedEssay.employeeName} ({selectedEssay.dept})
+                </h3>
+                <span style={{ fontSize: '12px', color: 'var(--text3)' }}>{selectedEssay.videoTitle}</span>
               </div>
-
-              <div>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text2)', display: 'block', marginBottom: '4px' }}>Jawaban Karyawan:</span>
-                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text1)', fontWeight: '500', background: '#eff6ff', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #3b82f6' }}>
-                  {selectedEssay.answer}
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmitGrade}>
-                <div className="form-group" style={{ marginTop: '10px' }}>
-                  <label className="form-label" style={{ fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>Skor Ujian (0 - 100)</span>
-                    <span style={{ fontSize: '16px', color: 'var(--accent)' }}>{scoreInput}%</span>
-                  </label>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
-                    <input 
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={scoreInput}
-                      onChange={(e) => setScoreInput(e.target.value)}
-                      style={{ flex: 1, cursor: 'pointer' }}
-                    />
-                    <input 
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={scoreInput}
-                      onChange={(e) => setScoreInput(Math.min(100, Math.max(0, Number(e.target.value))))}
-                      style={{ width: '60px', padding: '6px', textAlign: 'center', borderRadius: '6px', border: '1px solid var(--border)' }}
-                    />
-                  </div>
-
-                  {/* QUICK SCORING PRESETS */}
-                  <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text3)', alignSelf: 'center', marginRight: '4px' }}>Template Nilai Cepat:</span>
-                    <button 
-                      type="button" 
-                      onClick={() => setScoreInput(50)}
-                      style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#fce8e6', color: '#c5221f', border: '1px solid #f5c2c1' }}
-                    >
-                      ❌ Salah/Kurang (50)
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setScoreInput(75)}
-                      style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}
-                    >
-                      ⚠️ Cukup (75)
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => setScoreInput(100)}
-                      style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#e6f4ea', color: '#137333', border: '1px solid #c4eed0' }}
-                    >
-                      ✅ Sempurna (100)
-                    </button>
-                  </div>
-                  
-                  {/* Realtime Passing Status Badge */}
-                  <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text2)' }}>Status Kelulusan:</span>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      background: Number(scoreInput) >= passingScore ? '#e6f4ea' : '#fce8e6',
-                      color: Number(scoreInput) >= passingScore ? '#137333' : '#c5221f'
-                    }}>
-                      {Number(scoreInput) >= passingScore ? `Lulus (≥${passingScore}%)` : `Remedi (<${passingScore}%)`}
-                    </span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-                  <button 
-                    type="button" 
-                    className="btn-sec" 
-                    style={{ padding: '8px 16px' }}
-                    onClick={() => setSelectedEssay(null)}
-                  >
-                    Batal
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="btn-primary" 
-                    style={{ padding: '8px 20px', background: '#002D72', border: '1px solid #002D72' }}
-                  >
-                    Simpan Nilai
-                  </button>
-                </div>
-              </form>
+              <button 
+                type="button" 
+                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text3)' }}
+                onClick={() => setSelectedEssay(null)}
+              >
+                ✕
+              </button>
             </div>
+
+            {/* Split Screen Body */}
+            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+              
+              {/* LEFT PANEL: DAFTAR SOAL (35% Width) */}
+              <div style={{ 
+                width: '35%', 
+                borderRight: '1px solid var(--border)', 
+                background: '#f8fafc', 
+                overflowY: 'auto',
+                padding: '20px'
+              }}>
+                <h4 style={{ margin: '0 0 14px 0', fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Daftar Pertanyaan Esai ({selectedEssay.questions?.length})
+                </h4>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {selectedEssay.questions?.map((q, idx) => {
+                    const isActive = q.id === activeQuestionId;
+                    const isGraded = questionScores[q.id] !== null;
+                    const qScore = questionScores[q.id];
+
+                    return (
+                      <div
+                        key={q.id}
+                        onClick={() => handleSelectQuestion(q.id)}
+                        style={{
+                          padding: '12px 14px',
+                          borderRadius: '8px',
+                          border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)',
+                          background: isActive ? '#eff6ff' : '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? 'var(--accent)' : 'var(--text2)' }}>
+                            {isActive ? '👉 ' : ''}Soal {idx + 1}
+                          </span>
+                          <span style={{ 
+                            fontSize: '10px', 
+                            fontWeight: '700',
+                            padding: '2px 6px',
+                            borderRadius: '12px',
+                            background: isGraded ? '#e6f4ea' : '#f1f5f9',
+                            color: isGraded ? '#137333' : '#64748b'
+                          }}>
+                            {isGraded ? `Skor: ${qScore}%` : 'Belum dinilai'}
+                          </span>
+                        </div>
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '11px', 
+                          color: 'var(--text3)', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis' 
+                        }}>
+                          {q.question}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* RIGHT PANEL: LEMBAR JAWABAN & SKOR (65% Width) */}
+              <div style={{ 
+                width: '65%', 
+                padding: '24px', 
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                {activeQuestion ? (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase' }}>
+                        Tinjauan Jawaban Soal
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: '600' }}>
+                        Pertanyaan {selectedEssay.questions.findIndex(q => q.id === activeQuestionId) + 1} dari {selectedEssay.questions.length}
+                      </span>
+                    </div>
+
+                    {/* Question text box */}
+                    <div style={{ marginBottom: '18px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text2)', display: 'block', marginBottom: '6px' }}>PERTANYAAN:</span>
+                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text1)', fontWeight: '600', background: '#f1f5f9', padding: '12px 14px', borderRadius: '8px', lineHeight: '1.5' }}>
+                        "{activeQuestion.question}"
+                      </p>
+                    </div>
+
+                    {/* Employee Answer text box */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text2)', display: 'block', marginBottom: '6px' }}>JAWABAN KARYAWAN:</span>
+                      <p style={{ margin: 0, fontSize: '13px', color: 'var(--text1)', fontWeight: '500', background: '#eff6ff', padding: '14px', borderRadius: '8px', borderLeft: '4px solid #3b82f6', lineHeight: '1.6' }}>
+                        {activeQuestion.answer}
+                      </p>
+                    </div>
+
+                    {/* Scoring Controls */}
+                    <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px' }}>
+                      <label style={{ fontWeight: '700', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span>Beri Nilai Soal Ini</span>
+                        <span style={{ fontSize: '16px', color: 'var(--accent)' }}>
+                          {questionScores[activeQuestionId] !== null ? `${questionScores[activeQuestionId]}%` : 'Belum diisi'}
+                        </span>
+                      </label>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <input 
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="5"
+                          value={currentScoreVal}
+                          onChange={(e) => handleScoreValueChange(e.target.value)}
+                          style={{ flex: 1, cursor: 'pointer' }}
+                        />
+                        <input 
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={currentScoreVal}
+                          onChange={(e) => handleScoreValueChange(Math.min(100, Math.max(0, Number(e.target.value))))}
+                          style={{ width: '60px', padding: '6px', textAlign: 'center', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '13px' }}
+                        />
+                      </div>
+
+                      {/* Presets */}
+                      <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => handleQuickScore(50)}
+                          style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#fce8e6', color: '#c5221f', border: '1px solid #f5c2c1' }}
+                        >
+                          ❌ Kurang (50)
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => handleQuickScore(75)}
+                          style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}
+                        >
+                          ⚠️ Cukup (75)
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => handleQuickScore(100)}
+                          style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', background: '#e6f4ea', color: '#137333', border: '1px solid #c4eed0' }}
+                        >
+                          ✅ Sempurna (100)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text3)' }}>
+                    Silakan pilih soal di sebelah kiri untuk memulai penilaian.
+                  </div>
+                )}
+
+                {/* Back and Next navigation inside Wizard */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                  <button
+                    type="button"
+                    className="btn-sec"
+                    disabled={!prevQId}
+                    onClick={() => handleSelectQuestion(prevQId)}
+                    style={{ fontSize: '12px', padding: '6px 14px', cursor: prevQId ? 'pointer' : 'not-allowed', opacity: prevQId ? 1 : 0.5 }}
+                  >
+                    « Kembali
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-sec"
+                    disabled={!nextQId}
+                    onClick={() => handleSelectQuestion(nextQId)}
+                    style={{ fontSize: '12px', padding: '6px 14px', cursor: nextQId ? 'pointer' : 'not-allowed', opacity: nextQId ? 1 : 0.5 }}
+                  >
+                    Lanjut »
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer with Summary Statistics */}
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: 'var(--text3)', display: 'block', fontWeight: '600' }}>SKOR RATA-RATA</span>
+                  <span style={{ fontSize: '18px', fontWeight: '800', color: currentAverage >= passingScore ? 'var(--green)' : 'var(--accent)' }}>
+                    {currentAverage}%
+                  </span>
+                </div>
+                <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: '16px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text3)', display: 'block', fontWeight: '600' }}>STATUS KELULUSAN</span>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    fontWeight: '700',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    background: currentAverage >= passingScore ? '#e6f4ea' : '#fce8e6',
+                    color: currentAverage >= passingScore ? '#137333' : '#c5221f'
+                  }}>
+                    {currentAverage >= passingScore ? `Lulus (≥${passingScore}%)` : `Remedi (<${passingScore}%)`}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  type="button" 
+                  className="btn-sec" 
+                  style={{ padding: '8px 16px' }}
+                  onClick={() => setSelectedEssay(null)}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-primary" 
+                  disabled={!allGraded}
+                  onClick={handleSubmitGrade}
+                  style={{ 
+                    padding: '8px 20px', 
+                    background: allGraded ? '#002D72' : '#94a3b8', 
+                    borderColor: allGraded ? '#002D72' : '#94a3b8', 
+                    cursor: allGraded ? 'pointer' : 'not-allowed' 
+                  }}
+                  title={allGraded ? 'Simpan nilai akhir' : 'Harap nilai semua soal terlebih dahulu'}
+                >
+                  Simpan Nilai
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}

@@ -40,8 +40,29 @@ export const TenantProvider = ({ children }) => {
   ]);
 
   const [pendingEssays, setPendingEssays] = useState([
-    { id: 101, employeeName: 'Budi Pratama', dept: 'Finance', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', question: 'Mengapa kuitansi fotokopi tidak dapat diklaim?', answer: 'Kuitansi fotokopi tidak dapat diklaim karena regulasi perpajakan mewajibkan bukti fisik asli untuk diaudit, serta mencegah klaim ganda.', date: 'Hari ini' },
-    { id: 102, employeeName: 'Nina Putri', dept: 'CS', videoTitle: 'SOP Customer Service: Handling Komplain', question: 'Bagaimana langkah awal menangani pelanggan marah?', answer: 'Pertama-tama saya akan mendengarkan keluhan dengan empati tanpa memotong pembicaraannya, lalu memvalidasi emosinya dan menawarkan maaf atas ketidaknyamanan tersebut.', date: '1 hari lalu' }
+    { 
+      id: 101, 
+      employeeName: 'Budi Pratama', 
+      dept: 'Finance', 
+      videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', 
+      date: 'Hari ini',
+      questions: [
+        { id: 1, question: 'Mengapa kuitansi fotokopi tidak dapat diklaim?', answer: 'Kuitansi fotokopi tidak dapat diklaim karena regulasi perpajakan mewajibkan bukti fisik asli untuk diaudit, serta mencegah klaim ganda.', score: 85 },
+        { id: 2, question: 'Apa batas maksimum tanggal penyerahan kwitansi reimbursement setiap bulannya?', answer: 'Klaim reimbursement harus diserahkan selambat-lambatnya tanggal 25 setiap bulannya kepada bagian tim finance.', score: 90 },
+        { id: 3, question: 'Siapa yang berwenang memberikan persetujuan jika nominal reimburse di atas Rp 5.000.000?', answer: 'Untuk nominal di atas 5 juta rupiah, wajib mendapatkan persetujuan langsung (tanda tangan) dari Direktur Keuangan.', score: null }
+      ]
+    },
+    { 
+      id: 102, 
+      employeeName: 'Nina Putri', 
+      dept: 'CS', 
+      videoTitle: 'SOP Customer Service: Handling Komplain', 
+      date: '1 hari lalu',
+      questions: [
+        { id: 1, question: 'Bagaimana langkah awal menangani pelanggan marah?', answer: 'Pertama-tama saya akan mendengarkan keluhan dengan empati tanpa memotong pembicaraannya, lalu memvalidasi emosinya dan menawarkan maaf atas ketidaknyamanan tersebut.', score: null },
+        { id: 2, question: 'Apa batas waktu maksimal eskalasi tiket jika komplain tidak selesai di tingkat pertama?', answer: 'Eskalasi tiket harus dilakukan dalam waktu maksimal 2 jam setelah komplain pertama kali diterima dari nasabah.', score: null }
+      ]
+    }
   ]);
 
   const [passingScore, setPassingScore] = useState(80);
