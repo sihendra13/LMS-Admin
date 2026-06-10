@@ -63,23 +63,38 @@ export const Reports = () => {
       ) : (
         // 2. COMPLIANCE & FULL REPORTING (Business & Enterprise Plans)
         <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '22px' }}>
-            <div className="card" style={{ padding: '16px 20px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Compliance Rate</div>
-              <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--green)' }}>92.4%</div>
-              <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>Standar audit regulasi terpenuhi</div>
-            </div>
-            <div className="card" style={{ padding: '16px 20px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Rata-rata Skor Kuis</div>
-              <div style={{ fontSize: '24px', fontWeight: '600' }}>84.8 / 100</div>
-              <div style={{ fontSize: '10px', color: 'var(--green)', marginTop: '2px' }}>↑ Baik (Di atas standar target 80.0)</div>
-            </div>
-            <div className="card" style={{ padding: '16px 20px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Waktu Belajar Kolektif</div>
-              <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--accent)' }}>1,480 Jam</div>
-              <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>Total durasi nonton video SOP</div>
-            </div>
-          </div>
+          {(() => {
+            const deptStats = {
+              sales: { compliance: '89.0%', avgScore: '85.0', hours: '450 Jam' },
+              finance: { compliance: '94.0%', avgScore: '90.0', hours: '280 Jam' },
+              hrd: { compliance: '76.0%', avgScore: '80.0', hours: '180 Jam' },
+              operasional: { compliance: '61.0%', avgScore: '78.0', hours: '570 Jam' }
+            };
+
+            const currentStats = isSupervisor && deptStats[currentUser.dept.toLowerCase()]
+              ? deptStats[currentUser.dept.toLowerCase()]
+              : { compliance: '92.4%', avgScore: '84.8', hours: '1,480 Jam' };
+
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '22px' }}>
+                <div className="card" style={{ padding: '16px 20px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Compliance Rate</div>
+                  <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--green)' }}>{currentStats.compliance}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>Standar audit regulasi terpenuhi</div>
+                </div>
+                <div className="card" style={{ padding: '16px 20px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Rata-rata Skor Kuis</div>
+                  <div style={{ fontSize: '24px', fontWeight: '600' }}>{currentStats.avgScore} / 100</div>
+                  <div style={{ fontSize: '10px', color: 'var(--green)', marginTop: '2px' }}>↑ Baik (Di atas standar target 80.0)</div>
+                </div>
+                <div className="card" style={{ padding: '16px 20px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Waktu Belajar Kolektif</div>
+                  <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--accent)' }}>{currentStats.hours}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>Total durasi nonton video SOP</div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* COMPLIANCE DEPT */}
           <div className="card" style={{ marginBottom: '22px' }}>
