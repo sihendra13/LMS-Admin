@@ -261,6 +261,13 @@ export const UploadSOP = () => {
                   <>
                     <div style={{ fontSize: '13px', fontWeight: '600', color: '#059669', marginBottom: '4px', textAlign: 'center', wordBreak: 'break-all', padding: '0 10px' }}>✓ {videoFile.name}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '14px' }}>{(videoFile.size / 1024 / 1024).toFixed(1)} MB</div>
+                    <button
+                      type="button"
+                      style={{ background: 'none', border: '1px solid #fca5a5', color: '#ef4444', fontSize: '11px', fontWeight: '600', padding: '4px 12px', borderRadius: '20px', cursor: 'pointer', marginBottom: '8px' }}
+                      onClick={() => { setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
+                    >
+                      ✕ Hapus File
+                    </button>
                   </>
                 ) : (
                   <>
