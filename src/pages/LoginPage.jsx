@@ -39,7 +39,7 @@ export const LoginPage = ({ onLogin }) => {
     <div style={styles.wrapper}>
       <div style={styles.card}>
         <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
-        <p style={styles.subheading}>Silakan masukkan detail akun Mekari Talenta / LMS Anda</p>
+        <p style={styles.subheading}>Silakan masukkan email corporate dan password Anda</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.field}>
@@ -120,11 +120,17 @@ export const LoginPage = ({ onLogin }) => {
 const styles = {
   wrapper: {
     minHeight: '100vh',
+    width: '100vw',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     background: '#f5f7fa',
     padding: '24px',
+    boxSizing: 'border-box',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 9999
   },
   card: {
     background: '#ffffff',
@@ -134,6 +140,7 @@ const styles = {
     maxWidth: '440px',
     boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)',
     border: '1px solid #e2e8f0',
+    boxSizing: 'border-box'
   },
   heading: {
     fontSize: '24px',
