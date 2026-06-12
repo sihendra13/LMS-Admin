@@ -25,21 +25,19 @@ export const Sidebar = ({ onLogout }) => {
   return (
     <aside className="sidebar">
       {/* BRANDING TOP: CLIENT BRANDING WITH ROUNDED WHITE CONTAINER LIKE DANA LOGO */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', padding: '16px 16px 0' }}>
         <div style={{
           background: '#ffffff',
-          padding: '16px 20px',
-          borderRadius: '0 0 24px 24px',
-          boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.25)',
+          borderRadius: '16px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '8px',
           cursor: 'pointer',
-          minHeight: '60px',
+          height: '64px',
           overflow: 'hidden',
-          width: '100%',
-          boxSizing: 'border-box'
+          padding: '0 20px',
         }} onClick={() => setActivePage('dashboard')}>
           {tenant.logo ? (
             <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '100%', maxHeight: '40px', objectFit: 'contain' }} />
