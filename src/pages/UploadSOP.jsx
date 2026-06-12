@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { canUploadSOP } from '../utils/featureGates';
+import { supabase } from '../utils/supabase';
 
 export const UploadSOP = () => {
   const { tenant, addSOP, setActivePage } = useTenant();
   const [title, setTitle] = useState('');
   const [dept, setDept] = useState('Sales');
   const [duration, setDuration] = useState('5:00');
+  const [videoFile, setVideoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
   const [activeTab, setActiveTab] = useState('pre'); // 'pre' | 'post'
@@ -76,9 +80,35 @@ export const UploadSOP = () => {
     setPostQuestions(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUploadSubmit = (e) => {
+  const handleUploadSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return alert('Judul SOP tidak boleh kosong!');
+
+    let videoUrl = null;
+
+    // Upload video file ke Supabase Storage jika ada
+    if (videoFile) {
+      setUploading(true);
+      setUploadProgress(10);
+      const fileExt = videoFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${title.replace(/\s+/g, '_')}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('videos')
+        .upload(fileName, videoFile, { cacheControl: '3600', upsert: false });
+
+      setUploadProgress(90);
+
+      if (error) {
+        setUploading(false);
+        return alert('Gagal upload video: ' + error.message);
+      }
+
+      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(data.path);
+      videoUrl = urlData.publicUrl;
+      setUploadProgress(100);
+      setUploading(false);
+    }
 
     // Filter out blank Pre-Test Questions
     const preList = preQuestions
@@ -131,6 +161,7 @@ export const UploadSOP = () => {
       views: 0,
       color: deptColors[dept] || '#1e3a5f',
       tagClass: deptClasses[dept] || 'dt-sales',
+      videoUrl: videoUrl || null,
       preQuizzes: preList,
       postQuizzes: postList
     };
@@ -246,6 +277,30 @@ export const UploadSOP = () => {
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
                     />
+                  </div>
+
+                  <div className="form-group" style={{ margin: '0' }}>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600', letterSpacing: '0.05em' }}>File Video (MP4, MOV, AVI)</label>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="form-input"
+                      style={{ padding: '8px 12px', cursor: 'pointer' }}
+                      onChange={(e) => setVideoFile(e.target.files[0] || null)}
+                    />
+                    {videoFile && (
+                      <div style={{ marginTop: '6px', fontSize: '12px', color: '#059669', fontWeight: '600' }}>
+                        ✓ {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)} MB)
+                      </div>
+                    )}
+                    {uploading && (
+                      <div style={{ marginTop: '8px' }}>
+                        <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#002D72', transition: 'width 0.3s ease' }} />
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Mengupload video... {uploadProgress}%</div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -575,8 +630,8 @@ export const UploadSOP = () => {
           <button type="button" className="form-input" style={{ cursor: 'pointer', padding: '8px 18px' }} onClick={() => setActivePage('sop')}>
             Batal
           </button>
-          <button type="submit" className="btn-primary" style={{ padding: '8px 24px', background: '#002D72' }}>
-            Terbitkan SOP & Ujian
+          <button type="submit" className="btn-primary" style={{ padding: '8px 24px', background: uploading ? '#94a3b8' : '#002D72', cursor: uploading ? 'not-allowed' : 'pointer' }} disabled={uploading}>
+            {uploading ? `Mengupload Video... ${uploadProgress}%` : 'Terbitkan SOP & Ujian'}
           </button>
         </div>
       </form>
