@@ -322,10 +322,10 @@ export const UploadSOP = () => {
 
                   <div style={{ padding: '20px', textAlign: 'left' }}>
                     <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600' }}>Teks Pertanyaan</label>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Teks Pertanyaan</label>
                       <textarea
                         className="form-input"
-                        style={{ minHeight: '60px', fontFamily: 'inherit', resize: 'vertical', fontSize: '12px' }}
+                        style={{ minHeight: '80px', fontFamily: 'inherit', resize: 'vertical', fontSize: '14px', padding: '10px 14px', marginTop: '6px' }}
                         placeholder="Contoh: Apa langkah pertama dalam prosedur packing barang pecah belah?"
                         value={q.question}
                         onChange={(e) => handlePreQuestionChange(idx, 'question', e.target.value)}
@@ -334,7 +334,7 @@ export const UploadSOP = () => {
 
                     {/* QUESTION TYPE CHIPS SELECTOR */}
                     <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600' }}>Tipe Pertanyaan</label>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Tipe Pertanyaan</label>
                       <div className="type-chips-container" style={{ marginTop: '4px' }}>
                         <button
                           type="button"
@@ -407,7 +407,7 @@ export const UploadSOP = () => {
                               <input
                                 type="text"
                                 className="option-input"
-                                style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '12px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
+                                style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '14px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
                                 placeholder={`Opsi jawaban ${letter}`}
                                 value={opt}
                                 onChange={(e) => handlePreOptionChange(idx, oIdx, e.target.value)}
@@ -418,7 +418,7 @@ export const UploadSOP = () => {
                         })}
                       </div>
                     ) : (
-                      <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border)', marginTop: '10px', fontSize: '12px', color: 'var(--text3)' }}>
+                      <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '8px', border: '1px solid var(--border)', marginTop: '10px', fontSize: '13px', color: 'var(--text3)' }}>
                         📝 Karyawan akan menjawab pertanyaan kuis ini dengan mengetikkan esai/teks bebas di portal mereka.
                       </div>
                     )}
@@ -452,10 +452,10 @@ export const UploadSOP = () => {
 
                   <div style={{ padding: '20px', textAlign: 'left' }}>
                     <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600' }}>Teks Pertanyaan</label>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Teks Pertanyaan</label>
                       <textarea
                         className="form-input"
-                        style={{ minHeight: '60px', fontFamily: 'inherit', resize: 'vertical', fontSize: '12px' }}
+                        style={{ minHeight: '80px', fontFamily: 'inherit', resize: 'vertical', fontSize: '14px', padding: '10px 14px', marginTop: '6px' }}
                         placeholder="Contoh: Berapa standar berat maksimal per koli?"
                         value={q.question}
                         onChange={(e) => handlePostQuestionChange(idx, 'question', e.target.value)}
@@ -464,7 +464,7 @@ export const UploadSOP = () => {
 
                     {/* QUESTION TYPE CHIPS SELECTOR */}
                     <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600' }}>Tipe Pertanyaan</label>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Tipe Pertanyaan</label>
                       <div className="type-chips-container" style={{ marginTop: '4px' }}>
                         <button
                           type="button"
@@ -537,7 +537,7 @@ export const UploadSOP = () => {
                               <input
                                 type="text"
                                 className="option-input"
-                                style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '12px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
+                                style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '14px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
                                 placeholder={`Opsi jawaban ${letter}`}
                                 value={opt}
                                 onChange={(e) => handlePostOptionChange(idx, oIdx, e.target.value)}
@@ -548,7 +548,7 @@ export const UploadSOP = () => {
                         })}
                       </div>
                     ) : (
-                      <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border)', marginTop: '10px', fontSize: '12px', color: 'var(--text3)' }}>
+                      <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '8px', border: '1px solid var(--border)', marginTop: '10px', fontSize: '13px', color: 'var(--text3)' }}>
                         📝 Karyawan akan menjawab pertanyaan kuis ini dengan mengetikkan esai/teks bebas di portal mereka.
                       </div>
                     )}
