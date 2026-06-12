@@ -5,21 +5,7 @@ export const LoginPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Load tenant database from localStorage to simulate dynamic branding in login page
-  const getStoredTenant = () => {
-    try {
-      const data = localStorage.getItem('axara_lms_db');
-      if (data) {
-        const parsed = JSON.parse(data);
-        return parsed.tenant;
-      }
-    } catch (e) {
-      // ignore
-    }
-    return { name: 'PT Maju Bersama', plan: 'business', status: 'Aktif', logo: null };
-  };
-
-  const tenant = getStoredTenant();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,76 +37,80 @@ export const LoginPage = ({ onLogin }) => {
 
   return (
     <div style={styles.wrapper}>
-      {/* Left side decoration panel */}
-      <div style={styles.leftPanel}>
-        <div style={styles.brandingBox}>
-          <div style={styles.brandingLogoContainer}>
-            {tenant.logo ? (
-              <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '100%', maxHeight: '45px', objectFit: 'contain' }} />
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>🏢</span>
-                <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>{tenant.name}</span>
-              </div>
-            )}
-          </div>
-          <div style={styles.tagline}>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '10px', lineHeight: '1.3' }}>
-              White-Label LMS Platform
-            </div>
-            <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5' }}>
-              Akses materi pembelajaran mandiri, tonton SOP Divisi, dan ikuti uji kompetensi tersinkronisasi dalam satu platform terintegrasi.
-            </div>
-          </div>
-          <div style={styles.platformFooter}>
-            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', letterSpacing: '0.05em' }}>
-              POWERED BY AXARA LMS PLATFORM
-            </div>
-          </div>
-        </div>
-      </div>
+      <div style={styles.card}>
+        <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
+        <p style={styles.subheading}>Silakan masukkan detail akun Mekari Talenta / LMS Anda</p>
 
-      {/* Right side form card */}
-      <div style={styles.rightPanel}>
-        <div style={styles.card}>
-          <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
-          <p style={styles.subheading}>Silakan masukkan detail akun Mekari Talenta / LMS Anda</p>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.field}>
+            <label style={styles.label}>EMAIL CORPORATE</label>
+            <input
+              type="email"
+              placeholder="email@perusahaan.com"
+              value={form.email}
+              onChange={e => setForm({ ...form, email: e.target.value })}
+              style={styles.input}
+              required
+            />
+          </div>
 
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.field}>
-              <label style={styles.label}>EMAIL CORPORATE</label>
+          <div style={styles.field}>
+            <label style={styles.label}>PASSWORD</label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
-                type="email"
-                placeholder="email@perusahaan.com"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                style={styles.input}
-                required
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>PASSWORD</label>
-              <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
-                style={styles.input}
+                style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '4px'
+                }}
+              >
+                {showPassword ? (
+                  // Eye Slash Icon
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                ) : (
+                  // Eye Icon
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                )}
+              </button>
             </div>
-
-            {error && <div style={styles.error}>{error}</div>}
-
-            <button type="submit" style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
-              {loading ? 'Memproses Masuk...' : 'Masuk Sekarang'}
-            </button>
-          </form>
-
-          <div style={styles.footer}>
-            Belum memiliki akses? Silakan hubungi Administrator HRD perusahaan Anda untuk pendaftaran akun baru.
           </div>
+
+          {error && <div style={styles.error}>{error}</div>}
+
+          <button type="submit" style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
+            {loading ? 'Memproses Masuk...' : 'Masuk Sekarang'}
+          </button>
+        </form>
+
+        <div style={styles.footer}>
+          Belum memiliki akses? Silakan hubungi Administrator HRD perusahaan Anda untuk pendaftaran akun baru.
+        </div>
+
+        <div style={styles.platformBranding}>
+          Powered by Axara
         </div>
       </div>
     </div>
@@ -131,54 +121,19 @@ const styles = {
   wrapper: {
     minHeight: '100vh',
     display: 'flex',
-    flexDirection: 'row',
-    background: '#f8fafc',
-  },
-  leftPanel: {
-    flex: '1.2',
-    background: 'linear-gradient(135deg, #0f1e33 0%, #1a3a5c 100%)',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '40px',
-    position: 'relative',
-  },
-  brandingBox: {
-    maxWidth: '440px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '30px',
-  },
-  brandingLogoContainer: {
-    background: '#ffffff',
-    borderRadius: '20px',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
-    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '300px',
-    height: '72px',
-  },
-  tagline: {
-    marginTop: '20px',
-  },
-  platformFooter: {
-    marginTop: '40px',
-    borderTop: '1px solid rgba(255,255,255,0.1)',
-    paddingTop: '20px',
-  },
-  rightPanel: {
-    flex: '1',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '40px',
-    background: '#ffffff',
+    background: '#f5f7fa',
+    padding: '24px',
   },
   card: {
+    background: '#ffffff',
+    borderRadius: '16px',
+    padding: '40px',
     width: '100%',
-    maxWidth: '400px',
+    maxWidth: '440px',
+    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)',
+    border: '1px solid #e2e8f0',
   },
   heading: {
     fontSize: '24px',
@@ -186,12 +141,14 @@ const styles = {
     color: '#0f172a',
     margin: '0 0 8px',
     letterSpacing: '-0.5px',
+    textAlign: 'center',
   },
   subheading: {
     fontSize: '14px',
     color: '#64748b',
     margin: '0 0 32px',
     lineHeight: '1.5',
+    textAlign: 'center',
   },
   form: {
     display: 'flex',
@@ -244,6 +201,17 @@ const styles = {
     fontSize: '12px',
     color: '#94a3b8',
     lineHeight: '1.6',
-    textAlign: 'left',
+    textAlign: 'center',
   },
+  platformBranding: {
+    marginTop: '24px',
+    borderTop: '1px solid #e2e8f0',
+    paddingTop: '16px',
+    textAlign: 'center',
+    fontSize: '11px',
+    color: '#94a3b8',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  }
 };
