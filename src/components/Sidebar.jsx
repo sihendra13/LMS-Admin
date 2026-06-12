@@ -25,11 +25,11 @@ export const Sidebar = ({ onLogout }) => {
   return (
     <aside className="sidebar">
       {/* BRANDING TOP: CLIENT BRANDING WITH ROUNDED WHITE CONTAINER LIKE DANA LOGO */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', padding: '16px 16px 0' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
         <div style={{
           background: '#ffffff',
-          borderRadius: '16px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          borderRadius: '0 0 20px 20px',
+          boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
