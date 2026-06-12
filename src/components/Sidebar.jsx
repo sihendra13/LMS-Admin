@@ -24,12 +24,10 @@ export const Sidebar = ({ onLogout }) => {
 
   return (
     <aside className="sidebar">
-      {/* BRANDING TOP: CLIENT BRANDING WITH ROUNDED WHITE CONTAINER LIKE DANA LOGO */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', padding: '14px 20px 0' }}>
+      {/* BRANDING TOP: FULL WHITE HEADER CONTAINER FOR LOGO */}
+      <div style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column' }}>
         <div style={{
           background: '#ffffff',
-          borderRadius: '14px 14px 20px 20px',
-          boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -38,9 +36,11 @@ export const Sidebar = ({ onLogout }) => {
           height: '60px',
           overflow: 'hidden',
           padding: '0 20px',
+          width: '100%',
+          boxSizing: 'border-box'
         }} onClick={() => setActivePage('dashboard')}>
           {tenant.logo ? (
-            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '100%', maxHeight: '40px', objectFit: 'contain' }} />
+            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '100%', maxHeight: '42px', objectFit: 'contain' }} />
           ) : (
             <>
               <span style={{ fontSize: '15px', flexShrink: 0 }}>🏢</span>
