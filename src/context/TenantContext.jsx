@@ -11,7 +11,7 @@ export const useTenant = () => {
   return context;
 };
 
-export const TenantProvider = ({ children }) => {
+export const TenantProvider = ({ children, authUser }) => {
   // Local storage synchronization key
   const DB_KEY = 'axara_lms_db';
   const getStoredDB = () => {
@@ -35,12 +35,17 @@ export const TenantProvider = ({ children }) => {
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'sop' | 'sertifikasi' | 'laporan' | 'karyawan' | 'departemen' | 'upload' | 'notifikasi' | 'pengaturan'
 
   // State for Dynamic Role Access Control
-  const [currentUser, setCurrentUser] = useState({
-    id: 1,
-    name: 'Andi Saputra',
-    role: 'admin',
-    dept: 'HRD',
-    avatar: 'AS'
+  const [currentUser, setCurrentUser] = useState(() => {
+    if (authUser) {
+      return {
+        id: authUser.id,
+        name: authUser.name,
+        role: authUser.role,
+        dept: 'HRD',
+        avatar: authUser.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+      };
+    }
+    return { id: 1, name: 'Andi Saputra', role: 'admin', dept: 'HRD', avatar: 'AS' };
   });
 
   const [supervisors, setSupervisors] = useState([

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTenant } from '../context/TenantContext';
 import { PLANS, canUploadSOP } from '../utils/featureGates';
 
-export const Sidebar = () => {
+export const Sidebar = ({ onLogout }) => {
   const { tenant, activePage, setActivePage, videos, currentUser, pendingEssays } = useTenant();
 
   // Helper for active menu class
@@ -175,9 +175,25 @@ export const Sidebar = () => {
         </a>
       </nav>
 
-      {/* BRANDING BOTTOM: CLEAN ATTRIBUTION TEXT FOR THE PLATFORM */}
-      <div className="sidebar-footer" style={{ justifyContent: 'center', opacity: 0.5, borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 20px' }}>
-        <div style={{ fontSize: '11px', fontWeight: '600', color: '#ffffff', letterSpacing: '0.05em' }}>
+      {/* LOGOUT + BRANDING BOTTOM */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '12px 16px' }}>
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            style={{
+              width: '100%', background: 'rgba(255,255,255,0.06)', border: 'none',
+              borderRadius: '8px', padding: '9px 14px', color: 'rgba(255,255,255,0.7)',
+              fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center',
+              gap: '8px', marginBottom: '10px',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Keluar
+          </button>
+        )}
+        <div style={{ textAlign: 'center', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
           Axara LMS Platform
         </div>
       </div>
