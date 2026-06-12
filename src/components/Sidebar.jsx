@@ -37,7 +37,8 @@ export const Sidebar = ({ onLogout }) => {
           overflow: 'hidden',
           padding: '0 20px',
           width: '100%',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          borderRight: '1px solid #e2e8f0'
         }} onClick={() => setActivePage('dashboard')}>
           {tenant.logo ? (
             <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '100%', maxHeight: '42px', objectFit: 'contain' }} />
