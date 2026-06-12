@@ -25,17 +25,17 @@ export const Sidebar = ({ onLogout }) => {
   return (
     <aside className="sidebar">
       {/* BRANDING TOP: CLIENT BRANDING WITH ROUNDED WHITE CONTAINER LIKE DANA LOGO */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', padding: '14px 20px 0' }}>
         <div style={{
           background: '#ffffff',
-          borderRadius: '0 0 20px 20px',
+          borderRadius: '14px 14px 20px 20px',
           boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '8px',
           cursor: 'pointer',
-          height: '64px',
+          height: '60px',
           overflow: 'hidden',
           padding: '0 20px',
         }} onClick={() => setActivePage('dashboard')}>
