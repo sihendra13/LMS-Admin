@@ -13,14 +13,14 @@ export const UploadSOP = () => {
 
   // Dynamic state for Pre-Test Questions
   const [preQuestions, setPreQuestions] = useState([
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerTime: '' },
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerTime: '' }
+    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' },
+    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }
   ]);
 
   // Dynamic state for Post-Test Questions
   const [postQuestions, setPostQuestions] = useState([
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerTime: '' },
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerTime: '' }
+    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' },
+    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }
   ]);
 
   // State for confirm delete modal
@@ -44,7 +44,7 @@ export const UploadSOP = () => {
   };
 
   const addPreQuestion = () => {
-    setPreQuestions(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerTime: '' }]);
+    setPreQuestions(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }]);
   };
 
   const removePreQuestion = (index) => {
@@ -69,7 +69,7 @@ export const UploadSOP = () => {
   };
 
   const addPostQuestion = () => {
-    setPostQuestions(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerTime: '' }]);
+    setPostQuestions(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }]);
   };
 
   const removePostQuestion = (index) => {
@@ -87,7 +87,7 @@ export const UploadSOP = () => {
         id: idx + 1,
         question: q.question,
         type: q.type,
-        triggerTime: q.triggerTime !== '' ? Number(q.triggerTime) : 0,
+        triggerTime: (Number(q.triggerMin || 0) * 60) + Number(q.triggerSec || 0),
         options: q.type === 'multiple' ? q.options.map((o, oIdx) => o.trim() || `Opsi ${String.fromCharCode(65 + oIdx)}`) : [],
         answer: q.type === 'multiple' ? q.answer : ''
       }));
@@ -99,7 +99,7 @@ export const UploadSOP = () => {
         id: idx + 1,
         question: q.question,
         type: q.type,
-        triggerTime: q.triggerTime !== '' ? Number(q.triggerTime) : 0,
+        triggerTime: (Number(q.triggerMin || 0) * 60) + Number(q.triggerSec || 0),
         options: q.type === 'multiple' ? q.options.map((o, oIdx) => o.trim() || `Opsi ${String.fromCharCode(65 + oIdx)}`) : [],
         answer: q.type === 'multiple' ? q.answer : ''
       }));
@@ -354,22 +354,38 @@ export const UploadSOP = () => {
                     </div>
 
                     {/* TIMESTAMP TRIGGER (IN-VIDEO TIMESTAMP) */}
-                    <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600' }}>
-                        Detik Pemicu Kuis (Timestamp Tengah Video)
+                    <div className="form-group" style={{ marginBottom: '16px', marginTop: '12px' }}>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
+                        Waktu Pemicu Kuis (Muncul Di Tengah Video)
                       </label>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '4px' }}>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-input"
-                          style={{ width: '100px', fontSize: '12px' }}
-                          placeholder="Contoh: 120"
-                          value={q.triggerTime}
-                          onChange={(e) => handlePreQuestionChange(idx, 'triggerTime', e.target.value)}
-                        />
-                        <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-                          Detik ke-X video di-pause otomatis. (Misal: 120 untuk menit ke-2).
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            className="form-input"
+                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
+                            placeholder="0"
+                            value={q.triggerMin}
+                            onChange={(e) => handlePreQuestionChange(idx, 'triggerMin', e.target.value)}
+                          />
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Menit</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            max="59"
+                            className="form-input"
+                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
+                            placeholder="0"
+                            value={q.triggerSec}
+                            onChange={(e) => handlePreQuestionChange(idx, 'triggerSec', e.target.value)}
+                          />
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Detik</span>
+                        </div>
+                        <span style={{ fontSize: '13px', color: 'var(--text3)', marginLeft: '10px' }}>
+                          ℹ️ Video akan otomatis terhenti di waktu ini untuk menampilkan soal kuis ke karyawan.
                         </span>
                       </div>
                     </div>
@@ -468,22 +484,38 @@ export const UploadSOP = () => {
                     </div>
 
                     {/* TIMESTAMP TRIGGER (IN-VIDEO TIMESTAMP) */}
-                    <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600' }}>
-                        Detik Pemicu Kuis (Timestamp Tengah Video)
+                    <div className="form-group" style={{ marginBottom: '16px', marginTop: '12px' }}>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
+                        Waktu Pemicu Kuis (Muncul Di Tengah Video)
                       </label>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '4px' }}>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-input"
-                          style={{ width: '100px', fontSize: '12px' }}
-                          placeholder="Contoh: 120"
-                          value={q.triggerTime}
-                          onChange={(e) => handlePostQuestionChange(idx, 'triggerTime', e.target.value)}
-                        />
-                        <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-                          Detik ke-X video di-pause otomatis. (Misal: 120 untuk menit ke-2).
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            className="form-input"
+                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
+                            placeholder="0"
+                            value={q.triggerMin}
+                            onChange={(e) => handlePostQuestionChange(idx, 'triggerMin', e.target.value)}
+                          />
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Menit</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            max="59"
+                            className="form-input"
+                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
+                            placeholder="0"
+                            value={q.triggerSec}
+                            onChange={(e) => handlePostQuestionChange(idx, 'triggerSec', e.target.value)}
+                          />
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Detik</span>
+                        </div>
+                        <span style={{ fontSize: '13px', color: 'var(--text3)', marginLeft: '10px' }}>
+                          ℹ️ Video akan otomatis terhenti di waktu ini untuk menampilkan soal kuis ke karyawan.
                         </span>
                       </div>
                     </div>
