@@ -28,37 +28,22 @@ export const Sidebar = ({ onLogout }) => {
       <div style={{ padding: '24px 20px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div style={{
           background: '#ffffff',
-          padding: '12px 14px',
-          borderRadius: '16px',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
+          padding: '16px 20px',
+          borderRadius: '24px',
+          boxShadow: '0 10px 20px -5px rgba(0, 0, 0, 0.3)',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          marginBottom: '8px',
+          justifyContent: 'center',
+          gap: '8px',
+          marginBottom: '10px',
           cursor: 'pointer'
         }} onClick={() => setActivePage('dashboard')}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: 'var(--accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '13px',
-            fontWeight: '800',
-            color: '#ffffff',
-            flexShrink: 0
-          }}>
-            {tenant.avatar}
-          </div>
-          <div style={{ overflow: 'hidden' }}>
-            <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {tenant.name}
-            </div>
+          <span style={{ fontSize: '16px' }}>🏢</span>
+          <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.3px', textAlign: 'center' }}>
+            {tenant.name}
           </div>
         </div>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', paddingLeft: '4px', fontWeight: '600' }}>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', paddingLeft: '8px', fontWeight: '600' }}>
           Paket {planLabel} · {tenant.status}
         </div>
       </div>
