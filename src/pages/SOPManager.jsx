@@ -4,7 +4,7 @@ import { canUploadSOP } from '../utils/featureGates';
 
 export const SOPManager = () => {
   const { tenant, videos, setActivePage, currentUser } = useTenant();
-  const isSupervisor = currentUser.role === 'supervisor';
+  const isSupervisor = currentUser.role !== 'admin';
 
   return (
     <div className="content">

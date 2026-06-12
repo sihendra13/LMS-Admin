@@ -4,7 +4,7 @@ import { hasFullComplianceReports } from '../utils/featureGates';
 
 export const Reports = () => {
   const { tenant, quizSubmissions, videos, currentUser } = useTenant();
-  const isSupervisor = currentUser.role === 'supervisor';
+  const isSupervisor = currentUser.role !== 'admin';
 
   const displaySubmissions = isSupervisor
     ? quizSubmissions.filter(sub => {

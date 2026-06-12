@@ -5,7 +5,7 @@ import { getEmployeeLimit } from '../utils/featureGates';
 export const Dashboard = () => {
   const { tenant, employees, videos, activities, setActivePage, currentUser } = useTenant();
 
-  const isSupervisor = currentUser.role === 'supervisor';
+  const isSupervisor = currentUser.role !== 'admin';
 
   // Filter employees and videos by department for supervisor
   const displayEmployees = isSupervisor 

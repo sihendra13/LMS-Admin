@@ -15,7 +15,7 @@ export const QuizGrading = () => {
   const [sopFilter, setSopFilter] = useState('');
 
   // Filter essays by department if supervisor
-  const isSupervisor = currentUser.role === 'supervisor';
+  const isSupervisor = currentUser.role !== 'admin';
   const supervisorDept = currentUser.dept;
 
   // Base list depending on supervisor division boundary

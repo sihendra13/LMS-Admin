@@ -4,7 +4,7 @@ import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Employees = () => {
   const { tenant, employees, addEmployee, currentUser } = useTenant();
-  const isSupervisor = currentUser.role === 'supervisor';
+  const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
   const [dept, setDept] = useState(isSupervisor ? currentUser.dept : 'Sales');
