@@ -12,6 +12,19 @@ export const useTenant = () => {
 };
 
 export const TenantProvider = ({ children }) => {
+  // Local storage synchronization key
+  const DB_KEY = 'axara_lms_db';
+  const getStoredDB = () => {
+    try {
+      const data = localStorage.getItem(DB_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const storedDB = getStoredDB() || {};
+
   const [tenant, setTenant] = useState({
     name: 'PT Maju Bersama',
     plan: PLANS.BUSINESS, // Default plan in mockup
@@ -39,7 +52,7 @@ export const TenantProvider = ({ children }) => {
     { id: 1, email: 'hendra.f@majubersama.com', dept: 'Operasional', status: 'Pending', date: 'Hari ini' }
   ]);
 
-  const [pendingEssays, setPendingEssays] = useState([
+  const [pendingEssays, setPendingEssays] = useState(() => storedDB.pendingEssays || [
     { 
       id: 101, 
       employeeName: 'Budi Pratama', 
@@ -65,11 +78,11 @@ export const TenantProvider = ({ children }) => {
     }
   ]);
 
-  const [passingScore, setPassingScore] = useState(80);
-  const [validityMonths, setValidityMonths] = useState(12);
+  const [passingScore, setPassingScore] = useState(() => storedDB.passingScore !== undefined ? storedDB.passingScore : 80);
+  const [validityMonths, setValidityMonths] = useState(() => storedDB.validityMonths !== undefined ? storedDB.validityMonths : 12);
 
   // Mock initial data that can be updated dynamically
-  const [employees, setEmployees] = useState([
+  const [employees, setEmployees] = useState(() => storedDB.employees || [
     { id: 1, name: 'Rini Wulandari', dept: 'Sales', city: 'Jakarta', score: 18 },
     { id: 2, name: 'Budi Pratama', dept: 'Finance', city: 'Surabaya', score: 15 },
     { id: 3, name: 'Sari Anggraeni', dept: 'HRD', city: 'Bandung', score: 14 },
@@ -77,7 +90,7 @@ export const TenantProvider = ({ children }) => {
     { id: 5, name: 'Nina Putri', dept: 'CS', city: 'Medan', score: 11 },
   ]);
 
-  const [videos, setVideos] = useState([
+  const [videos, setVideos] = useState(() => storedDB.videos || [
     { 
       id: 1, 
       title: 'SOP Sales: Proses Onboarding Klien Baru', 
@@ -148,7 +161,7 @@ export const TenantProvider = ({ children }) => {
     { id: 6, title: 'SOP IT: Keamanan Password & Akun', dept: 'IT', duration: '7:50', progress: 33, views: 112, color: '#2a1024', tagClass: 'dt-it', preQuizzes: [], postQuizzes: [] },
   ]);
 
-  const [quizSubmissions, setQuizSubmissions] = useState([
+  const [quizSubmissions, setQuizSubmissions] = useState(() => storedDB.quizSubmissions || [
     { id: 1, employeeName: 'Rini Wulandari', videoTitle: 'SOP Sales: Proses Onboarding Klien Baru', preScore: 40, postScore: 100, date: 'Hari ini', status: 'Lulus' },
     { id: 2, employeeName: 'Budi Pratama', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', preScore: 50, postScore: 100, date: 'Hari ini', status: 'Lulus' },
     { id: 3, employeeName: 'Sari Anggraeni', videoTitle: 'SOP HRD: Rekrutmen & Seleksi Karyawan', preScore: 30, postScore: 90, date: '1 hari lalu', status: 'Lulus' },
@@ -156,13 +169,28 @@ export const TenantProvider = ({ children }) => {
     { id: 5, employeeName: 'Nina Putri', videoTitle: 'SOP Customer Service: Handling Komplain', preScore: 20, postScore: 60, date: '3 hari lalu', status: 'Remedi (Butuh Ujian Ulang)' },
   ]);
 
-  const [activities, setActivities] = useState([
+  const [activities, setActivities] = useState(() => storedDB.activities || [
     { id: 1, text: '<strong>Rini W.</strong> menyelesaikan SOP Sales Onboarding', time: '5 menit lalu', type: 'green' },
     { id: 2, text: 'Video baru <strong>SOP IT Security</strong> diunggah', time: '32 menit lalu', type: 'blue' },
     { id: 3, text: '<strong>12 karyawan</strong> mendapat sertifikat Finance', time: '1 jam lalu', type: 'purple' },
     { id: 4, text: '<strong>SOP K3 Gudang</strong> deadline besok — 38 belum nonton', time: '2 jam lalu', type: 'amber' },
     { id: 5, text: '<strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95', time: '3 jam lalu', type: 'cyan' },
   ]);
+
+  // Persist state to local storage when state changes
+  React.useEffect(() => {
+    const db = {
+      passingScore,
+      validityMonths,
+      currentUser: { id: 1, name: 'Rini Wulandari', role: 'employee', dept: 'Sales', city: 'Jakarta', avatar: 'RW', streak: 7 },
+      employees,
+      videos,
+      quizSubmissions,
+      pendingEssays,
+      activities
+    };
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+  }, [passingScore, validityMonths, employees, videos, quizSubmissions, pendingEssays, activities]);
 
   // Actions
   const changePlan = (newPlan) => {
@@ -264,6 +292,40 @@ export const TenantProvider = ({ children }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
+  const exportDBString = () => {
+    const db = {
+      passingScore,
+      validityMonths,
+      currentUser: { id: 1, name: 'Rini Wulandari', role: 'employee', dept: 'Sales', city: 'Jakarta', avatar: 'RW', streak: 7 },
+      employees,
+      videos,
+      quizSubmissions,
+      pendingEssays,
+      activities
+    };
+    return JSON.stringify(db, null, 2);
+  };
+
+  const importDBString = (jsonStr) => {
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.passingScore !== undefined) setPassingScore(parsed.passingScore);
+        if (parsed.validityMonths !== undefined) setValidityMonths(parsed.validityMonths);
+        if (parsed.employees) setEmployees(parsed.employees);
+        if (parsed.videos) setVideos(parsed.videos);
+        if (parsed.quizSubmissions) setQuizSubmissions(parsed.quizSubmissions);
+        if (parsed.pendingEssays) setPendingEssays(parsed.pendingEssays);
+        if (parsed.activities) setActivities(parsed.activities);
+        localStorage.setItem(DB_KEY, JSON.stringify(parsed));
+        return { success: true };
+      }
+      return { success: false, error: 'Format JSON database tidak valid.' };
+    } catch (e) {
+      return { success: false, error: 'Gagal parse JSON: ' + e.message };
+    }
+  };
+
   return (
     <TenantContext.Provider value={{
       tenant,
@@ -288,6 +350,8 @@ export const TenantProvider = ({ children }) => {
       setPassingScore,
       validityMonths,
       setValidityMonths,
+      exportDBString,
+      importDBString
     }}>
       {children}
     </TenantContext.Provider>
