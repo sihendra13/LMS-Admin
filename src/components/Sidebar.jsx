@@ -24,18 +24,67 @@ export const Sidebar = () => {
 
   return (
     <aside className="sidebar">
-      <div className="logo-area">
-        <div className="logo" onClick={() => setActivePage('dashboard')} style={{ cursor: 'pointer' }}>
-          SOP<span>Learn</span>
+      {/* BRANDING TOP: CLIENT BRANDING WITH ROUNDED WHITE CONTAINER LIKE DANA LOGO */}
+      <div style={{ padding: '24px 20px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{
+          background: '#ffffff',
+          padding: '12px 14px',
+          borderRadius: '16px',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '8px',
+          cursor: 'pointer'
+        }} onClick={() => setActivePage('dashboard')}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: 'var(--accent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            fontWeight: '800',
+            color: '#ffffff',
+            flexShrink: 0
+          }}>
+            {tenant.avatar}
+          </div>
+          <div style={{ overflow: 'hidden' }}>
+            <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {tenant.name}
+            </div>
+          </div>
         </div>
-        <div className="logo-tagline">Corporate LMS Platform</div>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', paddingLeft: '4px', fontWeight: '600' }}>
+          Paket {planLabel} · {tenant.status}
+        </div>
       </div>
 
-      <div className="tenant-badge">
-        <div className="tenant-avatar">{tenant.avatar}</div>
-        <div>
-          <div className="tenant-name">{tenant.name}</div>
-          <div className="tenant-plan">Paket {planLabel} · {tenant.status}</div>
+      {/* USER PROFILE BADGE (PUSHED TO UPPER MIDDLE INSTEAD OF BOTTOM) */}
+      <div className="tenant-badge" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          background: 'var(--accent)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '13px',
+          fontWeight: '700',
+          color: '#fff',
+          flexShrink: 0
+        }}>
+          {currentUser.avatar}
+        </div>
+        <div style={{ overflow: 'hidden' }}>
+          <div className="tenant-name" style={{ fontWeight: '700', fontSize: '13px' }}>{currentUser.name}</div>
+          <div className="tenant-plan" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            {currentUser.role === 'admin' ? 'HR Manager' : `Lead Divisi ${currentUser.dept}`}
+          </div>
         </div>
       </div>
 
@@ -126,11 +175,10 @@ export const Sidebar = () => {
         </a>
       </nav>
 
-      <div className="sidebar-footer">
-        <div className="user-avatar">{currentUser.avatar}</div>
-        <div>
-          <div className="user-name">{currentUser.name}</div>
-          <div className="user-role">{currentUser.role === 'admin' ? 'HR Manager' : `Lead Divisi ${currentUser.dept}`}</div>
+      {/* BRANDING BOTTOM: CLEAN ATTRIBUTION TEXT FOR THE PLATFORM */}
+      <div className="sidebar-footer" style={{ justifyContent: 'center', opacity: 0.5, borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 20px' }}>
+        <div style={{ fontSize: '11px', fontWeight: '600', color: '#ffffff', letterSpacing: '0.05em' }}>
+          Axara LMS Platform
         </div>
       </div>
     </aside>
