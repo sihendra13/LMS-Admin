@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { canUploadSOP } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
@@ -9,9 +9,21 @@ export const UploadSOP = () => {
   const [dept, setDept] = useState('Sales');
   const [duration, setDuration] = useState('5:00');
   const [videoFile, setVideoFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+  }, [previewUrl]);
+
+  const selectVideoFile = (file) => {
+    if (!file || !file.type.startsWith('video/')) return;
+    setVideoFile(file);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
 
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
   const [activeTab, setActiveTab] = useState('pre'); // 'pre' | 'post'
@@ -87,27 +99,34 @@ export const UploadSOP = () => {
 
     let videoUrl = null;
 
-    // Upload video file ke Supabase Storage jika ada
     if (videoFile) {
       setUploading(true);
-      setUploadProgress(10);
+      setUploadProgress(5);
       const fileExt = videoFile.name.split('.').pop();
       const fileName = `${Date.now()}_${title.replace(/\s+/g, '_')}.${fileExt}`;
+
+      // Simulasi progress saat upload berlangsung
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => prev < 80 ? prev + 5 : prev);
+      }, 300);
 
       const { data, error } = await supabase.storage
         .from('videos')
         .upload(fileName, videoFile, { cacheControl: '3600', upsert: false });
 
-      setUploadProgress(90);
+      clearInterval(progressInterval);
 
       if (error) {
         setUploading(false);
+        setUploadProgress(0);
         return alert('Gagal upload video: ' + error.message);
       }
 
+      setUploadProgress(95);
       const { data: urlData } = supabase.storage.from('videos').getPublicUrl(data.path);
       videoUrl = urlData.publicUrl;
       setUploadProgress(100);
+      await new Promise(r => setTimeout(r, 400));
       setUploading(false);
     }
 
@@ -227,8 +246,7 @@ export const UploadSOP = () => {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault();
-                  const file = e.dataTransfer.files[0];
-                  if (file && file.type.startsWith('video/')) setVideoFile(file);
+                  selectVideoFile(e.dataTransfer.files[0]);
                 }}
               >
                 <input
@@ -236,7 +254,7 @@ export const UploadSOP = () => {
                   ref={fileInputRef}
                   accept="video/*"
                   style={{ display: 'none' }}
-                  onChange={(e) => setVideoFile(e.target.files[0] || null)}
+                  onChange={(e) => selectVideoFile(e.target.files[0])}
                 />
                 <div className="upload-icon" style={{ fontSize: '28px', color: '#002D72', marginBottom: '10px' }}>☁️</div>
                 {videoFile ? (
@@ -321,14 +339,25 @@ export const UploadSOP = () => {
 
                 </div>
 
-                {/* Preview Placeholder */}
+                {/* Preview */}
                 <div style={{ display: 'flex', alignItems: 'stretch' }}>
-                  <div className="preview-laptop-box" style={{ flex: 1 }}>
-                    <div style={{ fontSize: '36px', marginBottom: '8px' }}>💻</div>
-                    <p style={{ fontSize: '11px', color: 'var(--text3)', lineHeight: '1.4', padding: '0 10px' }}>
-                      Pratinjau video akan muncul di sini setelah file diunggah.
-                    </p>
-                  </div>
+                  {previewUrl ? (
+                    <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <video
+                        src={previewUrl}
+                        controls
+                        controlsList="nodownload"
+                        style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '10px' }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="preview-laptop-box" style={{ flex: 1 }}>
+                      <div style={{ fontSize: '36px', marginBottom: '8px' }}>💻</div>
+                      <p style={{ fontSize: '11px', color: 'var(--text3)', lineHeight: '1.4', padding: '0 10px' }}>
+                        Pratinjau video akan muncul di sini setelah file dipilih.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
               </div>
