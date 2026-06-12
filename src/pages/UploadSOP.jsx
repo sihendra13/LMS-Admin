@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { canUploadSOP } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
@@ -11,6 +11,7 @@ export const UploadSOP = () => {
   const [videoFile, setVideoFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef(null);
 
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
   const [activeTab, setActiveTab] = useState('pre'); // 'pre' | 'post'
@@ -220,15 +221,54 @@ export const UploadSOP = () => {
             </div>
             
             <div className="card" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div className="upload-zone" style={{ margin: '0', padding: '36px 20px', border: '1px dashed var(--border)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <div
+                className="upload-zone"
+                style={{ margin: '0', padding: '36px 20px', border: '1px dashed var(--border)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files[0];
+                  if (file && file.type.startsWith('video/')) setVideoFile(file);
+                }}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="video/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => setVideoFile(e.target.files[0] || null)}
+                />
                 <div className="upload-icon" style={{ fontSize: '28px', color: '#002D72', marginBottom: '10px' }}>☁️</div>
-                <div className="upload-title" style={{ fontSize: '14px', fontWeight: '600' }}>Seret dan letakkan file video Anda</div>
-                <div className="upload-desc" style={{ fontSize: '11px', color: 'var(--text3)', margin: '6px 0 16px', lineHeight: '1.4' }}>
-                  Format MP4, MKV, atau AVI. Maksimal 500MB.
-                </div>
-                <button type="button" className="btn-primary" style={{ background: '#002D72', padding: '8px 20px', borderRadius: '20px', fontSize: '12px' }}>
-                  Pilih File Video
-                </button>
+                {videoFile ? (
+                  <>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#059669', marginBottom: '4px', textAlign: 'center', wordBreak: 'break-all', padding: '0 10px' }}>✓ {videoFile.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '14px' }}>{(videoFile.size / 1024 / 1024).toFixed(1)} MB</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="upload-title" style={{ fontSize: '14px', fontWeight: '600' }}>Seret dan letakkan file video Anda</div>
+                    <div className="upload-desc" style={{ fontSize: '11px', color: 'var(--text3)', margin: '6px 0 16px', lineHeight: '1.4' }}>
+                      Format MP4, MKV, atau AVI. Maksimal 500MB.
+                    </div>
+                  </>
+                )}
+                {uploading ? (
+                  <div style={{ width: '100%', padding: '0 10px', boxSizing: 'border-box' }}>
+                    <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
+                      <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#002D72', transition: 'width 0.3s ease' }} />
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ background: '#002D72', padding: '8px 20px', borderRadius: '20px', fontSize: '12px' }}
+                    onClick={() => fileInputRef.current.click()}
+                  >
+                    {videoFile ? 'Ganti File Video' : 'Pilih File Video'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -279,29 +319,6 @@ export const UploadSOP = () => {
                     />
                   </div>
 
-                  <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600', letterSpacing: '0.05em' }}>File Video (MP4, MOV, AVI)</label>
-                    <input
-                      type="file"
-                      accept="video/*"
-                      className="form-input"
-                      style={{ padding: '8px 12px', cursor: 'pointer' }}
-                      onChange={(e) => setVideoFile(e.target.files[0] || null)}
-                    />
-                    {videoFile && (
-                      <div style={{ marginTop: '6px', fontSize: '12px', color: '#059669', fontWeight: '600' }}>
-                        ✓ {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)} MB)
-                      </div>
-                    )}
-                    {uploading && (
-                      <div style={{ marginTop: '8px' }}>
-                        <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#002D72', transition: 'width 0.3s ease' }} />
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Mengupload video... {uploadProgress}%</div>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {/* Preview Placeholder */}
