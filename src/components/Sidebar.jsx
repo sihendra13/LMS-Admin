@@ -25,25 +25,34 @@ export const Sidebar = ({ onLogout }) => {
   return (
     <aside className="sidebar">
       {/* BRANDING TOP: CLIENT BRANDING WITH ROUNDED WHITE CONTAINER LIKE DANA LOGO */}
-      <div style={{ padding: '24px 20px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
         <div style={{
           background: '#ffffff',
           padding: '16px 20px',
-          borderRadius: '24px',
-          boxShadow: '0 10px 20px -5px rgba(0, 0, 0, 0.3)',
+          borderRadius: '0 0 24px 24px',
+          boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.25)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '8px',
-          marginBottom: '10px',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          minHeight: '60px',
+          overflow: 'hidden',
+          width: '100%',
+          boxSizing: 'border-box'
         }} onClick={() => setActivePage('dashboard')}>
-          <span style={{ fontSize: '16px' }}>🏢</span>
-          <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.3px', textAlign: 'center' }}>
-            {tenant.name}
-          </div>
+          {tenant.logo ? (
+            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '100%', maxHeight: '40px', objectFit: 'contain' }} />
+          ) : (
+            <>
+              <span style={{ fontSize: '15px', flexShrink: 0 }}>🏢</span>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.3px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {tenant.name}
+              </div>
+            </>
+          )}
         </div>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', paddingLeft: '8px', fontWeight: '600' }}>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', padding: '12px 20px', fontWeight: '600' }}>
           Paket {planLabel} · {tenant.status}
         </div>
       </div>

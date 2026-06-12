@@ -3,7 +3,7 @@ import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
 
 export const Settings = () => {
-  const { tenant, currentUser, changePlan } = useTenant();
+  const { tenant, currentUser, changePlan, updateTenantLogo } = useTenant();
   
   const isHRDAdmin = currentUser.role === 'admin';
 
@@ -106,6 +106,56 @@ export const Settings = () => {
                   <span style={{ fontSize: '16px' }}>⚠️</span>
                   <div style={{ fontSize: '12px', color: '#b45309', lineHeight: '1.4' }}>
                     <strong>Entitas Hukum Terkunci:</strong> Untuk menjaga legalitas kontrak berlangganan dan kesesuaian faktur pajak, nama entitas utama perusahaan tidak dapat diubah secara langsung dari dasbor ini. Silakan hubungi Account Manager Anda jika terdapat perubahan nama hukum.
+                  </div>
+                </div>
+
+                {/* LOGO UPLOAD AREA */}
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '24px', background: '#f8fafc', padding: '18px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                  <div style={{
+                    width: '120px',
+                    height: '60px',
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    border: '1px solid var(--border)',
+                    flexShrink: 0
+                  }}>
+                    {tenant.logo ? (
+                      <img src={tenant.logo} alt="Logo Perusahaan" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <span style={{ fontSize: '20px' }}>🏢</span>
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text2)', marginBottom: '6px' }}>
+                      LOGO PERUSAHAAN (WHITE-LABEL BRANDING)
+                    </label>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            updateTenantLogo(reader.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      style={{ 
+                        fontSize: '14px', 
+                        color: 'var(--text2)',
+                        cursor: 'pointer' 
+                      }} 
+                    />
+                    <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '4px' }}>
+                      Rekomendasi rasio landscape, background putih/transparan. Logo akan otomatis dipasang pada container putih di kiri atas menu navigasi.
+                    </div>
                   </div>
                 </div>
 

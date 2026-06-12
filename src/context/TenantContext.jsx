@@ -26,10 +26,11 @@ export const TenantProvider = ({ children, authUser }) => {
   const storedDB = getStoredDB() || {};
 
   const [tenant, setTenant] = useState({
-    name: 'PT Maju Bersama',
-    plan: PLANS.BUSINESS, // Default plan in mockup
-    status: 'Aktif',
-    avatar: 'MB',
+    name: storedDB.tenant?.name || 'PT Maju Bersama',
+    plan: storedDB.tenant?.plan || PLANS.BUSINESS, // Default plan in mockup
+    status: storedDB.tenant?.status || 'Aktif',
+    avatar: storedDB.tenant?.avatar || 'MB',
+    logo: storedDB.tenant?.logo || null,
   });
 
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'sop' | 'sertifikasi' | 'laporan' | 'karyawan' | 'departemen' | 'upload' | 'notifikasi' | 'pengaturan'
@@ -45,19 +46,19 @@ export const TenantProvider = ({ children, authUser }) => {
         avatar: authUser.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
       };
     }
-    return { id: 1, name: 'Andi Saputra', role: 'admin', dept: 'HRD', avatar: 'AS' };
+    return storedDB.currentUser || { id: 1, name: 'Andi Saputra', role: 'admin', dept: 'HRD', avatar: 'AS' };
   });
 
-  const [supervisors, setSupervisors] = useState([
+  const [supervisors, setSupervisors] = useState(storedDB.supervisors || [
     { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', dept: 'Sales', status: 'Aktif' },
     { id: 2, name: 'Budi Pratama', email: 'budi.p@majubersama.com', dept: 'Finance', status: 'Aktif' }
   ]);
 
-  const [invitations, setInvitations] = useState([
+  const [invitations, setInvitations] = useState(storedDB.invitations || [
     { id: 1, email: 'hendra.f@majubersama.com', dept: 'Operasional', status: 'Pending', date: 'Hari ini' }
   ]);
 
-  const [pendingEssays, setPendingEssays] = useState(() => storedDB.pendingEssays || [
+  const [pendingEssays, setPendingEssays] = useState(storedDB.pendingEssays || [
     { 
       id: 101, 
       employeeName: 'Budi Pratama', 
@@ -83,11 +84,11 @@ export const TenantProvider = ({ children, authUser }) => {
     }
   ]);
 
-  const [passingScore, setPassingScore] = useState(() => storedDB.passingScore !== undefined ? storedDB.passingScore : 80);
-  const [validityMonths, setValidityMonths] = useState(() => storedDB.validityMonths !== undefined ? storedDB.validityMonths : 12);
+  const [passingScore, setPassingScore] = useState(storedDB.passingScore || 80);
+  const [validityMonths, setValidityMonths] = useState(storedDB.validityMonths || 12);
 
   // Mock initial data that can be updated dynamically
-  const [employees, setEmployees] = useState(() => storedDB.employees || [
+  const [employees, setEmployees] = useState(storedDB.employees || [
     { id: 1, name: 'Rini Wulandari', dept: 'Sales', city: 'Jakarta', score: 18 },
     { id: 2, name: 'Budi Pratama', dept: 'Finance', city: 'Surabaya', score: 15 },
     { id: 3, name: 'Sari Anggraeni', dept: 'HRD', city: 'Bandung', score: 14 },
@@ -95,7 +96,7 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 5, name: 'Nina Putri', dept: 'CS', city: 'Medan', score: 11 },
   ]);
 
-  const [videos, setVideos] = useState(() => storedDB.videos || [
+  const [videos, setVideos] = useState(storedDB.videos || [
     { 
       id: 1, 
       title: 'SOP Sales: Proses Onboarding Klien Baru', 
@@ -166,7 +167,7 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 6, title: 'SOP IT: Keamanan Password & Akun', dept: 'IT', duration: '7:50', progress: 33, views: 112, color: '#2a1024', tagClass: 'dt-it', preQuizzes: [], postQuizzes: [] },
   ]);
 
-  const [quizSubmissions, setQuizSubmissions] = useState(() => storedDB.quizSubmissions || [
+  const [quizSubmissions, setQuizSubmissions] = useState(storedDB.quizSubmissions || [
     { id: 1, employeeName: 'Rini Wulandari', videoTitle: 'SOP Sales: Proses Onboarding Klien Baru', preScore: 40, postScore: 100, date: 'Hari ini', status: 'Lulus' },
     { id: 2, employeeName: 'Budi Pratama', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', preScore: 50, postScore: 100, date: 'Hari ini', status: 'Lulus' },
     { id: 3, employeeName: 'Sari Anggraeni', videoTitle: 'SOP HRD: Rekrutmen & Seleksi Karyawan', preScore: 30, postScore: 90, date: '1 hari lalu', status: 'Lulus' },
@@ -174,7 +175,7 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 5, employeeName: 'Nina Putri', videoTitle: 'SOP Customer Service: Handling Komplain', preScore: 20, postScore: 60, date: '3 hari lalu', status: 'Remedi (Butuh Ujian Ulang)' },
   ]);
 
-  const [activities, setActivities] = useState(() => storedDB.activities || [
+  const [activities, setActivities] = useState(storedDB.activities || [
     { id: 1, text: '<strong>Rini W.</strong> menyelesaikan SOP Sales Onboarding', time: '5 menit lalu', type: 'green' },
     { id: 2, text: 'Video baru <strong>SOP IT Security</strong> diunggah', time: '32 menit lalu', type: 'blue' },
     { id: 3, text: '<strong>12 karyawan</strong> mendapat sertifikat Finance', time: '1 jam lalu', type: 'purple' },
@@ -182,12 +183,13 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 5, text: '<strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95', time: '3 jam lalu', type: 'cyan' },
   ]);
 
-  // Persist state to local storage when state changes
-  React.useEffect(() => {
+  // Sync state with localstorage on change
+  useEffect(() => {
     const db = {
-      passingScore,
-      validityMonths,
-      currentUser: { id: 1, name: 'Rini Wulandari', role: 'employee', dept: 'Sales', city: 'Jakarta', avatar: 'RW', streak: 7 },
+      tenant,
+      currentUser,
+      supervisors,
+      invitations,
       employees,
       videos,
       quizSubmissions,
@@ -195,11 +197,15 @@ export const TenantProvider = ({ children, authUser }) => {
       activities
     };
     localStorage.setItem(DB_KEY, JSON.stringify(db));
-  }, [passingScore, validityMonths, employees, videos, quizSubmissions, pendingEssays, activities]);
+  }, [tenant, currentUser, supervisors, invitations, employees, videos, quizSubmissions, pendingEssays, activities]);
 
   // Actions
   const changePlan = (newPlan) => {
     setTenant(prev => ({ ...prev, plan: newPlan }));
+  };
+
+  const updateTenantLogo = (logoBase64) => {
+    setTenant(prev => ({ ...prev, logo: logoBase64 }));
   };
 
   const addSOP = (newVideo) => {
