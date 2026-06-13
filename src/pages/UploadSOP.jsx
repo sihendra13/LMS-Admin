@@ -230,20 +230,19 @@ export const UploadSOP = () => {
 
       <form onSubmit={handleUploadSubmit}>
         
-        {/* ROW 1: STEP 1 (Media & Details) & STEP 2 (Preview) SIDE-BY-SIDE (1fr 1fr Grid) */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', alignItems: 'stretch', marginBottom: '24px' }}>
-          
-          {/* LEFT COLUMN: Media Upload + Detail Informasi stacked vertically */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* STEP 1: MEDIA UPLOAD */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div className="step-header" style={{ marginBottom: '12px' }}>
-                <div className="step-title" style={{ fontSize: '15px' }}>Media Upload</div>
-              </div>
-              <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        {/* ROW 1: SINGLE CARD WITH 3 SECTIONS SPLIT INTO 2 COLUMNS SIDE-BY-SIDE */}
+        <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', alignItems: 'stretch' }}>
+            
+            {/* LEFT COLUMN: Media Upload & Detail Informasi */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* SECTION 1: MEDIA UPLOAD */}
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px', textAlign: 'left' }}>Media Upload</div>
                 <div
                   className="upload-zone"
-                  style={{ margin: '0', padding: '36px 20px', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
+                  style={{ margin: '0', padding: '30px 20px', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -272,8 +271,8 @@ export const UploadSOP = () => {
                     </>
                   ) : (
                     <>
-                      <div className="upload-title" style={{ fontSize: '14px', fontWeight: '600' }}>Seret dan letakkan file video Anda</div>
-                      <div className="upload-desc" style={{ fontSize: '11px', color: 'var(--text3)', margin: '6px 0 16px', lineHeight: '1.4' }}>
+                      <div className="upload-title" style={{ fontSize: '13px', fontWeight: '600' }}>Seret dan letakkan file video Anda</div>
+                      <div className="upload-desc" style={{ fontSize: '11px', color: 'var(--text3)', margin: '4px 0 12px', lineHeight: '1.4' }}>
                         Format MP4, MKV, atau AVI. Maksimal 500MB.
                       </div>
                     </>
@@ -297,14 +296,10 @@ export const UploadSOP = () => {
                   )}
                 </div>
               </div>
-            </div>
 
-            {/* STEP 2: DETAIL INFORMASI */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div className="step-header" style={{ marginBottom: '12px' }}>
-                <div className="step-title" style={{ fontSize: '15px' }}>Detail Informasi</div>
-              </div>
-              <div className="card" style={{ padding: '24px' }}>
+              {/* SECTION 2: DETAIL INFORMASI */}
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px', textAlign: 'left' }}>Detail Informasi</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
                   <div className="form-group" style={{ margin: '0' }}>
                     <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Judul Video Training / SOP</label>
@@ -346,22 +341,19 @@ export const UploadSOP = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* RIGHT COLUMN: PRATINJAU VIDEO */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="step-header" style={{ marginBottom: '12px' }}>
-              <div className="step-title" style={{ fontSize: '15px' }}>Pratinjau Video</div>
             </div>
-            <div className="card" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'stretch', alignItems: 'stretch' }}>
+
+            {/* RIGHT COLUMN: PRATINJAU VIDEO */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px', textAlign: 'left' }}>Pratinjau Video</div>
               {previewUrl ? (
                 <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
                   <video
                     src={previewUrl}
                     controls
                     controlsList="nodownload"
-                    style={{ width: '100%', height: '100%', maxHeight: '420px', objectFit: 'contain' }}
+                    style={{ width: '100%', height: '100%', maxHeight: '380px', objectFit: 'contain' }}
                   />
                 </div>
               ) : (
@@ -373,8 +365,8 @@ export const UploadSOP = () => {
                 </div>
               )}
             </div>
-          </div>
 
+          </div>
         </div>
 
         {/* ROW 2: STEP 3 (Full Width Underneath) - SIDE BY SIDE PRE-TEST AND POST-TEST LAYOUT */}
