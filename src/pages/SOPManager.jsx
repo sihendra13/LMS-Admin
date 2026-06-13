@@ -101,7 +101,7 @@ export const SOPManager = () => {
                       </svg>
                       Hapus
                     </button>
-                  ) : (
+                  ) : video.progress === 100 ? (
                     <button
                       type="button"
                       onClick={() => archiveSOP(video.id)}
@@ -117,7 +117,7 @@ export const SOPManager = () => {
                       </svg>
                       Arsipkan
                     </button>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
