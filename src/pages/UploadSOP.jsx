@@ -13,6 +13,7 @@ export const UploadSOP = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -207,7 +208,8 @@ export const UploadSOP = () => {
     };
 
     addSOP(newVideo);
-    setActivePage('sop');
+    setUploadSuccess(true);
+    setTimeout(() => setActivePage('sop'), 2200);
   };
 
   if (!canUploadSOP(tenant.plan)) {
@@ -312,6 +314,15 @@ export const UploadSOP = () => {
                 )}
               </div>
 
+              {/* FILE INPUT — always in DOM so ref works even when preview is showing */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="video/*"
+                style={{ display: 'none' }}
+                onChange={(e) => selectVideoFile(e.target.files[0])}
+              />
+
               {previewUrl ? (
                 /* VIDEO PLAYER WITH DETAILED FILE INFO BAR */
                 <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#0f172a', border: '1px solid var(--border)' }}>
@@ -362,14 +373,6 @@ export const UploadSOP = () => {
                   }}
                   onClick={() => fileInputRef.current.click()}
                 >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="video/*"
-                    style={{ display: 'none' }}
-                    onChange={(e) => selectVideoFile(e.target.files[0])}
-                  />
-                  
                   {/* SVG CLOUD WITH UP ARROW */}
                   <div style={{ color: '#94a3b8', marginBottom: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -787,6 +790,24 @@ export const UploadSOP = () => {
           </button>
         </div>
       </form>
+
+      {/* SUCCESS TOAST */}
+      {uploadSuccess && (
+        <div style={{
+          position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+          background: '#0f172a', color: '#fff', padding: '14px 24px', borderRadius: '12px',
+          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center',
+          gap: '12px', zIndex: 99999, fontSize: '14px', fontWeight: '500',
+          animation: 'slideUp 0.3s ease'
+        }}>
+          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <span>SOP berhasil diterbitkan! Mengalihkan ke halaman video...</span>
+        </div>
+      )}
 
       {/* PUBLISH CONFIRMATION MODAL */}
       {showPublishConfirm && (() => {
