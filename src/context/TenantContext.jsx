@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { PLANS } from '../utils/featureGates';
+import { supabase } from '../utils/supabase';
 
 const TenantContext = createContext();
 
@@ -235,6 +236,30 @@ export const TenantProvider = ({ children, authUser }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
+  const deleteSOP = (id) => {
+    const video = videos.find(v => v.id === id);
+    setVideos(prev => prev.filter(v => v.id !== id));
+    if (video?.filePath) {
+      supabase.storage.from('videos').remove([video.filePath]);
+    }
+    const newAct = { id: Date.now(), text: `Video <strong>${video?.title}</strong> dihapus permanen`, time: 'Baru saja', type: 'amber' };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
+  const archiveSOP = (id) => {
+    const video = videos.find(v => v.id === id);
+    setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: true } : v));
+    const newAct = { id: Date.now(), text: `Video <strong>${video?.title}</strong> diarsipkan`, time: 'Baru saja', type: 'amber' };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
+  const unarchiveSOP = (id) => {
+    const video = videos.find(v => v.id === id);
+    setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: false } : v));
+    const newAct = { id: Date.now(), text: `Video <strong>${video?.title}</strong> dipulihkan dari arsip`, time: 'Baru saja', type: 'blue' };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
   const addEmployee = (newEmp) => {
     setEmployees(prev => [newEmp, ...prev]);
     // Add activity
@@ -347,6 +372,9 @@ export const TenantProvider = ({ children, authUser }) => {
       addEmployee,
       videos,
       addSOP,
+      deleteSOP,
+      archiveSOP,
+      unarchiveSOP,
       activities,
       quizSubmissions,
       currentUser,

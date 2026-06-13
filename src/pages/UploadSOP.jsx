@@ -114,12 +114,14 @@ export const UploadSOP = () => {
   const handleConfirmPublish = async () => {
     setShowPublishConfirm(false);
     let videoUrl = null;
+    let filePath = null;
 
     if (videoFile) {
       setUploading(true);
       setUploadProgress(5);
       const fileExt = videoFile.name.split('.').pop();
       const fileName = `${Date.now()}_${title.replace(/\s+/g, '_')}.${fileExt}`;
+      filePath = fileName;
 
       // Simulasi progress saat upload berlangsung
       const progressInterval = setInterval(() => {
@@ -198,6 +200,8 @@ export const UploadSOP = () => {
       color: deptColors[dept] || '#1e3a5f',
       tagClass: deptClasses[dept] || 'dt-sales',
       videoUrl: videoUrl || null,
+      filePath: filePath,
+      archived: false,
       preQuizzes: preList,
       postQuizzes: postList
     };
