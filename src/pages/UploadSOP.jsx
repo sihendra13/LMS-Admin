@@ -232,19 +232,100 @@ export const UploadSOP = () => {
         
         {/* ROW 1: SINGLE CARD WITH 3 SECTIONS SPLIT INTO 2 COLUMNS SIDE-BY-SIDE */}
         <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', alignItems: 'stretch' }}>
+          {/* SINGLE COLUMN: Media Upload & Video Preview (Dynamic Layout) */}
+          <div style={{ marginBottom: '24px' }}>
             
-            {/* LEFT COLUMN: Media Upload & Detail Informasi */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              
-              {/* SECTION 1: MEDIA UPLOAD */}
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px', textAlign: 'left' }}>Media Upload</div>
+            {/* SECTION 1: MEDIA UPLOAD / VIDEO PLAYER */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)' }}>Media Training & SOP</div>
+                {videoFile && !uploading && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      className="btn-sec"
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        border: '1px solid var(--border)',
+                        background: '#ffffff',
+                        color: 'var(--text2)',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s'
+                      }}
+                      onClick={() => fileInputRef.current.click()}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                      </svg>
+                      Ganti Video
+                    </button>
+                    <button
+                      type="button"
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        border: '1px solid #fee2e2',
+                        background: '#fff5f5',
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s'
+                      }}
+                      onClick={() => { setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                      Hapus
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {previewUrl ? (
+                /* VIDEO PLAYER WITH DETAILED FILE INFO BAR */
+                <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#0f172a', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '340px', background: '#000' }}>
+                    <video
+                      src={previewUrl}
+                      controls
+                      controlsList="nodownload"
+                      style={{ width: '100%', maxHeight: '420px', objectFit: 'contain' }}
+                    />
+                  </div>
+                  {/* DETAILED FILE INFO FOOTER */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1329', padding: '12px 18px', color: '#fff', fontSize: '12.5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ background: '#3b82f6', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>HD</span>
+                      <span style={{ fontWeight: '500', opacity: 0.95 }}>{videoFile?.name}</span>
+                      <span style={{ opacity: 0.4 }}>•</span>
+                      <span style={{ color: '#94a3b8' }}>{videoFile ? (videoFile.size / 1024 / 1024).toFixed(1) : '0'} MB</span>
+                    </div>
+                    {duration && (
+                      <div style={{ color: '#94a3b8', fontWeight: '500' }}>
+                        Durasi: {duration}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* LARGE DROP ZONE AREA */
                 <div
                   className="upload-zone"
                   style={{ 
                     margin: '0', 
-                    padding: '40px 20px', 
+                    padding: '60px 20px', 
                     border: '2px dashed #cbd5e1', 
                     borderRadius: '16px',
                     display: 'flex', 
@@ -270,7 +351,7 @@ export const UploadSOP = () => {
                     onChange={(e) => selectVideoFile(e.target.files[0])}
                   />
                   
-                  {/* SVG CLOUD WITH UP ARROW - HIGHLY AESTHETIC DESIGN */}
+                  {/* SVG CLOUD WITH UP ARROW */}
                   <div style={{ color: '#94a3b8', marginBottom: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -279,30 +360,15 @@ export const UploadSOP = () => {
                     </svg>
                   </div>
 
-                  {videoFile ? (
-                    <>
-                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#059669', marginBottom: '4px', textAlign: 'center', wordBreak: 'break-all', padding: '0 10px' }}>✓ {videoFile.name}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '14px' }}>{(videoFile.size / 1024 / 1024).toFixed(1)} MB</div>
-                      <button
-                        type="button"
-                        style={{ background: 'none', border: '1px solid #fca5a5', color: '#ef4444', fontSize: '11px', fontWeight: '600', padding: '4px 12px', borderRadius: '20px', cursor: 'pointer', marginBottom: '8px' }}
-                        onClick={(e) => { e.stopPropagation(); setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
-                      >
-                        ✕ Hapus File
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="upload-title" style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Seret dan letakkan file video Anda</div>
-                      <div className="upload-desc" style={{ fontSize: '11.5px', color: '#94a3b8', margin: '0 0 20px 0', lineHeight: '1.4' }}>
-                        Format MP4, MKV, atau AVI. Maksimal 500MB.
-                      </div>
-                    </>
-                  )}
+                  <div className="upload-title" style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Seret dan letakkan file video Anda</div>
+                  <div className="upload-desc" style={{ fontSize: '11.5px', color: '#94a3b8', margin: '0 0 20px 0', lineHeight: '1.4' }}>
+                    Format MP4, MKV, atau AVI. Maksimal 500MB.
+                  </div>
+
                   {uploading ? (
-                    <div style={{ width: '100%', padding: '0 10px', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
+                    <div style={{ width: '280px', padding: '0 10px', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
                       <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
-                        <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#002D72', transition: 'width 0.3s ease' }} />
+                        <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#0B1628', transition: 'width 0.3s ease' }} />
                       </div>
                       <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
                     </div>
@@ -320,87 +386,56 @@ export const UploadSOP = () => {
                       }}
                       onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}
                     >
-                      {videoFile ? 'Ganti File Video' : 'Pilih File Video'}
+                      Pilih File Video
                     </button>
                   )}
                 </div>
-              </div>
+              )}
+            </div>
 
-              {/* SECTION 2: DETAIL INFORMASI */}
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px', textAlign: 'left' }}>Detail Informasi</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
+            {/* SECTION 2: DETAIL INFORMASI (Full width under player/dropzone) */}
+            <div className="card" style={{ padding: '24px', border: '1px solid var(--border)', borderRadius: '12px', background: '#ffffff', textAlign: 'left' }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px' }}>Detail Informasi</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="form-group" style={{ margin: '0' }}>
+                  <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Judul Video Training / SOP</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    style={{ fontSize: '14px', padding: '10px 12px' }}
+                    placeholder="Contoh: SOP Operasional: Tata Cara Packing Barang Baru"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Judul Video Training / SOP</label>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Departemen Target</label>
+                    <select className="form-select" style={{ fontSize: '14px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
+                      <option value="Sales">Sales & Marketing</option>
+                      <option value="HRD">HRD / GA</option>
+                      <option value="Operasional">Operasional & Gudang</option>
+                      <option value="Finance">Finance & Tax</option>
+                      <option value="CS">Customer Service</option>
+                      <option value="IT">IT Support</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ margin: '0' }}>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Estimasi Durasi (Menit)</label>
                     <input
                       type="text"
                       className="form-input"
-                      style={{ fontSize: '14px', padding: '10px 12px' }}
-                      placeholder="Contoh: SOP Operasional: Tata Cara Packing Barang Baru"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
+                      style={{ fontSize: '14px', padding: '10px 12px', textAlign: 'center' }}
+                      placeholder="5:00"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
                     />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div className="form-group" style={{ margin: '0' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Departemen Target</label>
-                      <select className="form-select" style={{ fontSize: '14px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
-                        <option value="Sales">Sales & Marketing</option>
-                        <option value="HRD">HRD / GA</option>
-                        <option value="Operasional">Operasional & Gudang</option>
-                        <option value="Finance">Finance & Tax</option>
-                        <option value="CS">Customer Service</option>
-                        <option value="IT">IT Support</option>
-                      </select>
-                    </div>
-
-                    <div className="form-group" style={{ margin: '0' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Estimasi Durasi (Menit)</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        style={{ fontSize: '14px', padding: '10px 12px', textAlign: 'center' }}
-                        placeholder="5:00"
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
-
-            </div>
-
-            {/* RIGHT COLUMN: PRATINJAU VIDEO */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px', textAlign: 'left' }}>Pratinjau Video</div>
-              {previewUrl ? (
-                <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-                  <video
-                    src={previewUrl}
-                    controls
-                    controlsList="nodownload"
-                    style={{ width: '100%', height: '100%', maxHeight: '380px', objectFit: 'contain' }}
-                  />
-                </div>
-              ) : (
-                <div className="preview-laptop-box" style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '12px', minHeight: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: '#f8fafc' }}>
-                  
-                  {/* AESTHETIC SVG VIDEO CAMERA OUTLINE ICON */}
-                  <div style={{ color: '#94a3b8', marginBottom: '16px' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M23 7l-7 5 7 5V7z" />
-                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                  </div>
-
-                  <p style={{ fontSize: '13px', color: 'var(--text3)', lineHeight: '1.5', padding: '0 20px', textAlign: 'center' }}>
-                    Pratinjau video akan muncul di sini setelah file dipilih.
-                  </p>
-                </div>
-              )}
             </div>
 
           </div>
