@@ -242,12 +242,25 @@ export const UploadSOP = () => {
                 <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px', textAlign: 'left' }}>Media Upload</div>
                 <div
                   className="upload-zone"
-                  style={{ margin: '0', padding: '30px 20px', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
+                  style={{ 
+                    margin: '0', 
+                    padding: '40px 20px', 
+                    border: '2px dashed #cbd5e1', 
+                    borderRadius: '16px',
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    background: '#f8fafc',
+                    transition: 'border-color 0.2s',
+                    cursor: 'pointer'
+                  }}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
                     selectVideoFile(e.dataTransfer.files[0]);
                   }}
+                  onClick={() => fileInputRef.current.click()}
                 >
                   <input
                     type="file"
@@ -256,7 +269,16 @@ export const UploadSOP = () => {
                     style={{ display: 'none' }}
                     onChange={(e) => selectVideoFile(e.target.files[0])}
                   />
-                  <div className="upload-icon" style={{ fontSize: '28px', color: '#002D72', marginBottom: '10px' }}>☁️</div>
+                  
+                  {/* SVG CLOUD WITH UP ARROW - HIGHLY AESTHETIC DESIGN */}
+                  <div style={{ color: '#94a3b8', marginBottom: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+
                   {videoFile ? (
                     <>
                       <div style={{ fontSize: '13px', fontWeight: '600', color: '#059669', marginBottom: '4px', textAlign: 'center', wordBreak: 'break-all', padding: '0 10px' }}>✓ {videoFile.name}</div>
@@ -264,21 +286,21 @@ export const UploadSOP = () => {
                       <button
                         type="button"
                         style={{ background: 'none', border: '1px solid #fca5a5', color: '#ef4444', fontSize: '11px', fontWeight: '600', padding: '4px 12px', borderRadius: '20px', cursor: 'pointer', marginBottom: '8px' }}
-                        onClick={() => { setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
+                        onClick={(e) => { e.stopPropagation(); setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
                       >
                         ✕ Hapus File
                       </button>
                     </>
                   ) : (
                     <>
-                      <div className="upload-title" style={{ fontSize: '13px', fontWeight: '600' }}>Seret dan letakkan file video Anda</div>
-                      <div className="upload-desc" style={{ fontSize: '11px', color: 'var(--text3)', margin: '4px 0 12px', lineHeight: '1.4' }}>
+                      <div className="upload-title" style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Seret dan letakkan file video Anda</div>
+                      <div className="upload-desc" style={{ fontSize: '11.5px', color: '#94a3b8', margin: '0 0 20px 0', lineHeight: '1.4' }}>
                         Format MP4, MKV, atau AVI. Maksimal 500MB.
                       </div>
                     </>
                   )}
                   {uploading ? (
-                    <div style={{ width: '100%', padding: '0 10px', boxSizing: 'border-box' }}>
+                    <div style={{ width: '100%', padding: '0 10px', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
                       <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
                         <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#002D72', transition: 'width 0.3s ease' }} />
                       </div>
@@ -288,8 +310,17 @@ export const UploadSOP = () => {
                     <button
                       type="button"
                       className="btn-primary"
-                      style={{ background: '#002D72', padding: '8px 20px', borderRadius: '20px', fontSize: '12px' }}
-                      onClick={() => fileInputRef.current.click()}
+                      style={{ 
+                        background: '#0f172a', 
+                        padding: '10px 24px', 
+                        borderRadius: '8px', 
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        border: 'none',
+                        boxShadow: '0 4px 6px -1px rgba(15, 23, 42, 0.15)',
+                        cursor: 'pointer'
+                      }}
+                      onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}
                     >
                       {videoFile ? 'Ganti File Video' : 'Pilih File Video'}
                     </button>
