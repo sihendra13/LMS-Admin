@@ -446,7 +446,7 @@ export const UploadSOP = () => {
                       <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
                         Waktu Pemicu Kuis (Muncul Di Tengah Video)
                       </label>
-                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginTop: '8px' }}>
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end', marginTop: '8px', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Menit</span>
                           <input
@@ -471,6 +471,30 @@ export const UploadSOP = () => {
                             value={q.triggerSec}
                             onChange={(e) => handlePreQuestionChange(idx, 'triggerSec', e.target.value)}
                           />
+                        </div>
+
+                        {/* INFO BOX WITH SVG OUTLINE ICON MATCHING THE TRASH ICON STYLE */}
+                        <div style={{
+                          background: '#f8fafc',
+                          border: '1px solid var(--border)',
+                          borderRadius: '8px',
+                          padding: '10px 16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          flex: 1,
+                          minWidth: '240px',
+                          height: '46px',
+                          boxSizing: 'border-box'
+                        }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                          </svg>
+                          <span style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic', lineHeight: '1.4' }}>
+                            Video akan otomatis terhenti di waktu ini untuk menampilkan kuis.
+                          </span>
                         </div>
                       </div>
                     </div>
