@@ -864,23 +864,26 @@ export const UploadSOP = () => {
                       {preToShow.map((q, i) => {
                         const trigger = formatTrigger(q);
                         return (
-                          <div key={i} style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 14px' }}>
+                          <div key={i} style={{ background: '#f8fafc', border: `1px solid ${trigger ? '#fde68a' : 'var(--border)'}`, borderRadius: '8px', padding: '10px 14px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                               <div style={{ fontSize: '13px', color: 'var(--text1)', lineHeight: '1.4', flex: 1 }}>
                                 <span style={{ fontWeight: '700', color: 'var(--text3)', marginRight: '6px' }}>#{i + 1}</span>
                                 {q.question}
                               </div>
-                              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                                <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: q.type === 'multiple' ? '#eff6ff' : '#f0fdf4', color: q.type === 'multiple' ? '#1d4ed8' : '#16a34a' }}>
-                                  {q.type === 'multiple' ? 'Pilihan Ganda' : 'Esai'}
-                                </span>
-                                {trigger && (
-                                  <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: '#fef3c7', color: '#b45309' }}>
-                                    ⏱ {trigger}
-                                  </span>
-                                )}
-                              </div>
+                              <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: q.type === 'multiple' ? '#eff6ff' : '#f0fdf4', color: q.type === 'multiple' ? '#1d4ed8' : '#16a34a', flexShrink: 0 }}>
+                                {q.type === 'multiple' ? 'Pilihan Ganda' : 'Esai'}
+                              </span>
                             </div>
+                            {trigger && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', padding: '6px 10px', background: '#fffbeb', borderRadius: '6px', border: '1px solid #fde68a' }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <span style={{ fontSize: '11px', color: '#92400e', lineHeight: '1.4' }}>
+                                  Video akan <strong>berhenti otomatis di menit {trigger}</strong> dan menampilkan soal ini sebelum karyawan bisa melanjutkan menonton.
+                                </span>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
