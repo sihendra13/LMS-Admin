@@ -311,13 +311,13 @@ export const UploadSOP = () => {
                       type="button"
                       className="btn-primary"
                       style={{ 
-                        background: '#0f172a', 
+                        background: '#0B1628', 
                         padding: '10px 24px', 
                         borderRadius: '8px', 
                         fontSize: '12px',
                         fontWeight: '700',
                         border: 'none',
-                        boxShadow: '0 4px 6px -1px rgba(15, 23, 42, 0.15)',
+                        boxShadow: '0 4px 6px -1px rgba(11, 22, 40, 0.15)',
                         cursor: 'pointer'
                       }}
                       onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}
@@ -388,8 +388,16 @@ export const UploadSOP = () => {
                   />
                 </div>
               ) : (
-                <div className="preview-laptop-box" style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '12px', minHeight: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>💻</div>
+                <div className="preview-laptop-box" style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '12px', minHeight: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: '#f8fafc' }}>
+                  
+                  {/* AESTHETIC SVG VIDEO CAMERA OUTLINE ICON */}
+                  <div style={{ color: '#94a3b8', marginBottom: '16px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M23 7l-7 5 7 5V7z" />
+                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                    </svg>
+                  </div>
+
                   <p style={{ fontSize: '13px', color: 'var(--text3)', lineHeight: '1.5', padding: '0 20px', textAlign: 'center' }}>
                     Pratinjau video akan muncul di sini setelah file dipilih.
                   </p>
@@ -694,7 +702,20 @@ export const UploadSOP = () => {
           <button type="button" className="form-input" style={{ cursor: 'pointer', padding: '8px 18px' }} onClick={() => setActivePage('sop')}>
             Batal
           </button>
-          <button type="submit" className="btn-primary" style={{ padding: '8px 24px', background: uploading ? '#94a3b8' : '#002D72', cursor: uploading ? 'not-allowed' : 'pointer' }} disabled={uploading}>
+          <button
+            type="submit"
+            className="btn-primary"
+            style={{
+              padding: '10px 24px',
+              background: uploading ? '#94a3b8' : '#0B1628',
+              borderRadius: '8px',
+              fontWeight: '700',
+              border: 'none',
+              boxShadow: '0 4px 6px -1px rgba(11, 22, 40, 0.15)',
+              cursor: uploading ? 'not-allowed' : 'pointer'
+            }}
+            disabled={uploading}
+          >
             {uploading ? `Mengupload Video... ${uploadProgress}%` : 'Terbitkan SOP & Ujian'}
           </button>
         </div>

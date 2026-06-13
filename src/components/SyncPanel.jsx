@@ -101,7 +101,7 @@ export const SyncPanel = ({ isOpen, onClose }) => {
           <button className="btn-sec" onClick={handleCopy} style={{ padding: '8px 16px', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' }}>
             📋 Salin (Export)
           </button>
-          <button className="btn-primary" onClick={handleImport} style={{ padding: '8px 16px', background: '#002D72', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+          <button className="btn-primary" onClick={handleImport} style={{ padding: '8px 16px', background: '#0B1628', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
             📥 Terapkan (Import)
           </button>
         </div>
