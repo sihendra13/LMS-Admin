@@ -230,90 +230,88 @@ export const UploadSOP = () => {
 
       <form onSubmit={handleUploadSubmit}>
         
-        {/* ROW 1: STEP 1 & STEP 2 SIDE-BY-SIDE (1fr 1.5fr Grid) */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '24px', alignItems: 'stretch', marginBottom: '24px' }}>
+        {/* ROW 1: STEP 1 (Media & Details) & STEP 2 (Preview) SIDE-BY-SIDE (1fr 1fr Grid) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', alignItems: 'stretch', marginBottom: '24px' }}>
           
-          {/* STEP 1: MEDIA UPLOAD (Left Column) */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="step-header" style={{ marginBottom: '16px' }}>
-              <div className="step-title" style={{ fontSize: '15px' }}>Media Upload</div>
-            </div>
-            
-            <div className="card" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div
-                className="upload-zone"
-                style={{ margin: '0', padding: '36px 20px', border: '1px dashed var(--border)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  selectVideoFile(e.dataTransfer.files[0]);
-                }}
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="video/*"
-                  style={{ display: 'none' }}
-                  onChange={(e) => selectVideoFile(e.target.files[0])}
-                />
-                <div className="upload-icon" style={{ fontSize: '28px', color: '#002D72', marginBottom: '10px' }}>☁️</div>
-                {videoFile ? (
-                  <>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#059669', marginBottom: '4px', textAlign: 'center', wordBreak: 'break-all', padding: '0 10px' }}>✓ {videoFile.name}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '14px' }}>{(videoFile.size / 1024 / 1024).toFixed(1)} MB</div>
+          {/* LEFT COLUMN: Media Upload + Detail Informasi stacked vertically */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* STEP 1: MEDIA UPLOAD */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="step-header" style={{ marginBottom: '12px' }}>
+                <div className="step-title" style={{ fontSize: '15px' }}>Media Upload</div>
+              </div>
+              <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div
+                  className="upload-zone"
+                  style={{ margin: '0', padding: '36px 20px', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    selectVideoFile(e.dataTransfer.files[0]);
+                  }}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="video/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) => selectVideoFile(e.target.files[0])}
+                  />
+                  <div className="upload-icon" style={{ fontSize: '28px', color: '#002D72', marginBottom: '10px' }}>☁️</div>
+                  {videoFile ? (
+                    <>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#059669', marginBottom: '4px', textAlign: 'center', wordBreak: 'break-all', padding: '0 10px' }}>✓ {videoFile.name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '14px' }}>{(videoFile.size / 1024 / 1024).toFixed(1)} MB</div>
+                      <button
+                        type="button"
+                        style={{ background: 'none', border: '1px solid #fca5a5', color: '#ef4444', fontSize: '11px', fontWeight: '600', padding: '4px 12px', borderRadius: '20px', cursor: 'pointer', marginBottom: '8px' }}
+                        onClick={() => { setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
+                      >
+                        ✕ Hapus File
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="upload-title" style={{ fontSize: '14px', fontWeight: '600' }}>Seret dan letakkan file video Anda</div>
+                      <div className="upload-desc" style={{ fontSize: '11px', color: 'var(--text3)', margin: '6px 0 16px', lineHeight: '1.4' }}>
+                        Format MP4, MKV, atau AVI. Maksimal 500MB.
+                      </div>
+                    </>
+                  )}
+                  {uploading ? (
+                    <div style={{ width: '100%', padding: '0 10px', boxSizing: 'border-box' }}>
+                      <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
+                        <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#002D72', transition: 'width 0.3s ease' }} />
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      style={{ background: 'none', border: '1px solid #fca5a5', color: '#ef4444', fontSize: '11px', fontWeight: '600', padding: '4px 12px', borderRadius: '20px', cursor: 'pointer', marginBottom: '8px' }}
-                      onClick={() => { setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
+                      className="btn-primary"
+                      style={{ background: '#002D72', padding: '8px 20px', borderRadius: '20px', fontSize: '12px' }}
+                      onClick={() => fileInputRef.current.click()}
                     >
-                      ✕ Hapus File
+                      {videoFile ? 'Ganti File Video' : 'Pilih File Video'}
                     </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="upload-title" style={{ fontSize: '14px', fontWeight: '600' }}>Seret dan letakkan file video Anda</div>
-                    <div className="upload-desc" style={{ fontSize: '11px', color: 'var(--text3)', margin: '6px 0 16px', lineHeight: '1.4' }}>
-                      Format MP4, MKV, atau AVI. Maksimal 500MB.
-                    </div>
-                  </>
-                )}
-                {uploading ? (
-                  <div style={{ width: '100%', padding: '0 10px', boxSizing: 'border-box' }}>
-                    <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
-                      <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#002D72', transition: 'width 0.3s ease' }} />
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    style={{ background: '#002D72', padding: '8px 20px', borderRadius: '20px', fontSize: '12px' }}
-                    onClick={() => fileInputRef.current.click()}
-                  >
-                    {videoFile ? 'Ganti File Video' : 'Pilih File Video'}
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* STEP 2: DETAIL INFORMASI (Right Column) */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="step-header" style={{ marginBottom: '16px' }}>
-              <div className="step-title" style={{ fontSize: '15px' }}>Detail Informasi</div>
-            </div>
-
-            <div className="card" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', alignItems: 'stretch', height: '100%' }}>
-                
-                {/* Form Fields */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left', justifyContent: 'center' }}>
+            {/* STEP 2: DETAIL INFORMASI */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="step-header" style={{ marginBottom: '12px' }}>
+                <div className="step-title" style={{ fontSize: '15px' }}>Detail Informasi</div>
+              </div>
+              <div className="card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
                   <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600', letterSpacing: '0.05em' }}>Judul Video Training / SOP</label>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Judul Video Training / SOP</label>
                     <input
                       type="text"
                       className="form-input"
+                      style={{ fontSize: '14px', padding: '10px 12px' }}
                       placeholder="Contoh: SOP Operasional: Tata Cara Packing Barang Baru"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
@@ -321,53 +319,59 @@ export const UploadSOP = () => {
                     />
                   </div>
 
-                  <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600', letterSpacing: '0.05em' }}>Departemen Target</label>
-                    <select className="form-select" value={dept} onChange={(e) => setDept(e.target.value)}>
-                      <option value="Sales">Sales & Marketing</option>
-                      <option value="HRD">HRD / GA</option>
-                      <option value="Operasional">Operasional & Gudang</option>
-                      <option value="Finance">Finance & Tax</option>
-                      <option value="CS">Customer Service</option>
-                      <option value="IT">IT Support</option>
-                    </select>
-                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-group" style={{ margin: '0' }}>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Departemen Target</label>
+                      <select className="form-select" style={{ fontSize: '14px', padding: '10px 12px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
+                        <option value="Sales">Sales & Marketing</option>
+                        <option value="HRD">HRD / GA</option>
+                        <option value="Operasional">Operasional & Gudang</option>
+                        <option value="Finance">Finance & Tax</option>
+                        <option value="CS">Customer Service</option>
+                        <option value="IT">IT Support</option>
+                      </select>
+                    </div>
 
-                  <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '600', letterSpacing: '0.05em' }}>Estimasi Durasi (Menit)</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="5:00"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                    />
-                  </div>
-
-                </div>
-
-                {/* Preview */}
-                <div style={{ display: 'flex', alignItems: 'stretch' }}>
-                  {previewUrl ? (
-                    <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <video
-                        src={previewUrl}
-                        controls
-                        controlsList="nodownload"
-                        style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '10px' }}
+                    <div className="form-group" style={{ margin: '0' }}>
+                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Estimasi Durasi (Menit)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ fontSize: '14px', padding: '10px 12px', textAlign: 'center' }}
+                        placeholder="5:00"
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
                       />
                     </div>
-                  ) : (
-                    <div className="preview-laptop-box" style={{ flex: 1 }}>
-                      <div style={{ fontSize: '36px', marginBottom: '8px' }}>💻</div>
-                      <p style={{ fontSize: '11px', color: 'var(--text3)', lineHeight: '1.4', padding: '0 10px' }}>
-                        Pratinjau video akan muncul di sini setelah file dipilih.
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </div>
-
               </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: PRATINJAU VIDEO */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="step-header" style={{ marginBottom: '12px' }}>
+              <div className="step-title" style={{ fontSize: '15px' }}>Pratinjau Video</div>
+            </div>
+            <div className="card" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'stretch', alignItems: 'stretch' }}>
+              {previewUrl ? (
+                <div style={{ flex: 1, borderRadius: '10px', overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                  <video
+                    src={previewUrl}
+                    controls
+                    controlsList="nodownload"
+                    style={{ width: '100%', height: '100%', maxHeight: '420px', objectFit: 'contain' }}
+                  />
+                </div>
+              ) : (
+                <div className="preview-laptop-box" style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '12px', minHeight: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>💻</div>
+                  <p style={{ fontSize: '13px', color: 'var(--text3)', lineHeight: '1.5', padding: '0 20px', textAlign: 'center' }}>
+                    Pratinjau video akan muncul di sini setelah file dipilih.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -450,8 +454,9 @@ export const UploadSOP = () => {
                       <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
                         Waktu Pemicu Kuis (Muncul Di Tengah Video)
                       </label>
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', marginTop: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Menit</span>
                           <input
                             type="number"
                             min="0"
@@ -461,9 +466,9 @@ export const UploadSOP = () => {
                             value={q.triggerMin}
                             onChange={(e) => handlePreQuestionChange(idx, 'triggerMin', e.target.value)}
                           />
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Menit</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Detik</span>
                           <input
                             type="number"
                             min="0"
@@ -474,7 +479,6 @@ export const UploadSOP = () => {
                             value={q.triggerSec}
                             onChange={(e) => handlePreQuestionChange(idx, 'triggerSec', e.target.value)}
                           />
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Detik</span>
                         </div>
                       </div>
                     </div>
