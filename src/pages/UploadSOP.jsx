@@ -346,7 +346,7 @@ export const UploadSOP = () => {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div className="form-group" style={{ margin: '0' }}>
                       <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Departemen Target</label>
-                      <select className="form-select" style={{ fontSize: '14px', padding: '10px 32px 10px 12px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
+                      <select className="form-select" style={{ fontSize: '14px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
                         <option value="Sales">Sales & Marketing</option>
                         <option value="HRD">HRD / GA</option>
                         <option value="Operasional">Operasional & Gudang</option>
