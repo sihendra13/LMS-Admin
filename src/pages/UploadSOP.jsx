@@ -373,39 +373,23 @@ export const UploadSOP = () => {
 
         </div>
 
-        {/* ROW 2: STEP 3 (Full Width Underneath) */}
+        {/* ROW 2: STEP 3 (Full Width Underneath) - SIDE BY SIDE PRE-TEST AND POST-TEST LAYOUT */}
         <div style={{ marginBottom: '24px' }}>
-          <div className="step-header" style={{ justifyContent: 'space-between', marginBottom: '12px', alignItems: 'flex-start' }}>
-            <div style={{ textAlign: 'left' }}>
-              <div className="step-title" style={{ fontSize: '15px' }}>Konfigurasi Ujian</div>
-              <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>Dikerjakan sebelum atau sesudah karyawan menonton video</div>
-            </div>
-            
-            {/* SEGMENTED TAB SWITCHER */}
-            <div className="segmented-control">
-              <button
-                type="button"
-                className={`segment-btn ${activeTab === 'pre' ? 'active' : ''}`}
-                onClick={() => setActiveTab('pre')}
-              >
-                Pre-Test
-              </button>
-              <button
-                type="button"
-                className={`segment-btn ${activeTab === 'post' ? 'active' : ''}`}
-                onClick={() => setActiveTab('post')}
-              >
-                Post-Test
-              </button>
-            </div>
+          <div className="step-header" style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div className="step-title" style={{ fontSize: '15px' }}>Konfigurasi Ujian</div>
+            <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>Buat parameter kuis yang muncul di tengah video (Pre-Test) dan evaluasi akhir setelah selesai menonton (Post-Test).</div>
           </div>
 
-          {/* ACTIVE QUESTIONS AREA (Spans Full Width) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* TWO COLUMN GRID FOR PRE-TEST AND POST-TEST */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
             
-            {activeTab === 'pre' ? (
-              // RENDER PRE-TEST QUESTIONS
-              preQuestions.map((q, idx) => (
+            {/* COLUMN 1: PRE-TEST */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '8px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                ✍️ Kuis Pre-Test (Tengah Video)
+              </div>
+              
+              {preQuestions.map((q, idx) => (
                 <div key={idx} className="card" style={{ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
                     <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#1d4ed8', letterSpacing: '0.05em' }}>
@@ -492,9 +476,6 @@ export const UploadSOP = () => {
                           />
                           <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Detik</span>
                         </div>
-                        <span style={{ fontSize: '13px', color: 'var(--text3)', marginLeft: '10px' }}>
-                          ℹ️ Video akan otomatis terhenti di waktu ini untuk menampilkan soal kuis ke karyawan.
-                        </span>
                       </div>
                     </div>
 
@@ -532,13 +513,29 @@ export const UploadSOP = () => {
                     )}
                   </div>
                 </div>
-              ))
-            ) : (
-              // RENDER POST-TEST QUESTIONS
-              postQuestions.map((q, idx) => (
+              ))}
+
+              {/* ADD PRE-TEST QUESTION BUTTON */}
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text2)', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer' }}
+                onClick={addPreQuestion}
+              >
+                ➕ Tambah Pertanyaan Pre-Test
+              </button>
+            </div>
+
+            {/* COLUMN 2: POST-TEST */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '8px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                📝 Kuis Post-Test (Setelah Video Selesai)
+              </div>
+              
+              {postQuestions.map((q, idx) => (
                 <div key={idx} className="card" style={{ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#1d4ed8', letterSpacing: '0.05em' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#10b981', letterSpacing: '0.05em' }}>
                       Pertanyaan Post-Test #{idx + 1}
                     </div>
                     {postQuestions.length > 1 && (
@@ -591,43 +588,6 @@ export const UploadSOP = () => {
                       </div>
                     </div>
 
-                    {/* TIMESTAMP TRIGGER (IN-VIDEO TIMESTAMP) */}
-                    <div className="form-group" style={{ marginBottom: '16px', marginTop: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
-                        Waktu Pemicu Kuis (Muncul Di Tengah Video)
-                      </label>
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <input
-                            type="number"
-                            min="0"
-                            className="form-input"
-                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
-                            placeholder="0"
-                            value={q.triggerMin}
-                            onChange={(e) => handlePostQuestionChange(idx, 'triggerMin', e.target.value)}
-                          />
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Menit</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <input
-                            type="number"
-                            min="0"
-                            max="59"
-                            className="form-input"
-                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
-                            placeholder="0"
-                            value={q.triggerSec}
-                            onChange={(e) => handlePostQuestionChange(idx, 'triggerSec', e.target.value)}
-                          />
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Detik</span>
-                        </div>
-                        <span style={{ fontSize: '13px', color: 'var(--text3)', marginLeft: '10px' }}>
-                          ℹ️ Video akan otomatis terhenti di waktu ini untuk menampilkan soal kuis ke karyawan.
-                        </span>
-                      </div>
-                    </div>
-
                     {q.type === 'multiple' ? (
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
                         {q.options.map((opt, oIdx) => {
@@ -662,18 +622,18 @@ export const UploadSOP = () => {
                     )}
                   </div>
                 </div>
-              ))
-            )}
+              ))}
 
-            {/* ADD QUESTION BUTTON */}
-            <button
-              type="button"
-              className="btn-primary"
-              style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text2)', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer' }}
-              onClick={activeTab === 'pre' ? addPreQuestion : addPostQuestion}
-            >
-              ➕ Tambah Pertanyaan Baru
-            </button>
+              {/* ADD POST-TEST QUESTION BUTTON */}
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text2)', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer' }}
+                onClick={addPostQuestion}
+              >
+                ➕ Tambah Pertanyaan Post-Test
+              </button>
+            </div>
 
           </div>
         </div>

@@ -1,18 +1,64 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
 
 export const PlanSwitcher = () => {
   const { tenant, changePlan, currentUser, setCurrentUser, setActivePage } = useTenant();
 
+  // Draggable states
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+
   const handleUserChange = (user) => {
     setCurrentUser(user);
-    // Redirect to dashboard to prevent permission errors on admin-only pages
     setActivePage('dashboard');
   };
 
+  const handleMouseDown = (e) => {
+    // Only drag when clicking the switcher wrapper itself or titles, not the buttons
+    if (e.target.tagName === 'BUTTON') return;
+    
+    isDragging.current = true;
+    dragStart.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging.current) return;
+    setPosition({
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  };
+
   return (
-    <div className="plan-switcher" style={{ gap: '10px' }}>
+    <div 
+      className="plan-switcher" 
+      style={{ 
+        gap: '10px',
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        cursor: 'grab',
+        userSelect: 'none',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+        transition: isDragging.current ? 'none' : 'transform 0.1s ease'
+      }}
+      onMouseDown={handleMouseDown}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', cursor: 'move' }}>
+        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>✋ DRAG UNTUK PINDAH</span>
+      </div>
       <div>
         <div className="plan-switcher-title" style={{ marginBottom: '4px' }}>Simulasi Paket Klien</div>
         <div className="plan-btn-group">
