@@ -696,8 +696,24 @@ export const UploadSOP = () => {
         </div>
 
         {/* BOTTOM FORM ACTIONS */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '24px' }}>
-          <button type="button" className="form-input" style={{ cursor: 'pointer', padding: '8px 18px' }} onClick={() => setActivePage('sop')}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: '12px',
+          borderTop: '1px solid var(--border)',
+          padding: '16px 24px',
+          marginTop: '32px',
+          position: 'sticky',
+          bottom: 0,
+          background: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          boxShadow: '0 -10px 15px -3px rgba(15, 23, 42, 0.04), 0 -4px 6px -2px rgba(15, 23, 42, 0.02)',
+          zIndex: 10,
+          marginRight: '-24px',
+          marginLeft: '-24px'
+        }}>
+          <button type="button" className="form-input" style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }} onClick={() => setActivePage('sop')}>
             Batal
           </button>
           <button
