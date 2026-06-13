@@ -12,6 +12,7 @@ export const UploadSOP = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -22,7 +23,18 @@ export const UploadSOP = () => {
     if (!file || !file.type.startsWith('video/')) return;
     setVideoFile(file);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(file));
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    const tempVideo = document.createElement('video');
+    tempVideo.preload = 'metadata';
+    tempVideo.onloadedmetadata = () => {
+      const secs = Math.floor(tempVideo.duration);
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      setDuration(`${m}:${s.toString().padStart(2, '0')}`);
+      URL.revokeObjectURL(tempVideo.src);
+    };
+    tempVideo.src = URL.createObjectURL(file);
   };
 
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
@@ -93,10 +105,14 @@ export const UploadSOP = () => {
     setPostQuestions(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUploadSubmit = async (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return alert('Judul SOP tidak boleh kosong!');
+    setShowPublishConfirm(true);
+  };
 
+  const handleConfirmPublish = async () => {
+    setShowPublishConfirm(false);
     let videoUrl = null;
 
     if (videoFile) {
@@ -187,7 +203,6 @@ export const UploadSOP = () => {
     };
 
     addSOP(newVideo);
-    alert(`Video Training / SOP Berhasil Diunggah! Video terbit bersama ${preList.length} soal Pre-Test & ${postList.length} soal Post-Test.`);
     setActivePage('sop');
   };
 
@@ -228,7 +243,7 @@ export const UploadSOP = () => {
         </p>
       </div>
 
-      <form onSubmit={handleUploadSubmit}>
+      <form onSubmit={handleFormSubmit}>
         
         {/* ROW 1: SINGLE CARD WITH 3 SECTIONS SPLIT INTO 2 COLUMNS SIDE-BY-SIDE */}
         <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
@@ -414,6 +429,7 @@ export const UploadSOP = () => {
                   <div className="form-group" style={{ margin: '0' }}>
                     <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Departemen Target</label>
                     <select className="form-select" style={{ fontSize: '14px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
+                      <option value="Semua">Semua Departemen</option>
                       <option value="Sales">Sales & Marketing</option>
                       <option value="HRD">HRD / GA</option>
                       <option value="Operasional">Operasional & Gudang</option>
@@ -424,14 +440,14 @@ export const UploadSOP = () => {
                   </div>
 
                   <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Estimasi Durasi (Menit)</label>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Durasi Video</label>
                     <input
                       type="text"
                       className="form-input"
-                      style={{ fontSize: '14px', padding: '10px 12px', textAlign: 'center' }}
-                      placeholder="5:00"
+                      style={{ fontSize: '14px', padding: '10px 12px', textAlign: 'center', background: '#f1f5f9', color: 'var(--text2)', cursor: 'default' }}
+                      placeholder="Otomatis terisi"
                       value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
+                      readOnly
                     />
                   </div>
                 </div>
@@ -768,7 +784,175 @@ export const UploadSOP = () => {
         </div>
       </form>
 
-      {/* CONFIRMATION MODAL */}
+      {/* PUBLISH CONFIRMATION MODAL */}
+      {showPublishConfirm && (() => {
+        const preToShow = preQuestions.filter(q => q.question.trim() !== '');
+        const postToShow = postQuestions.filter(q => q.question.trim() !== '');
+        const formatTrigger = (q) => {
+          const secs = (Number(q.triggerMin || 0) * 60) + Number(q.triggerSec || 0);
+          if (secs === 0) return null;
+          const m = Math.floor(secs / 60);
+          const s = secs % 60;
+          return `${m}:${s.toString().padStart(2, '0')}`;
+        };
+        return (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
+          }} onClick={() => setShowPublishConfirm(false)}>
+            <div className="card" style={{
+              width: '560px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto',
+              background: '#ffffff', borderRadius: '16px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              display: 'flex', flexDirection: 'column'
+            }} onClick={(e) => e.stopPropagation()}>
+              {/* MODAL HEADER */}
+              <div style={{ padding: '24px 28px 0', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#fffbeb', border: '1px solid #fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                      <line x1="12" y1="9" x2="12" y2="13"></line>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>Konfirmasi Terbitkan SOP</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text3)', margin: 0 }}>Tinjau kembali sebelum menerbitkan</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* MODAL BODY */}
+              <div style={{ padding: '20px 28px', flex: 1 }}>
+                {/* SOP SUMMARY */}
+                <div style={{ background: '#f8fafc', borderRadius: '10px', padding: '14px 18px', marginBottom: '20px', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Ringkasan SOP</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Judul</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{title || '—'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Departemen</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{dept === 'Semua' ? 'Semua Departemen' : dept}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Durasi Video</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{duration || '—'}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>File Video</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{videoFile ? videoFile.name : 'Tidak ada video'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PRE-TEST QUESTIONS */}
+                {preToShow.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#1d4ed8', display: 'inline-block' }}></span>
+                      Pre-Test ({preToShow.length} soal)
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {preToShow.map((q, i) => {
+                        const trigger = formatTrigger(q);
+                        return (
+                          <div key={i} style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 14px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                              <div style={{ fontSize: '13px', color: 'var(--text1)', lineHeight: '1.4', flex: 1 }}>
+                                <span style={{ fontWeight: '700', color: 'var(--text3)', marginRight: '6px' }}>#{i + 1}</span>
+                                {q.question}
+                              </div>
+                              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                                <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: q.type === 'multiple' ? '#eff6ff' : '#f0fdf4', color: q.type === 'multiple' ? '#1d4ed8' : '#16a34a' }}>
+                                  {q.type === 'multiple' ? 'Pilihan Ganda' : 'Esai'}
+                                </span>
+                                {trigger && (
+                                  <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: '#fef3c7', color: '#b45309' }}>
+                                    ⏱ {trigger}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* POST-TEST QUESTIONS */}
+                {postToShow.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+                      Post-Test ({postToShow.length} soal)
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {postToShow.map((q, i) => (
+                        <div key={i} style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 14px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                            <div style={{ fontSize: '13px', color: 'var(--text1)', lineHeight: '1.4', flex: 1 }}>
+                              <span style={{ fontWeight: '700', color: 'var(--text3)', marginRight: '6px' }}>#{i + 1}</span>
+                              {q.question}
+                            </div>
+                            <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: q.type === 'multiple' ? '#eff6ff' : '#f0fdf4', color: q.type === 'multiple' ? '#1d4ed8' : '#16a34a', flexShrink: 0 }}>
+                              {q.type === 'multiple' ? 'Pilihan Ganda' : 'Esai'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {preToShow.length === 0 && postToShow.length === 0 && (
+                  <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--text3)', textAlign: 'center' }}>
+                    Tidak ada soal kuis yang dikonfigurasi
+                  </div>
+                )}
+
+                {/* WARNING */}
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '14px 18px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span style={{ fontSize: '13px', color: '#dc2626', fontWeight: '500', lineHeight: '1.5' }}>
+                    Setelah diterbitkan, pertanyaan kuis <strong>tidak dapat diedit atau diubah</strong>. Pastikan semua soal sudah benar sebelum melanjutkan.
+                  </span>
+                </div>
+              </div>
+
+              {/* MODAL FOOTER */}
+              <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end', background: '#fafafa', borderRadius: '0 0 16px 16px' }}>
+                <button
+                  type="button"
+                  className="form-input"
+                  style={{ cursor: 'pointer', padding: '10px 20px', margin: 0, fontWeight: '600', fontSize: '13px' }}
+                  onClick={() => setShowPublishConfirm(false)}
+                >
+                  Tinjau Ulang
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ padding: '10px 24px', fontWeight: '700', fontSize: '13px', borderRadius: '8px', cursor: 'pointer' }}
+                  onClick={handleConfirmPublish}
+                >
+                  Terbitkan Sekarang
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* DELETE QUESTION MODAL */}
       {deleteConfirm.isOpen && (
         <div style={{
           position: 'fixed',
