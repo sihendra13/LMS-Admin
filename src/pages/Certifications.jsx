@@ -49,7 +49,7 @@ export const Certifications = () => {
           <button 
             type="button" 
             className="btn-primary" 
-            style={{ padding: '10px 24px', background: '#002D72', border: '1px solid #002D72' }}
+            style={{ padding: '10px 24px' }}
             onClick={() => changePlan(PLANS.BUSINESS)}
           >
             Upgrade ke Paket Business
@@ -407,7 +407,7 @@ export const Certifications = () => {
               <button 
                 type="button" 
                 className="btn-primary" 
-                style={{ padding: '8px 24px', background: '#002D72' }}
+                style={{ padding: '8px 24px' }}
                 onClick={() => window.print()}
               >
                 🖨️ Cetak / Simpan PDF

@@ -59,7 +59,7 @@ export const Departments = () => {
         <button 
           type="button" 
           className="btn-primary"
-          style={{ background: '#002D72', padding: '10px 20px', borderRadius: '8px' }}
+          style={{ padding: '10px 20px', borderRadius: '8px' }}
           onClick={() => setIsModalOpen(true)}
         >
           ➕ Undang Supervisor
@@ -320,7 +320,7 @@ export const Departments = () => {
                 <button
                   type="submit"
                   className="btn-primary"
-                  style={{ padding: '8px 20px', background: '#002D72', border: '1px solid #002D72', color: '#ffffff', cursor: 'pointer' }}
+                  style={{ padding: '8px 20px', color: '#ffffff', cursor: 'pointer' }}
                 >
                   Kirim Undangan
                 </button>

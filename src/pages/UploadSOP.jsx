@@ -311,12 +311,10 @@ export const UploadSOP = () => {
                       type="button"
                       className="btn-primary"
                       style={{ 
-                        background: '#0B1628', 
                         padding: '10px 24px', 
                         borderRadius: '8px', 
                         fontSize: '12px',
                         fontWeight: '700',
-                        border: 'none',
                         boxShadow: '0 4px 6px -1px rgba(11, 22, 40, 0.15)',
                         cursor: 'pointer'
                       }}
@@ -707,10 +705,8 @@ export const UploadSOP = () => {
             className="btn-primary"
             style={{
               padding: '10px 24px',
-              background: uploading ? '#94a3b8' : '#0B1628',
               borderRadius: '8px',
               fontWeight: '700',
-              border: 'none',
               boxShadow: '0 4px 6px -1px rgba(11, 22, 40, 0.15)',
               cursor: uploading ? 'not-allowed' : 'pointer'
             }}

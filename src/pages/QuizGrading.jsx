@@ -248,7 +248,7 @@ export const QuizGrading = () => {
                   <button 
                     type="button"
                     className="btn-primary"
-                    style={{ fontSize: '12px', padding: '6px 14px', background: '#002D72', border: '1px solid #002D72', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    style={{ fontSize: '12px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
                     onClick={() => handleOpenGradeModal(essay)}
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>

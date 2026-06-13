@@ -236,7 +236,7 @@ export const Settings = () => {
                   <button 
                     type="button" 
                     className="btn-primary" 
-                    style={{ fontSize: '12px', padding: '6px 14px', background: '#002D72', border: '1px solid #002D72' }}
+                    style={{ fontSize: '12px', padding: '6px 14px' }}
                     onClick={handleSyncHRIS}
                     disabled={isSyncing}
                   >
