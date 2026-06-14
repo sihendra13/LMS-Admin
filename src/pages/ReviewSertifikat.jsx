@@ -61,9 +61,11 @@ export const ReviewSertifikat = () => {
   // ── sub-components ───────────────────────────────────────────────────
   const StatusBadge = ({ certStatus }) => {
     const m = STATUS_META[certStatus] || STATUS_META.pending;
+    // Supervisor melihat pending → label "Belum Direview" bukan "Menunggu Supervisor"
+    const label = (!isHRD && (certStatus === 'pending' || !certStatus)) ? 'Belum Direview' : m.label;
     return (
       <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px', background: m.bg, color: m.color, border: `1px solid ${m.border}`, flexShrink: 0 }}>
-        {m.label}
+        {label}
       </span>
     );
   };
