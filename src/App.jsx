@@ -16,6 +16,7 @@ import { Certifications } from './pages/Certifications';
 import { Departments } from './pages/Departments';
 import { QuizGrading } from './pages/QuizGrading';
 import { Settings } from './pages/Settings';
+import { ReviewSertifikat } from './pages/ReviewSertifikat';
 
 const AppContent = ({ onLogout }) => {
   const { activePage } = useTenant();
@@ -31,6 +32,7 @@ const AppContent = ({ onLogout }) => {
       case 'sertifikasi':  return <Certifications />;
       case 'departemen':   return <Departments />;
       case 'penilaian':    return <QuizGrading />;
+      case 'review-sertifikat': return <ReviewSertifikat />;
       case 'pengaturan':   return <Settings />;
       default:             return <Dashboard />;
     }

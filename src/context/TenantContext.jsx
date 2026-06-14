@@ -169,11 +169,11 @@ export const TenantProvider = ({ children, authUser }) => {
   ]);
 
   const [quizSubmissions, setQuizSubmissions] = useState(storedDB.quizSubmissions || [
-    { id: 1, employeeName: 'Rini Wulandari', videoTitle: 'SOP Sales: Proses Onboarding Klien Baru', preScore: 40, postScore: 100, date: 'Hari ini', status: 'Lulus' },
-    { id: 2, employeeName: 'Budi Pratama', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', preScore: 50, postScore: 100, date: 'Hari ini', status: 'Lulus' },
-    { id: 3, employeeName: 'Sari Anggraeni', videoTitle: 'SOP HRD: Rekrutmen & Seleksi Karyawan', preScore: 30, postScore: 90, date: '1 hari lalu', status: 'Lulus' },
-    { id: 4, employeeName: 'Dika Kurniawan', videoTitle: 'SOP IT: Keamanan Password & Akun', preScore: 60, postScore: 95, date: '2 hari lalu', status: 'Lulus' },
-    { id: 5, employeeName: 'Nina Putri', videoTitle: 'SOP Customer Service: Handling Komplain', preScore: 20, postScore: 60, date: '3 hari lalu', status: 'Remedi (Butuh Ujian Ulang)' },
+    { id: 1, employeeName: 'Rini Wulandari', videoTitle: 'SOP Sales: Proses Onboarding Klien Baru', preScore: 40, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending' },
+    { id: 2, employeeName: 'Budi Pratama', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', preScore: 50, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending' },
+    { id: 3, employeeName: 'Sari Anggraeni', videoTitle: 'SOP HRD: Rekrutmen & Seleksi Karyawan', preScore: 30, postScore: 90, date: '1 hari lalu', status: 'Lulus', certStatus: 'pending' },
+    { id: 4, employeeName: 'Dika Kurniawan', videoTitle: 'SOP IT: Keamanan Password & Akun', preScore: 60, postScore: 95, date: '2 hari lalu', status: 'Lulus', certStatus: 'pending' },
+    { id: 5, employeeName: 'Nina Putri', videoTitle: 'SOP Customer Service: Handling Komplain', preScore: 20, postScore: 60, date: '3 hari lalu', status: 'Remedi (Butuh Ujian Ulang)', certStatus: 'pending' },
   ]);
 
   const [activities, setActivities] = useState(storedDB.activities || [
@@ -221,7 +221,8 @@ export const TenantProvider = ({ children, authUser }) => {
         preScore: 50,
         postScore: 100,
         date: 'Baru saja',
-        status: 'Lulus'
+        status: 'Lulus',
+        certStatus: 'pending'
       };
       setQuizSubmissions(prev => [newSubmission, ...prev]);
     }
@@ -298,6 +299,25 @@ export const TenantProvider = ({ children, authUser }) => {
     } else {
       setInvitations(prev => prev.filter(s => s.id !== id));
     }
+  };
+
+  const approveCertificate = (submissionId, approverName) => {
+    const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    setQuizSubmissions(prev => prev.map(s =>
+      s.id === submissionId ? { ...s, certStatus: 'approved', approvedBy: approverName, approvedDate: today } : s
+    ));
+    const sub = quizSubmissions.find(s => s.id === submissionId);
+    const newAct = { id: Date.now(), text: `Sertifikat <strong>${sub?.employeeName}</strong> untuk <strong>${sub?.videoTitle}</strong> diterbitkan oleh ${approverName}`, time: 'Baru saja', type: 'green' };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
+  const rejectCertificate = (submissionId, note) => {
+    setQuizSubmissions(prev => prev.map(s =>
+      s.id === submissionId ? { ...s, certStatus: 'rejected', rejectionNote: note || '' } : s
+    ));
+    const sub = quizSubmissions.find(s => s.id === submissionId);
+    const newAct = { id: Date.now(), text: `Sertifikat <strong>${sub?.employeeName}</strong> untuk <strong>${sub?.videoTitle}</strong> ditolak`, time: 'Baru saja', type: 'amber' };
+    setActivities(prev => [newAct, ...prev]);
   };
 
   const gradeEssay = (id, score) => {
@@ -385,6 +405,8 @@ export const TenantProvider = ({ children, authUser }) => {
       revokeSupervisor,
       pendingEssays,
       gradeEssay,
+      approveCertificate,
+      rejectCertificate,
       passingScore,
       setPassingScore,
       validityMonths,
