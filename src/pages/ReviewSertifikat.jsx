@@ -485,7 +485,7 @@ export const ReviewSertifikat = () => {
             </label>
             <textarea
               className="form-input"
-              style={{ height: '80px', resize: 'none', marginBottom: '20px', fontSize: '13px' }}
+              style={{ height: '80px', resize: 'none', marginBottom: '20px', fontSize: '13px', width: '100%', boxSizing: 'border-box' }}
               placeholder={mc.placeholder || ''}
               value={modalNote}
               onChange={e => setModalNote(e.target.value)}
@@ -497,7 +497,7 @@ export const ReviewSertifikat = () => {
               </button>
               <button onClick={handleConfirm} disabled={!canConfirm} style={{
                 flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
-                background: canConfirm ? mc.btnBg : '#e5e7eb',
+                background: canConfirm ? 'var(--navy)' : '#e5e7eb',
                 border: 'none', color: canConfirm ? '#fff' : '#9ca3af', cursor: canConfirm ? 'pointer' : 'not-allowed',
                 transition: 'all 0.15s'
               }}>
