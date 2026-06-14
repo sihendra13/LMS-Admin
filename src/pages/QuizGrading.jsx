@@ -140,31 +140,55 @@ export const QuizGrading = () => {
       </div>
 
       {/* FILTER SEARCH & DROPDOWN HEADER */}
-      <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-          <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>Cari Karyawan</label>
+      <div className="card" style={{ padding: '20px', marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>
+        <div style={{ flex: 1, minWidth: '260px' }}>
+          <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text2)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cari Karyawan</label>
           <div style={{ position: 'relative' }}>
             <input 
               type="text" 
-              className="form-control" 
-              placeholder="Ketik nama karyawan..." 
+              className="form-input" 
+              placeholder="Cari nama karyawan..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '36px', fontSize: '13px' }}
+              style={{
+                paddingLeft: '38px',
+                fontSize: '13.5px',
+                width: '100%',
+                height: '42px',
+                boxSizing: 'border-box'
+              }}
             />
-            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>🔍</span>
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="#94a3b8" 
+              strokeWidth="2.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }}
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
           </div>
         </div>
 
-        <div style={{ width: '280px', minWidth: '200px' }}>
-          <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', display: 'block', marginBottom: '6px', textTransform: 'uppercase' }}>Saring Berdasarkan SOP</label>
+        <div style={{ width: '320px', minWidth: '240px' }}>
+          <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text2)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Saring Berdasarkan SOP</label>
           <select 
             className="form-select" 
-            style={{ fontSize: '13px' }}
+            style={{ 
+              fontSize: '13.5px',
+              width: '100%',
+              height: '42px',
+              boxSizing: 'border-box'
+            }}
             value={sopFilter}
             onChange={(e) => setSopFilter(e.target.value)}
           >
-            <option value="">-- Semua SOP / Video ({uniqueSops.length}) --</option>
+            <option value="">Semua Video Training & SOP ({uniqueSops.length})</option>
             {uniqueSops.map((sop, i) => (
               <option key={i} value={sop}>{sop}</option>
             ))}
@@ -172,11 +196,22 @@ export const QuizGrading = () => {
         </div>
 
         {(searchQuery || sopFilter) && (
-          <div style={{ alignSelf: 'flex-end', marginBottom: '4px' }}>
+          <div style={{ alignSelf: 'flex-end' }}>
             <button 
               type="button" 
               className="btn-sec" 
-              style={{ fontSize: '12px', padding: '6px 12px', background: '#f1f5f9', border: '1px solid #cbd5e1' }}
+              style={{
+                fontSize: '12px',
+                padding: '0 18px',
+                background: '#f1f5f9',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                fontWeight: '600',
+                height: '42px',
+                cursor: 'pointer',
+                color: 'var(--text2)',
+                transition: 'all 0.2s'
+              }}
               onClick={() => { setSearchQuery(''); setSopFilter(''); }}
             >
               Reset Filter

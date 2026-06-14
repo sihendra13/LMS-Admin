@@ -333,26 +333,26 @@ export const ReviewSertifikat = () => {
         ) : (
           <>
             {/* Supervisor Card 1: Perlu Review */}
-            <div className="stat-card amber">
-              <div className="stat-icon amber">
+            <div className="stat-card blue">
+              <div className="stat-icon blue">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
               <div className="stat-label">Perlu Review</div>
               <div className="stat-value">{needReviewSubs.length}</div>
-              <div className="stat-change up">Belum Direkomendasikan</div>
+              <div className="stat-change info">Belum Direkomendasikan</div>
             </div>
             {/* Supervisor Card 2: Sedang Remedial */}
-            <div className="stat-card red" style={{ background: '#fff5f5', border: '1px solid #fecaca' }}>
-              <div className="stat-icon red" style={{ background: '#fee2e2', color: '#ef4444' }}>
+            <div className="stat-card amber">
+              <div className="stat-icon amber">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
                 </svg>
               </div>
               <div className="stat-label">Sedang Remedial</div>
-              <div className="stat-value" style={{ color: '#ef4444' }}>{remedialSubs.length}</div>
-              <div className="stat-change down" style={{ color: '#f87171' }}>Menunggu Ulang</div>
+              <div className="stat-value">{remedialSubs.length}</div>
+              <div className="stat-change up">Menunggu Ulang</div>
             </div>
             {/* Supervisor Card 3: Sudah Direkomendasikan */}
             <div className="stat-card green">
