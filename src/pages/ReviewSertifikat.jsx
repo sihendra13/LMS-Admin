@@ -461,8 +461,15 @@ export const ReviewSertifikat = () => {
         }} onClick={closeModal}>
           <div className="card" style={{
             width: '440px', maxWidth: '95vw', padding: '28px', background: '#fff',
-            borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)'
+            borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)', position: 'relative'
           }} onClick={e => e.stopPropagation()}>
+            <button onClick={closeModal} style={{
+              position: 'absolute', top: '16px', right: '16px',
+              width: '28px', height: '28px', borderRadius: '50%',
+              border: 'none', background: '#f1f5f9', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#64748b', fontSize: '16px', lineHeight: 1
+            }}>×</button>
             <h3 style={{ fontSize: '16px', fontWeight: '700', color: mc.color || 'var(--text1)', marginBottom: '6px' }}>
               {mc.title}
             </h3>
