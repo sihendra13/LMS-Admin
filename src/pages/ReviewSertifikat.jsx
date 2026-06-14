@@ -70,75 +70,153 @@ export const ReviewSertifikat = () => {
     );
   };
 
-  const Card = ({ sub, actions }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
-      {/* Avatar */}
-      <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', color: '#fff', flexShrink: 0 }}>
-        {sub.employeeName?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
-      </div>
+  const Card = ({ sub, actions }) => {
+    const passed = sub.postScore != null && sub.postScore >= passingScore;
+    const improvement = (sub.preScore != null && sub.postScore != null) ? sub.postScore - sub.preScore : null;
+    const isSupervisorDecision = !isHRD && actions?.some(a => a.type === 'sup_ok');
 
-      {/* Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text1)', marginBottom: '1px' }}>{sub.employeeName}</div>
-        <div style={{ fontSize: '12px', color: 'var(--text3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '5px' }}>{sub.videoTitle}</div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-            Pre: <strong style={{ color: scoreColor(sub.preScore) }}>{sub.preScore ?? '—'}%</strong>
-          </span>
-          <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-            Post: <strong style={{ color: scoreColor(sub.postScore) }}>{sub.postScore ?? '—'}%</strong>
-          </span>
-          <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{sub.date}</span>
-          {sub.retakeCount > 0 && (
-            <span style={{ fontSize: '11px', fontWeight: '700', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', padding: '1px 7px', borderRadius: '10px' }}>
-              Percobaan ke-{sub.retakeCount + 1}
+    // ── SUPERVISOR DECISION CARD ─────────────────────────────────────────
+    if (isSupervisorDecision) {
+      return (
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+          {/* Header row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700', color: '#fff', flexShrink: 0 }}>
+              {sub.employeeName?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)' }}>{sub.employeeName}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text3)' }}>{sub.videoTitle}</div>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text3)', textAlign: 'right' }}>
+              {sub.date}
+              {sub.retakeCount > 0 && (
+                <div style={{ marginTop: '2px', fontWeight: '700', color: '#b45309' }}>Percobaan ke-{sub.retakeCount + 1} dari {MAX_RETAKES}</div>
+              )}
+            </div>
+          </div>
+
+          {/* Pass/fail status block */}
+          <div style={{
+            background: passed ? '#f0fdf4' : '#fff5f5',
+            border: `1px solid ${passed ? '#86efac' : '#fecaca'}`,
+            borderRadius: '10px', padding: '12px 16px', marginBottom: '14px'
+          }}>
+            <div style={{ fontWeight: '700', fontSize: '13px', color: passed ? '#15803d' : '#b91c1c', marginBottom: '6px' }}>
+              {passed ? '✅ Lulus standar perusahaan' : '❌ Belum memenuhi standar perusahaan'}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text2)' }}>
+                Nilai awal (sebelum belajar): <strong style={{ color: scoreColor(sub.preScore) }}>{sub.preScore ?? '—'}%</strong>
+              </span>
+              <span style={{ color: 'var(--text3)', fontSize: '12px' }}>→</span>
+              <span style={{ fontSize: '12px', color: 'var(--text2)' }}>
+                Nilai akhir (setelah belajar): <strong style={{ color: scoreColor(sub.postScore) }}>{sub.postScore ?? '—'}%</strong>
+              </span>
+              {improvement !== null && improvement > 0 && (
+                <span style={{ fontSize: '11px', fontWeight: '700', color: '#15803d', background: '#dcfce7', padding: '2px 8px', borderRadius: '10px' }}>
+                  ↑ naik {improvement}%
+                </span>
+              )}
+            </div>
+            <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text3)' }}>
+              Standar kelulusan perusahaan: <strong>{passingScore}%</strong>
+            </div>
+          </div>
+
+          {/* Previous remedial note */}
+          {sub.supervisorNote && (
+            <div style={{ fontSize: '12px', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px', padding: '8px 12px', marginBottom: '14px' }}>
+              📋 <strong>Catatan remedial sebelumnya:</strong> {sub.supervisorNote}
+            </div>
+          )}
+
+          {/* Decision question */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)', marginBottom: '10px' }}>
+              Apakah Anda merekomendasikan sertifikat untuk karyawan ini?
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => openModal('sup_ok', sub)} style={{
+                flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
+                background: '#eff6ff', border: '1px solid #93c5fd', color: '#1d4ed8', cursor: 'pointer'
+              }}>
+                ✓ Ya, Rekomendasikan
+              </button>
+              <button onClick={() => openModal('sup_rem', sub)} style={{
+                flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
+                background: '#fff7ed', border: '1px solid #fed7aa', color: '#b45309', cursor: 'pointer'
+              }}>
+                ↩ Belum, Minta Ulang
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── COMPACT CARD (HRD + history) ─────────────────────────────────────
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '700', color: '#fff', flexShrink: 0 }}>
+          {sub.employeeName?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text1)', marginBottom: '1px' }}>{sub.employeeName}</div>
+          <div style={{ fontSize: '12px', color: 'var(--text3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '4px' }}>{sub.videoTitle}</div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
+              Pre: <strong style={{ color: scoreColor(sub.preScore) }}>{sub.preScore ?? '—'}%</strong>
             </span>
+            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
+              Post: <strong style={{ color: scoreColor(sub.postScore) }}>{sub.postScore ?? '—'}%</strong>
+            </span>
+            {improvement !== null && improvement > 0 && (
+              <span style={{ fontSize: '10px', fontWeight: '700', color: '#15803d', background: '#dcfce7', padding: '1px 6px', borderRadius: '8px' }}>↑{improvement}%</span>
+            )}
+            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{sub.date}</span>
+            {sub.retakeCount > 0 && (
+              <span style={{ fontSize: '10px', fontWeight: '700', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', padding: '1px 7px', borderRadius: '10px' }}>
+                Percobaan ke-{sub.retakeCount + 1}
+              </span>
+            )}
+          </div>
+          {sub.supervisorNote && (
+            <div style={{ marginTop: '5px', fontSize: '11px', color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '4px 8px', display: 'inline-block' }}>
+              💬 {sub.supervisorName}: {sub.supervisorNote}
+            </div>
+          )}
+          {sub.certStatus === 'rejected' && sub.rejectionNote && (
+            <div style={{ marginTop: '5px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '4px 8px', display: 'inline-block' }}>
+              Alasan: {sub.rejectionNote}
+            </div>
+          )}
+          {sub.certStatus === 'approved' && (
+            <div style={{ marginTop: '4px', fontSize: '11px', color: '#15803d', fontWeight: '600' }}>
+              ✓ Diterbitkan oleh {sub.approvedBy} · {sub.approvedDate}
+            </div>
           )}
         </div>
-        {/* Supervisor note visible to HRD */}
-        {sub.supervisorNote && (
-          <div style={{ marginTop: '5px', fontSize: '11px', color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '4px 8px', display: 'inline-block' }}>
-            💬 Catatan Supervisor ({sub.supervisorName}): {sub.supervisorNote}
-          </div>
-        )}
-        {/* Rejection note */}
-        {sub.certStatus === 'rejected' && sub.rejectionNote && (
-          <div style={{ marginTop: '5px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '4px 8px', display: 'inline-block' }}>
-            Alasan: {sub.rejectionNote}
-          </div>
-        )}
-        {/* Remedial note for supervisor */}
-        {sub.certStatus === 'remedial' && sub.supervisorNote && !isHRD && (
-          <div style={{ marginTop: '5px', fontSize: '11px', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '6px', padding: '4px 8px', display: 'inline-block' }}>
-            Catatan: {sub.supervisorNote}
-          </div>
-        )}
-        {/* Approved info */}
-        {sub.certStatus === 'approved' && (
-          <div style={{ marginTop: '4px', fontSize: '11px', color: '#15803d', fontWeight: '600' }}>
-            ✓ Diterbitkan oleh {sub.approvedBy} · {sub.approvedDate}
-          </div>
-        )}
-      </div>
 
-      {/* Right side: badge + actions */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
-        <StatusBadge certStatus={sub.certStatus || 'pending'} />
-        {actions && (
-          <div style={{ display: 'flex', gap: '6px' }}>
-            {actions.map(a => (
-              <button key={a.label} onClick={() => openModal(a.type, sub)} style={{
-                padding: '5px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '700',
-                background: a.bg, border: `1px solid ${a.border}`, color: a.color, cursor: 'pointer'
-              }}>
-                {a.label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
+          <StatusBadge certStatus={sub.certStatus || 'pending'} />
+          {actions && (
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {actions.map(a => (
+                <button key={a.label} onClick={() => openModal(a.type, sub)} style={{
+                  padding: '5px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '700',
+                  background: a.bg, border: `1px solid ${a.border}`, color: a.color, cursor: 'pointer'
+                }}>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const EmptyState = ({ icon, msg }) => (
     <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text3)' }}>
@@ -185,8 +263,8 @@ export const ReviewSertifikat = () => {
   const MODAL_CONFIG = {
     approve:  { title: 'Terbitkan Sertifikat?', color: '#15803d', btnLabel: 'Ya, Terbitkan',   btnBg: '#16a34a', needNote: false },
     reject:   { title: 'Tolak Final?',           color: '#b91c1c', btnLabel: 'Ya, Tolak Final', btnBg: '#ef4444', needNote: true, placeholder: 'Contoh: Skor tidak memenuhi standar, atau karyawan masih dalam masa percobaan.' },
-    sup_ok:   { title: 'Rekomendasikan Lulus?',  color: '#1d4ed8', btnLabel: 'Rekomendasikan',  btnBg: '#2563eb', needNote: false, placeholder: 'Catatan tambahan (opsional)' },
-    sup_rem:  { title: 'Minta Remedial?',        color: '#b45309', btnLabel: 'Ya, Minta Remedial', btnBg: '#f59e0b', needNote: true, placeholder: 'Contoh: Jawaban kurang detail. Mohon tonton ulang bagian X dan coba kembali.' },
+    sup_ok:   { title: 'Rekomendasikan Sertifikat?', color: '#1d4ed8', btnLabel: 'Ya, Rekomendasikan', btnBg: '#2563eb', needNote: false, placeholder: 'Catatan tambahan untuk HRD (opsional)' },
+    sup_rem:  { title: 'Minta Karyawan Mengulang?',  color: '#b45309', btnLabel: 'Ya, Minta Ulang',    btnBg: '#f59e0b', needNote: true, placeholder: 'Tuliskan alasan & bagian mana yang perlu dipelajari ulang. Catatan ini akan dilihat karyawan.' },
   };
 
   const mc = MODAL_CONFIG[actionModal.type] || {};
