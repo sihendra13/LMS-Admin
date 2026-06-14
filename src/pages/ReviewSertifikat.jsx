@@ -203,16 +203,92 @@ export const ReviewSertifikat = () => {
         </p>
       </div>
 
-      {/* STATS */}
-      <div className="stats-row" style={{ marginBottom: '20px' }}>
-        {stats.map(s => (
-          <div key={s.label} className="stat-mini" style={{ background: s.bg, border: `1px solid ${s.border}` }}>
-            <div>
-              <div className="s-val" style={{ color: s.color }}>{s.value}</div>
-              <div className="s-lbl">{s.label}</div>
+      {/* STATS OVERVIEW */}
+      <div className="stats-grid" style={{ marginBottom: '24px' }}>
+        {isHRD ? (
+          <>
+            {/* HRD Card 1 */}
+            <div className="stat-card blue">
+              <div className="stat-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <div className="stat-label">Siap Diterbitkan</div>
+              <div className="stat-value">{readySubs.length}</div>
+              <div className="stat-change info">Rekomendasi Supervisor</div>
             </div>
-          </div>
-        ))}
+            {/* HRD Card 2 */}
+            <div className="stat-card amber">
+              <div className="stat-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div className="stat-label">Dalam Proses</div>
+              <div className="stat-value">{inProgressSubs.length}</div>
+              <div className="stat-change up">Menunggu Review</div>
+            </div>
+            {/* HRD Card 3 */}
+            <div className="stat-card green">
+              <div className="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+                </svg>
+              </div>
+              <div className="stat-label">Diterbitkan</div>
+              <div className="stat-value">{approvedSubs.length}</div>
+              <div className="stat-change up">Sertifikat Aktif</div>
+            </div>
+            {/* HRD Card 4 */}
+            <div className="stat-card red" style={{ background: '#fff5f5', border: '1px solid #fecaca' }}>
+              <div className="stat-icon red" style={{ background: '#fee2e2', color: '#ef4444' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <div className="stat-label">Ditolak</div>
+              <div className="stat-value" style={{ color: '#ef4444' }}>{rejectedSubs.length}</div>
+              <div className="stat-change down" style={{ color: '#f87171' }}>Ditolak Final</div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Supervisor Card 1: Perlu Review */}
+            <div className="stat-card amber">
+              <div className="stat-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div className="stat-label">Perlu Review</div>
+              <div className="stat-value">{needReviewSubs.length}</div>
+              <div className="stat-change up">Belum Direkomendasikan</div>
+            </div>
+            {/* Supervisor Card 2: Sedang Remedial */}
+            <div className="stat-card red" style={{ background: '#fff5f5', border: '1px solid #fecaca' }}>
+              <div className="stat-icon red" style={{ background: '#fee2e2', color: '#ef4444' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+              </div>
+              <div className="stat-label">Sedang Remedial</div>
+              <div className="stat-value" style={{ color: '#ef4444' }}>{remedialSubs.length}</div>
+              <div className="stat-change down" style={{ color: '#f87171' }}>Menunggu Ulang</div>
+            </div>
+            {/* Supervisor Card 3: Sudah Direkomendasikan */}
+            <div className="stat-card green">
+              <div className="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <div className="stat-label">Sudah Direkomendasikan</div>
+              <div className="stat-value">{recommendedSubs.length}</div>
+              <div className="stat-change up">Diteruskan ke HRD</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ROLE INFO BANNER */}
