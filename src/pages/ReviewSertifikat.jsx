@@ -21,23 +21,18 @@ export const ReviewSertifikat = () => {
 
   // ── filter helpers ───────────────────────────────────────────────────
   const myDept = currentUser.dept;
-  const forMe = (sub) => isHRD || sub.dept?.toLowerCase() === myDept?.toLowerCase() ||
-    // fallback: match by supervisor's dept against employee list (submissions may not have dept)
-    true; // supervisor sees all pending for now; will be refined when dept is on submission
-
-  const byCertStatus = (...statuses) =>
-    quizSubmissions.filter(s => statuses.includes(s.certStatus || 'pending') && (isHRD || !s.dept || s.dept?.toLowerCase() === myDept?.toLowerCase()));
+  const forMe = (sub) => isHRD || !sub.dept || sub.dept?.toLowerCase() === myDept?.toLowerCase();
 
   // HRD tabs
-  const readySubs    = quizSubmissions.filter(s => s.certStatus === 'supervisor_ok');
+  const readySubs      = quizSubmissions.filter(s => s.certStatus === 'supervisor_ok');
   const inProgressSubs = quizSubmissions.filter(s => !s.certStatus || s.certStatus === 'pending' || s.certStatus === 'remedial');
-  const approvedSubs = quizSubmissions.filter(s => s.certStatus === 'approved');
-  const rejectedSubs = quizSubmissions.filter(s => s.certStatus === 'rejected');
+  const approvedSubs   = quizSubmissions.filter(s => s.certStatus === 'approved');
+  const rejectedSubs   = quizSubmissions.filter(s => s.certStatus === 'rejected');
 
-  // Supervisor tabs (all — dept filter would come from real auth; for demo shows all)
-  const needReviewSubs  = quizSubmissions.filter(s => !s.certStatus || s.certStatus === 'pending');
-  const remedialSubs    = quizSubmissions.filter(s => s.certStatus === 'remedial');
-  const recommendedSubs = quizSubmissions.filter(s => s.certStatus === 'supervisor_ok' || s.certStatus === 'approved' || s.certStatus === 'rejected');
+  // Supervisor tabs — hanya tampil divisi yg sama
+  const needReviewSubs  = quizSubmissions.filter(s => forMe(s) && (!s.certStatus || s.certStatus === 'pending'));
+  const remedialSubs    = quizSubmissions.filter(s => forMe(s) && s.certStatus === 'remedial');
+  const recommendedSubs = quizSubmissions.filter(s => forMe(s) && (s.certStatus === 'supervisor_ok' || s.certStatus === 'approved' || s.certStatus === 'rejected'));
 
   // ── action handlers ──────────────────────────────────────────────────
   const openModal = (type, sub) => { setActionModal({ open: true, type, sub }); setModalNote(''); };
