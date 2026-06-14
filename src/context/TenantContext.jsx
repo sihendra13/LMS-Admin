@@ -169,11 +169,11 @@ export const TenantProvider = ({ children, authUser }) => {
   ]);
 
   const [quizSubmissions, setQuizSubmissions] = useState(storedDB.quizSubmissions || [
-    { id: 1, employeeName: 'Rini Wulandari', videoTitle: 'SOP Sales: Proses Onboarding Klien Baru', preScore: 40, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending' },
-    { id: 2, employeeName: 'Budi Pratama', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', preScore: 50, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending' },
-    { id: 3, employeeName: 'Sari Anggraeni', videoTitle: 'SOP HRD: Rekrutmen & Seleksi Karyawan', preScore: 30, postScore: 90, date: '1 hari lalu', status: 'Lulus', certStatus: 'pending' },
-    { id: 4, employeeName: 'Dika Kurniawan', videoTitle: 'SOP IT: Keamanan Password & Akun', preScore: 60, postScore: 95, date: '2 hari lalu', status: 'Lulus', certStatus: 'pending' },
-    { id: 5, employeeName: 'Nina Putri', videoTitle: 'SOP Customer Service: Handling Komplain', preScore: 20, postScore: 60, date: '3 hari lalu', status: 'Remedi (Butuh Ujian Ulang)', certStatus: 'pending' },
+    { id: 1, employeeName: 'Rini Wulandari', videoTitle: 'SOP Sales: Proses Onboarding Klien Baru', preScore: 40, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
+    { id: 2, employeeName: 'Budi Pratama', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', preScore: 50, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
+    { id: 3, employeeName: 'Sari Anggraeni', videoTitle: 'SOP HRD: Rekrutmen & Seleksi Karyawan', preScore: 30, postScore: 90, date: '1 hari lalu', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
+    { id: 4, employeeName: 'Dika Kurniawan', videoTitle: 'SOP IT: Keamanan Password & Akun', preScore: 60, postScore: 95, date: '2 hari lalu', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
+    { id: 5, employeeName: 'Nina Putri', videoTitle: 'SOP Customer Service: Handling Komplain', preScore: 20, postScore: 60, date: '3 hari lalu', status: 'Remedi (Butuh Ujian Ulang)', certStatus: 'pending', retakeCount: 0 },
   ]);
 
   const [activities, setActivities] = useState(storedDB.activities || [
@@ -320,6 +320,30 @@ export const TenantProvider = ({ children, authUser }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
+  const MAX_RETAKES = 3;
+
+  const supervisorRecommend = (submissionId, decision, note) => {
+    const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    const sub = quizSubmissions.find(s => s.id === submissionId);
+    const newStatus = decision === 'ok' ? 'supervisor_ok' : 'remedial';
+    setQuizSubmissions(prev => prev.map(s =>
+      s.id === submissionId ? {
+        ...s,
+        certStatus: newStatus,
+        supervisorNote: note || '',
+        supervisorName: currentUser.name,
+        supervisorDate: today,
+      } : s
+    ));
+    const newAct = {
+      id: Date.now(),
+      text: `${currentUser.name} merekomendasikan <strong>${decision === 'ok' ? 'LULUS' : 'REMEDIAL'}</strong> untuk <strong>${sub?.employeeName}</strong> — ${sub?.videoTitle}`,
+      time: 'Baru saja',
+      type: decision === 'ok' ? 'green' : 'amber'
+    };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
   const gradeEssay = (id, score) => {
     const essay = pendingEssays.find(e => e.id === id);
     if (!essay) return;
@@ -407,6 +431,8 @@ export const TenantProvider = ({ children, authUser }) => {
       gradeEssay,
       approveCertificate,
       rejectCertificate,
+      supervisorRecommend,
+      MAX_RETAKES,
       passingScore,
       setPassingScore,
       validityMonths,
