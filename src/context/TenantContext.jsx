@@ -168,13 +168,7 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 6, title: 'SOP IT: Keamanan Password & Akun', dept: 'IT', duration: '7:50', progress: 33, views: 112, color: '#2a1024', tagClass: 'dt-it', preQuizzes: [], postQuizzes: [] },
   ]);
 
-  const [quizSubmissions, setQuizSubmissions] = useState(storedDB.quizSubmissions || [
-    { id: 1, employeeName: 'Rini Wulandari', videoTitle: 'SOP Sales: Proses Onboarding Klien Baru', preScore: 40, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
-    { id: 2, employeeName: 'Budi Pratama', videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', preScore: 50, postScore: 100, date: 'Hari ini', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
-    { id: 3, employeeName: 'Sari Anggraeni', videoTitle: 'SOP HRD: Rekrutmen & Seleksi Karyawan', preScore: 30, postScore: 90, date: '1 hari lalu', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
-    { id: 4, employeeName: 'Dika Kurniawan', videoTitle: 'SOP IT: Keamanan Password & Akun', preScore: 60, postScore: 95, date: '2 hari lalu', status: 'Lulus', certStatus: 'pending', retakeCount: 0 },
-    { id: 5, employeeName: 'Nina Putri', videoTitle: 'SOP Customer Service: Handling Komplain', preScore: 20, postScore: 60, date: '3 hari lalu', status: 'Remedi (Butuh Ujian Ulang)', certStatus: 'pending', retakeCount: 0 },
-  ]);
+  const [quizSubmissions, setQuizSubmissions] = useState([]);
 
   const [activities, setActivities] = useState(storedDB.activities || [
     { id: 1, text: '<strong>Rini W.</strong> menyelesaikan SOP Sales Onboarding', time: '5 menit lalu', type: 'green' },
@@ -184,7 +178,7 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 5, text: '<strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95', time: '3 jam lalu', type: 'cyan' },
   ]);
 
-  // Sync state with localstorage on change
+  // Sync state with localstorage (quizSubmissions lives in Supabase, not here)
   useEffect(() => {
     const db = {
       tenant,
@@ -193,12 +187,50 @@ export const TenantProvider = ({ children, authUser }) => {
       invitations,
       employees,
       videos,
-      quizSubmissions,
       pendingEssays,
       activities
     };
     localStorage.setItem(DB_KEY, JSON.stringify(db));
-  }, [tenant, currentUser, supervisors, invitations, employees, videos, quizSubmissions, pendingEssays, activities]);
+  }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities]);
+
+  // Supabase: fetch all quiz submissions + realtime sync
+  const mapRow = (row) => ({
+    id: row.id,
+    employeeName: row.employee_name,
+    dept: row.dept,
+    videoTitle: row.video_title,
+    preScore: row.pre_score,
+    postScore: row.post_score,
+    date: row.submission_date,
+    status: row.status,
+    certStatus: row.cert_status,
+    retakeCount: row.retake_count,
+    supervisorNote: row.supervisor_note || '',
+    supervisorName: row.supervisor_name,
+    supervisorDate: row.supervisor_date,
+    approvedBy: row.approved_by,
+    approvedDate: row.approved_date,
+    rejectionNote: row.rejection_note || '',
+  });
+
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      const { data } = await supabase
+        .from('quiz_submissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (data) setQuizSubmissions(data.map(mapRow));
+    };
+
+    fetchSubmissions();
+
+    const channel = supabase
+      .channel('admin_quiz_submissions')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_submissions' }, fetchSubmissions)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, []);
 
   // Actions
   const changePlan = (newPlan) => {
@@ -212,21 +244,6 @@ export const TenantProvider = ({ children, authUser }) => {
   const addSOP = (newVideo) => {
     setVideos(prev => [newVideo, ...prev]);
     
-    // Auto-populate some mock submissions if the video has quizzes
-    if ((newVideo.preQuizzes && newVideo.preQuizzes.length > 0) || (newVideo.postQuizzes && newVideo.postQuizzes.length > 0)) {
-      const newSubmission = {
-        id: Date.now() + 1,
-        employeeName: 'Rini Wulandari',
-        videoTitle: newVideo.title,
-        preScore: 50,
-        postScore: 100,
-        date: 'Baru saja',
-        status: 'Lulus',
-        certStatus: 'pending'
-      };
-      setQuizSubmissions(prev => [newSubmission, ...prev]);
-    }
-
     // Add activity
     const newAct = {
       id: Date.now(),
@@ -301,8 +318,14 @@ export const TenantProvider = ({ children, authUser }) => {
     }
   };
 
-  const approveCertificate = (submissionId, approverName) => {
+  const approveCertificate = async (submissionId, approverName) => {
     const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    await supabase.from('quiz_submissions').update({
+      cert_status: 'approved',
+      approved_by: approverName,
+      approved_date: today,
+    }).eq('id', submissionId);
+    // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
       s.id === submissionId ? { ...s, certStatus: 'approved', approvedBy: approverName, approvedDate: today } : s
     ));
@@ -311,7 +334,12 @@ export const TenantProvider = ({ children, authUser }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const rejectCertificate = (submissionId, note) => {
+  const rejectCertificate = async (submissionId, note) => {
+    await supabase.from('quiz_submissions').update({
+      cert_status: 'rejected',
+      rejection_note: note || '',
+    }).eq('id', submissionId);
+    // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
       s.id === submissionId ? { ...s, certStatus: 'rejected', rejectionNote: note || '' } : s
     ));
@@ -322,10 +350,17 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const MAX_RETAKES = 3;
 
-  const supervisorRecommend = (submissionId, decision, note) => {
+  const supervisorRecommend = async (submissionId, decision, note) => {
     const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
     const sub = quizSubmissions.find(s => s.id === submissionId);
     const newStatus = decision === 'ok' ? 'supervisor_ok' : 'remedial';
+    await supabase.from('quiz_submissions').update({
+      cert_status: newStatus,
+      supervisor_note: note || '',
+      supervisor_name: currentUser.name,
+      supervisor_date: today,
+    }).eq('id', submissionId);
+    // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
       s.id === submissionId ? {
         ...s,
@@ -379,7 +414,6 @@ export const TenantProvider = ({ children, authUser }) => {
       currentUser: { id: 1, name: 'Rini Wulandari', role: 'employee', dept: 'Sales', city: 'Jakarta', avatar: 'RW', streak: 7 },
       employees,
       videos,
-      quizSubmissions,
       pendingEssays,
       activities
     };
@@ -394,7 +428,6 @@ export const TenantProvider = ({ children, authUser }) => {
         if (parsed.validityMonths !== undefined) setValidityMonths(parsed.validityMonths);
         if (parsed.employees) setEmployees(parsed.employees);
         if (parsed.videos) setVideos(parsed.videos);
-        if (parsed.quizSubmissions) setQuizSubmissions(parsed.quizSubmissions);
         if (parsed.pendingEssays) setPendingEssays(parsed.pendingEssays);
         if (parsed.activities) setActivities(parsed.activities);
         localStorage.setItem(DB_KEY, JSON.stringify(parsed));
