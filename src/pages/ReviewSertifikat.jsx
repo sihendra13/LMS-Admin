@@ -218,15 +218,35 @@ export const ReviewSertifikat = () => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
           <StatusBadge certStatus={sub.certStatus || 'pending'} />
           {actions && (
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {actions.map(a => (
-                <button key={a.label} onClick={() => openModal(a.type, sub)} style={{
-                  padding: '5px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '700',
-                  background: a.bg, border: `1px solid ${a.border}`, color: a.color, cursor: 'pointer'
-                }}>
-                  {a.label}
-                </button>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {actions.map(a => {
+                  const isPending = !sub.certStatus || sub.certStatus === 'pending';
+                  return (
+                    <button
+                      key={a.label}
+                      onClick={() => !isPending && openModal(a.type, sub)}
+                      disabled={isPending}
+                      title={isPending ? 'Menunggu supervisor review terlebih dahulu' : ''}
+                      style={{
+                        padding: '5px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '700',
+                        background: isPending ? '#f1f5f9' : a.bg,
+                        border: `1px solid ${isPending ? '#cbd5e1' : a.border}`,
+                        color: isPending ? '#94a3b8' : a.color,
+                        cursor: isPending ? 'not-allowed' : 'pointer',
+                        opacity: isPending ? 0.7 : 1
+                      }}
+                    >
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {(!sub.certStatus || sub.certStatus === 'pending') && (
+                <span style={{ fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' }}>
+                  Menunggu review supervisor
+                </span>
+              )}
             </div>
           )}
         </div>
