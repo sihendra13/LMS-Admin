@@ -122,6 +122,9 @@ export const QuizGrading = () => {
 
   const { prev: prevQId, next: nextQId } = getPrevAndNext();
 
+  const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  const formatDate = (dateStr) => (!dateStr || dateStr === 'Hari ini' || dateStr === 'Baru saja') ? todayStr : dateStr;
+
   return (
     <div className="content">
       {/* HEADER */}
@@ -363,14 +366,12 @@ export const QuizGrading = () => {
                           <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', background: '#e0f2fe', color: '#0369a1' }}>
                             Pilihan Ganda
                           </span>
-                          {hasEssay && (
-                            <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', background: '#ede9fe', color: '#6d28d9' }}>
-                              Esai
-                            </span>
-                          )}
+                          <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', background: hasEssay ? '#ede9fe' : '#f1f5f9', color: hasEssay ? '#6d28d9' : '#94a3b8' }}>
+                            {hasEssay ? 'Esai' : 'Esai (Belum Dinilai)'}
+                          </span>
                         </div>
                       </td>
-                      <td style={{ padding: '12px 20px', color: 'var(--text3)' }}>{sub.date}</td>
+                      <td style={{ padding: '12px 20px', color: 'var(--text3)' }}>{formatDate(sub.date)}</td>
                       <td style={{ padding: '12px 20px', fontWeight: '700', color: sub.postScore >= passingScore ? 'var(--green)' : 'var(--red)' }}>
                         {sub.postScore}%
                       </td>
