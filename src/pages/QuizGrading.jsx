@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTenant } from '../context/TenantContext';
 
 export const QuizGrading = () => {
-  const { currentUser, pendingEssays, gradeEssay, passingScore, quizSubmissions, gradedEssays } = useTenant();
+  const { currentUser, pendingEssays, gradeEssay, passingScore, quizSubmissions } = useTenant();
   const [selectedEssay, setSelectedEssay] = useState(null);
   
   // Modal inner wizard states
@@ -36,11 +36,8 @@ export const QuizGrading = () => {
     return matchesSearch && matchesSop;
   });
 
-  // Combine multiple choice (Supabase) + essay grades (localStorage), filter by dept for supervisor
-  const combinedHistory = [
-    ...quizSubmissions.map(s => ({ ...s, type: 'quiz' })),
-    ...gradedEssays.map(s => ({ ...s, type: 'essay' })),
-  ].filter(sub => {
+  // Quiz submission history filtered by dept for supervisor
+  const combinedHistory = quizSubmissions.filter(sub => {
     if (isSupervisor) return (sub.dept || '').toLowerCase() === supervisorDept.toLowerCase();
     return true;
   });
@@ -334,59 +331,73 @@ export const QuizGrading = () => {
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Karyawan</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>SOP / Materi</th>
-                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Jenis Kuis</th>
+                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Jenis</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Tanggal</th>
-                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor</th>
+                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor PG</th>
+                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor Esai</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Status</th>
               </tr>
             </thead>
             <tbody>
               {combinedHistory.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text3)' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text3)' }}>
                     Belum ada riwayat penilaian kuis.
                   </td>
                 </tr>
               ) : (
-                combinedHistory.map((sub, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text1)' }}>
-                      {sub.employeeName}
-                      {sub.dept && <div style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '400' }}>Divisi {sub.dept}</div>}
-                    </td>
-                    <td style={{ padding: '12px 20px', color: 'var(--text2)' }}>{sub.videoTitle}</td>
-                    <td style={{ padding: '12px 20px' }}>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '3px 8px',
-                        borderRadius: '10px',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        background: sub.type === 'essay' ? '#ede9fe' : '#e0f2fe',
-                        color: sub.type === 'essay' ? '#6d28d9' : '#0369a1',
-                      }}>
-                        {sub.type === 'essay' ? '✏️ Esai' : '☑️ Pilihan Ganda'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 20px', color: 'var(--text3)' }}>{sub.date}</td>
-                    <td style={{ padding: '12px 20px', fontWeight: '700', color: sub.postScore >= passingScore ? 'var(--green)' : 'var(--red)' }}>
-                      {sub.postScore}%
-                    </td>
-                    <td style={{ padding: '12px 20px' }}>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        fontSize: '11px',
-                        fontWeight: '600',
-                        background: sub.postScore >= passingScore ? '#e6f4ea' : '#fce8e6',
-                        color: sub.postScore >= passingScore ? '#137333' : '#c5221f'
-                      }}>
-                        {sub.postScore >= passingScore ? 'Lulus' : 'Remedi'}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                combinedHistory.map((sub, i) => {
+                  const hasEssay = sub.essayScore !== null && sub.essayScore !== undefined;
+                  return (
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text1)' }}>
+                        {sub.employeeName}
+                        {sub.dept && <div style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '400' }}>Divisi {sub.dept}</div>}
+                      </td>
+                      <td style={{ padding: '12px 20px', color: 'var(--text2)' }}>{sub.videoTitle}</td>
+                      <td style={{ padding: '12px 20px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '3px 8px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          background: hasEssay ? '#ede9fe' : '#e0f2fe',
+                          color: hasEssay ? '#6d28d9' : '#0369a1',
+                        }}>
+                          {hasEssay ? '✏️ PG + Esai' : '☑️ Pilihan Ganda'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 20px', color: 'var(--text3)' }}>{sub.date}</td>
+                      <td style={{ padding: '12px 20px', fontWeight: '700', color: sub.postScore >= passingScore ? 'var(--green)' : 'var(--red)' }}>
+                        {sub.postScore}%
+                      </td>
+                      <td style={{ padding: '12px 20px' }}>
+                        {hasEssay ? (
+                          <span style={{ fontWeight: '700', color: sub.essayScore >= passingScore ? 'var(--green)' : 'var(--red)' }}>
+                            {sub.essayScore}%
+                            {sub.essayGradedBy && <div style={{ fontSize: '10px', color: 'var(--text3)', fontWeight: '400' }}>oleh {sub.essayGradedBy}</div>}
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text3)', fontSize: '12px' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px 20px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '4px 10px',
+                          borderRadius: '20px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                          background: sub.postScore >= passingScore ? '#e6f4ea' : '#fce8e6',
+                          color: sub.postScore >= passingScore ? '#137333' : '#c5221f'
+                        }}>
+                          {sub.postScore >= passingScore ? 'Lulus' : 'Remedi'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

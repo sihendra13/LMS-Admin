@@ -178,7 +178,6 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 5, text: '<strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95', time: '3 jam lalu', type: 'cyan' },
   ]);
 
-  const [gradedEssays, setGradedEssays] = useState(storedDB.gradedEssays || []);
 
   // Sync state with localstorage (quizSubmissions lives in Supabase, not here)
   useEffect(() => {
@@ -191,10 +190,9 @@ export const TenantProvider = ({ children, authUser }) => {
       videos,
       pendingEssays,
       activities,
-      gradedEssays,
     };
     localStorage.setItem(DB_KEY, JSON.stringify(db));
-  }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities, gradedEssays]);
+  }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities]);
 
   // Supabase: fetch all quiz submissions + realtime sync
   const mapRow = (row) => ({
@@ -214,6 +212,9 @@ export const TenantProvider = ({ children, authUser }) => {
     approvedBy: row.approved_by,
     approvedDate: row.approved_date,
     rejectionNote: row.rejection_note || '',
+    essayScore: row.essay_score ?? null,
+    essayGradedBy: row.essay_graded_by || '',
+    essayGradedDate: row.essay_graded_date || '',
   });
 
   useEffect(() => {
@@ -382,25 +383,23 @@ export const TenantProvider = ({ children, authUser }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const gradeEssay = (id, score) => {
+  const gradeEssay = async (id, score) => {
     const essay = pendingEssays.find(e => e.id === id);
     if (!essay) return;
 
     const isPassed = score >= passingScore;
     const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-    const newGraded = {
-      id: Date.now(),
-      employeeName: essay.employeeName,
-      dept: essay.dept,
-      videoTitle: essay.videoTitle,
-      postScore: score,
-      date: today,
-      status: isPassed ? 'Lulus' : 'Remedi',
-      gradedBy: currentUser.name,
-      type: 'essay',
-    };
 
-    setGradedEssays(prev => [newGraded, ...prev]);
+    await supabase
+      .from('quiz_submissions')
+      .update({
+        essay_score: score,
+        essay_graded_by: currentUser.name,
+        essay_graded_date: today,
+      })
+      .eq('employee_name', essay.employeeName)
+      .eq('video_title', essay.videoTitle);
+
     setPendingEssays(prev => prev.filter(e => e.id !== id));
 
     const newAct = {
@@ -467,7 +466,6 @@ export const TenantProvider = ({ children, authUser }) => {
       revokeSupervisor,
       pendingEssays,
       gradeEssay,
-      gradedEssays,
       approveCertificate,
       rejectCertificate,
       supervisorRecommend,
