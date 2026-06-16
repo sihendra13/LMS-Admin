@@ -217,17 +217,17 @@ export const ReviewSertifikat = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
           <StatusBadge certStatus={sub.certStatus || 'pending'} />
-          {actions && (
+          {actions && (() => {
+            const isPending = !sub.certStatus || sub.certStatus === 'pending' || sub.certStatus === 'remedial';
+            return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
-                {actions.map(a => {
-                  const isPending = !sub.certStatus || sub.certStatus === 'pending';
-                  return (
+                {actions.map(a => (
                     <button
                       key={a.label}
                       onClick={() => !isPending && openModal(a.type, sub)}
                       disabled={isPending}
-                      title={isPending ? 'Menunggu supervisor review terlebih dahulu' : ''}
+                      title={isPending ? (sub.certStatus === 'remedial' ? 'Karyawan sedang mengerjakan ulang kuis' : 'Menunggu supervisor review terlebih dahulu') : ''}
                       style={{
                         padding: '5px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '700',
                         background: isPending ? '#f1f5f9' : a.bg,
@@ -239,16 +239,16 @@ export const ReviewSertifikat = () => {
                     >
                       {a.label}
                     </button>
-                  );
-                })}
+                ))}
               </div>
-              {(!sub.certStatus || sub.certStatus === 'pending') && (
+              {isPending && (
                 <span style={{ fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' }}>
-                  Menunggu review supervisor
+                  {sub.certStatus === 'remedial' ? 'Karyawan sedang mengerjakan ulang' : 'Menunggu review supervisor'}
                 </span>
               )}
             </div>
-          )}
+            );
+          })()}
         </div>
       </div>
     );
