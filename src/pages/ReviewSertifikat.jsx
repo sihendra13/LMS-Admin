@@ -92,7 +92,7 @@ export const ReviewSertifikat = () => {
           </div>
 
           {/* Remedial completion banner */}
-          {sub.retakeCount > 0 && (
+          {(sub.retakeCount > 0 || sub.supervisorNote) && (
             <div style={{
               background: '#f0fdf4', border: '1px solid #86efac',
               borderRadius: '10px', padding: '10px 14px', marginBottom: '12px',
@@ -101,7 +101,9 @@ export const ReviewSertifikat = () => {
               <span style={{ fontSize: '16px' }}>✅</span>
               <div>
                 <div style={{ fontSize: '12px', fontWeight: '700', color: '#15803d' }}>
-                  Karyawan sudah menyelesaikan remedial (percobaan ke-{sub.retakeCount + 1} dari {MAX_RETAKES})
+                  {sub.retakeCount > 0
+                    ? `Karyawan sudah menyelesaikan remedial (percobaan ke-${sub.retakeCount + 1} dari ${MAX_RETAKES})`
+                    : 'Karyawan sudah menyelesaikan remedial dan mengumpulkan ulang hasil kuis'}
                 </div>
                 <div style={{ fontSize: '11px', color: '#166534', marginTop: '2px' }}>
                   Tinjau hasil belajar terbaru di bawah dan beri keputusan Anda.
