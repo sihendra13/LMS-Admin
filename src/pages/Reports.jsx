@@ -3,7 +3,7 @@ import { useTenant } from '../context/TenantContext';
 import { hasFullComplianceReports } from '../utils/featureGates';
 
 export const Reports = () => {
-  const { tenant, quizSubmissions, videos, currentUser } = useTenant();
+  const { tenant, quizSubmissions, videos, employees, currentUser, passingScore } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const displaySubmissions = isSupervisor
@@ -14,6 +14,48 @@ export const Reports = () => {
     : quizSubmissions;
 
   const isFullReportEnabled = hasFullComplianceReports(tenant.plan);
+
+  // --- Computed compliance stats ---
+  const parseDuration = (str) => {
+    if (!str) return 0;
+    const [m, s] = str.split(':').map(Number);
+    return (m || 0) + (s || 0) / 60;
+  };
+
+  const getComplianceStatus = (rate) => {
+    if (rate >= 90) return { label: 'Sangat Aman', color: 'var(--green)' };
+    if (rate >= 75) return { label: 'Aman', color: 'var(--green)' };
+    if (rate >= 60) return { label: 'Butuh Perhatian', color: 'var(--amber)' };
+    return { label: 'Berisiko', color: 'var(--red)' };
+  };
+
+  const activeDepts = isSupervisor
+    ? [currentUser.dept]
+    : [...new Set(videos.filter(v => !v.archived && v.dept !== 'Semua').map(v => v.dept))].sort();
+
+  const complianceMatrix = activeDepts.map(dept => {
+    const deptVideos = videos.filter(v => !v.archived && (v.dept === dept || v.dept === 'Semua'));
+    const deptEmployees = employees.filter(e => e.dept?.toLowerCase() === dept.toLowerCase());
+    const deptSubs = quizSubmissions.filter(s => (s.dept || '').toLowerCase() === dept.toLowerCase());
+    const uniqueSubmitters = new Set(deptSubs.map(s => s.employeeName)).size;
+    const completedRate = deptEmployees.length > 0
+      ? Math.round((uniqueSubmitters / deptEmployees.length) * 100)
+      : 0;
+    const avgScore = deptSubs.length > 0
+      ? Math.round(deptSubs.reduce((sum, s) => sum + (s.postScore || 0), 0) / deptSubs.length)
+      : null;
+    return { dept, sopWajib: deptVideos.length, completedRate, avgScore, status: getComplianceStatus(completedRate) };
+  });
+
+  const totalEmployees = employees.length;
+  const uniqueGlobalSubmitters = new Set(quizSubmissions.map(s => s.employeeName)).size;
+  const overallCompliance = totalEmployees > 0 ? Math.round((uniqueGlobalSubmitters / totalEmployees) * 100) : 0;
+  const overallAvgScore = quizSubmissions.length > 0
+    ? Math.round(quizSubmissions.reduce((sum, s) => sum + (s.postScore || 0), 0) / quizSubmissions.length)
+    : 0;
+  const totalWatchHours = Math.round(
+    videos.reduce((sum, v) => sum + parseDuration(v.duration) * ((v.progress || 0) / 100), 0) / 60
+  );
 
   return (
     <div className="content">
@@ -63,38 +105,29 @@ export const Reports = () => {
       ) : (
         // 2. COMPLIANCE & FULL REPORTING (Business & Enterprise Plans)
         <div>
-          {(() => {
-            const deptStats = {
-              sales: { compliance: '89.0%', avgScore: '85.0', hours: '450 Jam' },
-              finance: { compliance: '94.0%', avgScore: '90.0', hours: '280 Jam' },
-              hrd: { compliance: '76.0%', avgScore: '80.0', hours: '180 Jam' },
-              operasional: { compliance: '61.0%', avgScore: '78.0', hours: '570 Jam' }
-            };
-
-            const currentStats = isSupervisor && deptStats[currentUser.dept.toLowerCase()]
-              ? deptStats[currentUser.dept.toLowerCase()]
-              : { compliance: '92.4%', avgScore: '84.8', hours: '1,480 Jam' };
-
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '22px' }}>
-                <div className="card" style={{ padding: '16px 20px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Compliance Rate</div>
-                  <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--green)' }}>{currentStats.compliance}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>Standar audit regulasi terpenuhi</div>
-                </div>
-                <div className="card" style={{ padding: '16px 20px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Rata-rata Skor Kuis</div>
-                  <div style={{ fontSize: '24px', fontWeight: '600' }}>{currentStats.avgScore} / 100</div>
-                  <div style={{ fontSize: '10px', color: 'var(--green)', marginTop: '2px' }}>↑ Baik (Di atas standar target 80.0)</div>
-                </div>
-                <div className="card" style={{ padding: '16px 20px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Waktu Belajar Kolektif</div>
-                  <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--accent)' }}>{currentStats.hours}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>Total durasi nonton video SOP</div>
-                </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '22px' }}>
+            <div className="card" style={{ padding: '16px 20px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Compliance Rate</div>
+              <div style={{ fontSize: '24px', fontWeight: '600', color: overallCompliance >= 75 ? 'var(--green)' : 'var(--amber)' }}>
+                {overallCompliance}%
               </div>
-            );
-          })()}
+              <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>
+                {uniqueGlobalSubmitters} dari {totalEmployees} karyawan sudah mengikuti kuis
+              </div>
+            </div>
+            <div className="card" style={{ padding: '16px 20px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Rata-rata Skor Kuis</div>
+              <div style={{ fontSize: '24px', fontWeight: '600' }}>{overallAvgScore} / 100</div>
+              <div style={{ fontSize: '10px', color: overallAvgScore >= passingScore ? 'var(--green)' : 'var(--amber)', marginTop: '2px' }}>
+                {overallAvgScore >= passingScore ? `↑ Di atas batas kelulusan (${passingScore})` : `↓ Di bawah batas kelulusan (${passingScore})`}
+              </div>
+            </div>
+            <div className="card" style={{ padding: '16px 20px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Waktu Belajar Kolektif</div>
+              <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--accent)' }}>{totalWatchHours} Jam</div>
+              <div style={{ fontSize: '10px', color: 'var(--text3)', marginTop: '2px' }}>Estimasi total durasi nonton video SOP</div>
+            </div>
+          </div>
 
           {/* COMPLIANCE DEPT */}
           <div className="card" style={{ marginBottom: '22px' }}>
@@ -116,40 +149,26 @@ export const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'sales') && (
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>Sales</td>
-                      <td style={{ padding: '14px 20px' }}>4 Video SOP</td>
-                      <td style={{ padding: '14px 20px' }}>89%</td>
-                      <td style={{ padding: '14px 20px' }}>85%</td>
-                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Sangat Aman</td>
+                  {complianceMatrix.map(row => (
+                    <tr key={row.dept} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>{row.dept}</td>
+                      <td style={{ padding: '14px 20px' }}>{row.sopWajib} Video SOP</td>
+                      <td style={{ padding: '14px 20px', fontWeight: row.completedRate < 75 ? '600' : '400', color: row.completedRate < 75 ? 'var(--amber)' : 'inherit' }}>
+                        {row.completedRate}%
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        {row.avgScore !== null ? `${row.avgScore}%` : <span style={{ color: 'var(--text3)' }}>—</span>}
+                      </td>
+                      <td style={{ padding: '14px 20px', textAlign: 'right', color: row.status.color, fontWeight: '600' }}>
+                        {row.status.label}
+                      </td>
                     </tr>
-                  )}
-                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'hrd') && (
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>HRD</td>
-                      <td style={{ padding: '14px 20px' }}>3 Video SOP</td>
-                      <td style={{ padding: '14px 20px' }}>76%</td>
-                      <td style={{ padding: '14px 20px' }}>80%</td>
-                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Aman</td>
-                    </tr>
-                  )}
-                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'operasional') && (
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>Operasional</td>
-                      <td style={{ padding: '14px 20px' }}>6 Video SOP</td>
-                      <td style={{ padding: '14px 20px', color: 'var(--amber)', fontWeight: '600' }}>61%</td>
-                      <td style={{ padding: '14px 20px' }}>78%</td>
-                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--amber)', fontWeight: '600' }}>Butuh Perhatian</td>
-                    </tr>
-                  )}
-                  {(!isSupervisor || currentUser.dept.toLowerCase() === 'finance') && (
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>Finance</td>
-                      <td style={{ padding: '14px 20px' }}>2 Video SOP</td>
-                      <td style={{ padding: '14px 20px' }}>94%</td>
-                      <td style={{ padding: '14px 20px' }}>90%</td>
-                      <td style={{ padding: '14px 20px', textAlign: 'right', color: 'var(--green)', fontWeight: '600' }}>Sangat Aman</td>
+                  ))}
+                  {complianceMatrix.length === 0 && (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text3)' }}>
+                        Belum ada data departemen.
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -178,6 +197,13 @@ export const Reports = () => {
                 <tbody>
                   {displaySubmissions.map((sub) => {
                     const improvement = sub.postScore - sub.preScore;
+                    const progressLabel = improvement > 0
+                      ? `↑ ${improvement}% Meningkat`
+                      : improvement < 0
+                      ? `↓ ${Math.abs(improvement)}% Menurun`
+                      : '= Tidak Berubah';
+                    const progressColor = improvement > 0 ? 'var(--green)' : improvement < 0 ? 'var(--red)' : 'var(--text3)';
+                    const progressBg = improvement > 0 ? '#ecfdf5' : improvement < 0 ? '#fef2f2' : '#f8fafc';
                     return (
                       <tr key={sub.id} style={{ borderBottom: '1px solid var(--border)' }}>
                         <td style={{ padding: '14px 20px', fontWeight: '500' }}>{sub.employeeName}</td>
@@ -187,11 +213,11 @@ export const Reports = () => {
                         <td style={{ padding: '14px 20px', textAlign: 'center', fontWeight: '500', color: 'var(--text3)' }}>{sub.preScore}%</td>
                         <td style={{ padding: '14px 20px', textAlign: 'center', fontWeight: '600', color: 'var(--text1)' }}>{sub.postScore}%</td>
                         <td style={{ padding: '14px 20px', textAlign: 'center' }}>
-                          <span style={{ fontSize: '11px', background: '#ecfdf5', color: 'var(--green)', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
-                            ↑ {improvement}% Meningkat
+                          <span style={{ fontSize: '11px', background: progressBg, color: progressColor, padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
+                            {progressLabel}
                           </span>
                         </td>
-                        <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: '600', color: sub.status.includes('Lulus') ? 'var(--green)' : 'var(--red)' }}>
+                        <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: '600', color: sub.status?.includes('Lulus') ? 'var(--green)' : 'var(--red)' }}>
                           {sub.status}
                         </td>
                       </tr>
