@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { hasFullComplianceReports } from '../utils/featureGates';
 
@@ -53,9 +54,51 @@ export const Reports = () => {
   const overallAvgScore = quizSubmissions.length > 0
     ? Math.round(quizSubmissions.reduce((sum, s) => sum + (s.postScore || 0), 0) / quizSubmissions.length)
     : 0;
-  const totalWatchHours = Math.round(
-    videos.reduce((sum, v) => sum + parseDuration(v.duration) * ((v.progress || 0) / 100), 0) / 60
-  );
+  // Waktu belajar: hitung dari jumlah submisi × rata-rata durasi video (lebih akurat dari progress localStorage)
+  const avgVideoDurationMinutes = videos.length > 0
+    ? videos.reduce((sum, v) => sum + parseDuration(v.duration), 0) / videos.length
+    : 0;
+  const totalWatchHours = Math.round((quizSubmissions.length * avgVideoDurationMinutes) / 60);
+
+  // Filter Pre/Post-Test table for HRD
+  const [histDeptFilter, setHistDeptFilter] = useState('');
+  const filteredDisplaySubmissions = (!isSupervisor && histDeptFilter)
+    ? displaySubmissions.filter(s => (s.dept || '').toLowerCase() === histDeptFilter.toLowerCase())
+    : displaySubmissions;
+
+  // Export XLSX
+  const handleExport = () => {
+    const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Matriks Compliance
+    const complianceRows = complianceMatrix.map(row => ({
+      'Departemen': row.dept,
+      'SOP Wajib': `${row.sopWajib} Video`,
+      'Completed Rate (%)': row.completedRate,
+      'Skor Kuis Rata-rata (%)': row.avgScore ?? '-',
+      'Status Compliance': row.status.label,
+    }));
+    const ws1 = XLSX.utils.json_to_sheet(complianceRows);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Compliance Departemen');
+
+    // Sheet 2: Pre/Post-Test
+    const prePostRows = displaySubmissions.map(sub => ({
+      'Nama Karyawan': sub.employeeName,
+      'Departemen': sub.dept || '-',
+      'SOP / Materi': sub.videoTitle,
+      'Tanggal': sub.date || '-',
+      'Skor Pre-Test (%)': sub.preScore,
+      'Skor Post-Test (%)': sub.postScore,
+      'Peningkatan (%)': sub.postScore - sub.preScore,
+      'Status': sub.status,
+    }));
+    const ws2 = XLSX.utils.json_to_sheet(prePostRows);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Evaluasi Pre-Post Test');
+
+    XLSX.writeFile(wb, `Laporan_LMS_${today}.xlsx`);
+  };
 
   return (
     <div className="content">
@@ -133,7 +176,7 @@ export const Reports = () => {
           <div className="card" style={{ marginBottom: '22px' }}>
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="card-title">Matriks Compliance & Risiko Departemen</div>
-              <button className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }} onClick={() => alert('Mengekspor data ke Excel...')}>
+              <button className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }} onClick={handleExport}>
                 📥 Ekspor Laporan Lengkap (.XLSX)
               </button>
             </div>
@@ -178,9 +221,24 @@ export const Reports = () => {
 
           {/* NEW PRE-TEST & POST-TEST MONITORING */}
           <div className="card">
-            <div className="card-head" style={{ borderBottom: '1px solid var(--border)' }}>
-              <div className="card-title">Evaluasi Efektivitas Pembelajaran (Pre-Test vs Post-Test)</div>
-              <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Membandingkan pemahaman sebelum & sesudah menonton SOP</span>
+            <div className="card-head" style={{ borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <div className="card-title">Evaluasi Efektivitas Pembelajaran (Pre-Test vs Post-Test)</div>
+                <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Membandingkan pemahaman sebelum & sesudah menonton SOP</span>
+              </div>
+              {!isSupervisor && (
+                <select
+                  className="form-select"
+                  style={{ fontSize: '12px', height: '34px', padding: '0 10px', minWidth: '180px' }}
+                  value={histDeptFilter}
+                  onChange={e => setHistDeptFilter(e.target.value)}
+                >
+                  <option value="">Semua Departemen</option>
+                  {activeDepts.map(d => (
+                    <option key={d} value={d}>Divisi {d}</option>
+                  ))}
+                </select>
+              )}
             </div>
             <div className="card-body">
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -195,7 +253,7 @@ export const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displaySubmissions.map((sub) => {
+                  {filteredDisplaySubmissions.map((sub) => {
                     const improvement = sub.postScore - sub.preScore;
                     const progressLabel = improvement > 0
                       ? `↑ ${improvement}% Meningkat`
