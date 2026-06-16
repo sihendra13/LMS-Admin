@@ -129,9 +129,9 @@ export const QuizGrading = () => {
         <div>
           <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px' }}>Penilaian Kuis (Esai)</h2>
           <p style={{ color: 'var(--text3)', fontSize: '13px' }}>
-            {isSupervisor 
+            {isSupervisor
               ? `Tinjau dan beri nilai jawaban esai karyawan untuk Divisi ${supervisorDept}.`
-              : 'Tinjau dan beri nilai jawaban esai karyawan untuk seluruh departemen perusahaan.'
+              : 'Pantau riwayat penilaian kuis seluruh departemen. Penilaian esai dilakukan oleh supervisor masing-masing divisi.'
             }
           </p>
         </div>
@@ -140,8 +140,8 @@ export const QuizGrading = () => {
         </div>
       </div>
 
-      {/* FILTER SEARCH & DROPDOWN HEADER */}
-      <div className="card" style={{ padding: '20px', marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>
+      {/* FILTER SEARCH & DROPDOWN HEADER — supervisor only */}
+      {isSupervisor && <div className="card" style={{ padding: '20px', marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>
         <div style={{ flex: 1, minWidth: '260px' }}>
           <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text2)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cari Karyawan</label>
           <div style={{ position: 'relative' }}>
@@ -219,9 +219,11 @@ export const QuizGrading = () => {
             </button>
           </div>
         )}
-      </div>
+      </div>}
 
-      {/* PENDING ESSAYS QUEUE */}
+      {/* PENDING ESSAYS QUEUE — supervisor only */}
+      {isSupervisor && <>
+
       <div className="card" style={{ marginBottom: '28px' }}>
         <div className="card-head" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -316,6 +318,7 @@ export const QuizGrading = () => {
           </div>
         )}
       </div>
+      </>}
 
       {/* GRADED HISTORY LIST */}
       <div className="card">
@@ -333,7 +336,7 @@ export const QuizGrading = () => {
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>SOP / Materi</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Jenis</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Tanggal</th>
-                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor PG</th>
+                <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor Kuis</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Skor Esai</th>
                 <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Status</th>
               </tr>
@@ -365,7 +368,7 @@ export const QuizGrading = () => {
                           background: hasEssay ? '#ede9fe' : '#e0f2fe',
                           color: hasEssay ? '#6d28d9' : '#0369a1',
                         }}>
-                          {hasEssay ? '✏️ PG + Esai' : '☑️ Pilihan Ganda'}
+                          {hasEssay ? '✏️ Kuis + Esai' : '☑️ Kuis'}
                         </span>
                       </td>
                       <td style={{ padding: '12px 20px', color: 'var(--text3)' }}>{sub.date}</td>
