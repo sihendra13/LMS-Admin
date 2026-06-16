@@ -368,7 +368,7 @@ export const QuizGrading = () => {
                           background: hasEssay ? '#ede9fe' : '#e0f2fe',
                           color: hasEssay ? '#6d28d9' : '#0369a1',
                         }}>
-                          {hasEssay ? '✏️ Kuis + Esai' : '☑️ Kuis'}
+                          {hasEssay ? 'Pilihan Ganda + Esai' : 'Pilihan Ganda'}
                         </span>
                       </td>
                       <td style={{ padding: '12px 20px', color: 'var(--text3)' }}>{sub.date}</td>
