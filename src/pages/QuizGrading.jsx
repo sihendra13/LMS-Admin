@@ -13,6 +13,7 @@ export const QuizGrading = () => {
   // Search and Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [sopFilter, setSopFilter] = useState('');
+  const [deptFilter, setDeptFilter] = useState('');
 
   // Filter essays by department if supervisor
   const isSupervisor = currentUser.role !== 'admin';
@@ -36,11 +37,14 @@ export const QuizGrading = () => {
     return matchesSearch && matchesSop;
   });
 
-  // Quiz submission history filtered by dept for supervisor
+  // Quiz submission history filtered by dept
   const combinedHistory = quizSubmissions.filter(sub => {
     if (isSupervisor) return (sub.dept || '').toLowerCase() === supervisorDept.toLowerCase();
+    if (deptFilter) return (sub.dept || '').toLowerCase() === deptFilter.toLowerCase();
     return true;
   });
+
+  const uniqueDepts = Array.from(new Set(quizSubmissions.map(s => s.dept).filter(Boolean))).sort();
 
   const handleOpenGradeModal = (essay) => {
     setSelectedEssay(essay);
@@ -325,11 +329,26 @@ export const QuizGrading = () => {
 
       {/* GRADED HISTORY LIST */}
       <div className="card">
-        <div className="card-head" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="card-title">Riwayat Penilaian Kuis</div>
-          <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: '500' }}>
-            Pilihan Ganda + Esai
-          </span>
+        <div className="card-head" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="card-title">Riwayat Penilaian Kuis</div>
+            <span style={{ background: 'var(--accent)', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px' }}>
+              {combinedHistory.length}
+            </span>
+          </div>
+          {!isSupervisor && (
+            <select
+              className="form-select"
+              style={{ fontSize: '12px', height: '34px', padding: '0 10px', minWidth: '180px' }}
+              value={deptFilter}
+              onChange={e => setDeptFilter(e.target.value)}
+            >
+              <option value="">Semua Departemen</option>
+              {uniqueDepts.map(dept => (
+                <option key={dept} value={dept}>Divisi {dept}</option>
+              ))}
+            </select>
+          )}
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
