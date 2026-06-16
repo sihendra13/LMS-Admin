@@ -178,6 +178,8 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 5, text: '<strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95', time: '3 jam lalu', type: 'cyan' },
   ]);
 
+  const [gradedEssays, setGradedEssays] = useState(storedDB.gradedEssays || []);
+
   // Sync state with localstorage (quizSubmissions lives in Supabase, not here)
   useEffect(() => {
     const db = {
@@ -188,10 +190,11 @@ export const TenantProvider = ({ children, authUser }) => {
       employees,
       videos,
       pendingEssays,
-      activities
+      activities,
+      gradedEssays,
     };
     localStorage.setItem(DB_KEY, JSON.stringify(db));
-  }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities]);
+  }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities, gradedEssays]);
 
   // Supabase: fetch all quiz submissions + realtime sync
   const mapRow = (row) => ({
@@ -384,20 +387,22 @@ export const TenantProvider = ({ children, authUser }) => {
     if (!essay) return;
 
     const isPassed = score >= passingScore;
-    const newSubmission = {
+    const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    const newGraded = {
       id: Date.now(),
       employeeName: essay.employeeName,
+      dept: essay.dept,
       videoTitle: essay.videoTitle,
-      preScore: 30,
       postScore: score,
-      date: 'Baru saja',
-      status: isPassed ? 'Lulus' : 'Remedi (Butuh Ujian Ulang)'
+      date: today,
+      status: isPassed ? 'Lulus' : 'Remedi',
+      gradedBy: currentUser.name,
+      type: 'essay',
     };
 
-    setQuizSubmissions(prev => [newSubmission, ...prev]);
+    setGradedEssays(prev => [newGraded, ...prev]);
     setPendingEssays(prev => prev.filter(e => e.id !== id));
 
-    // Add activity
     const newAct = {
       id: Date.now(),
       text: `Kuis esai <strong>${essay.employeeName}</strong> dinilai oleh ${currentUser.name} dengan skor <strong>${score}%</strong> (${isPassed ? 'Lulus' : 'Remedi'})`,
@@ -462,6 +467,7 @@ export const TenantProvider = ({ children, authUser }) => {
       revokeSupervisor,
       pendingEssays,
       gradeEssay,
+      gradedEssays,
       approveCertificate,
       rejectCertificate,
       supervisorRecommend,
