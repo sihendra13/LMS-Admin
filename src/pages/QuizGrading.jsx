@@ -359,17 +359,16 @@ export const QuizGrading = () => {
                       </td>
                       <td style={{ padding: '12px 20px', color: 'var(--text2)' }}>{sub.videoTitle}</td>
                       <td style={{ padding: '12px 20px' }}>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '3px 8px',
-                          borderRadius: '10px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          background: hasEssay ? '#ede9fe' : '#e0f2fe',
-                          color: hasEssay ? '#6d28d9' : '#0369a1',
-                        }}>
-                          {hasEssay ? 'Pilihan Ganda + Esai' : 'Pilihan Ganda'}
-                        </span>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', background: '#e0f2fe', color: '#0369a1' }}>
+                            Pilihan Ganda
+                          </span>
+                          {hasEssay && (
+                            <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '600', background: '#ede9fe', color: '#6d28d9' }}>
+                              Esai
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td style={{ padding: '12px 20px', color: 'var(--text3)' }}>{sub.date}</td>
                       <td style={{ padding: '12px 20px', fontWeight: '700', color: sub.postScore >= passingScore ? 'var(--green)' : 'var(--red)' }}>
