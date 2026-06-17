@@ -279,63 +279,67 @@ export const Settings = () => {
                 </div>
               </div>
 
-              {/* HRIS SYNC INTEGRATION */}
-              <div className="card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🔄 Sinkronisasi Karyawan (HRIS Integration)
-                </h3>
-                <p style={{ color: 'var(--text3)', fontSize: '13px', margin: '0 0 16px 0' }}>
-                  Hubungkan dengan HRIS internal Anda untuk otomatis menyinkronkan data karyawan, penugasan divisi, dan status aktif/nonaktif.
-                </p>
-
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                  <div style={{ 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '8px', 
-                    padding: '12px 16px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px',
-                    background: '#f8fafc',
-                    flex: 1,
-                    minWidth: '200px'
-                  }}>
-                    <div style={{ fontSize: '24px' }}>💼</div>
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700' }}>Mekari Talenta</h4>
-                      <span style={{ fontSize: '11px', color: 'var(--green)', fontWeight: '600' }}>Tersambung (API Key)</span>
-                    </div>
-                  </div>
-                  <div style={{ 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '8px', 
-                    padding: '12px 16px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px',
-                    background: '#f8fafc',
-                    flex: 1,
-                    minWidth: '200px'
-                  }}>
-                    <div style={{ fontSize: '24px' }}>🧩</div>
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700' }}>SAP SuccessFactors</h4>
-                      <span style={{ fontSize: '11px', color: 'var(--text3)' }}>Belum Terhubung</span>
-                    </div>
-                  </div>
+              {/* HRIS SYNC INTEGRATION - ENTERPRISE LOCKED */}
+              <div className="card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                {/* ENTERPRISE BADGE */}
+                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.05em' }}>
+                  ENTERPRISE
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f1f5f9', padding: '12px 16px', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: '500' }}>{syncStatus}</span>
-                  <button 
-                    type="button" 
-                    className="btn-primary" 
-                    style={{ fontSize: '12px', padding: '6px 14px' }}
-                    onClick={handleSyncHRIS}
-                    disabled={isSyncing}
-                  >
-                    {isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Sekarang'}
-                  </button>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🔄 Sinkronisasi Karyawan (HRIS Integration)
+                </h3>
+                <p style={{ color: 'var(--text3)', fontSize: '13px', margin: '0 0 20px 0' }}>
+                  Hubungkan LMS dengan sistem HRIS perusahaan untuk sinkronisasi data karyawan secara otomatis.
+                </p>
+
+                {/* BLURRED PREVIEW */}
+                <div style={{ position: 'relative' }}>
+                  <div style={{ filter: 'blur(3px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.5 }}>
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', flex: 1, minWidth: '180px' }}>
+                        <div style={{ fontSize: '22px' }}>💼</div>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: '700' }}>Mekari Talenta</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Belum Terhubung</div>
+                        </div>
+                      </div>
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', flex: 1, minWidth: '180px' }}>
+                        <div style={{ fontSize: '22px' }}>🧩</div>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: '700' }}>SAP SuccessFactors</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Belum Terhubung</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ background: '#f1f5f9', padding: '12px 16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text2)' }}>Belum pernah disinkronisasi</span>
+                      <div style={{ background: 'var(--accent)', color: '#fff', fontSize: '12px', padding: '6px 14px', borderRadius: '6px', fontWeight: '600' }}>Sinkronkan Sekarang</div>
+                    </div>
+                  </div>
+
+                  {/* LOCK OVERLAY */}
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                    <div style={{ width: '44px', height: '44px', background: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)', marginBottom: '4px' }}>Fitur Eksklusif Enterprise</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text3)', maxWidth: '280px', lineHeight: '1.5' }}>
+                        Sinkronisasi otomatis karyawan baru, penugasan divisi, dan status aktif dari Mekari Talenta atau SAP SuccessFactors.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      style={{ marginTop: '4px', padding: '7px 18px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                      onClick={() => alert('Hubungi tim Axara untuk upgrade ke Enterprise dan aktifkan HRIS Integration.')}
+                    >
+                      Hubungi Axara untuk Upgrade
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
