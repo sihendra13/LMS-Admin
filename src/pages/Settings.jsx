@@ -10,6 +10,7 @@ export const Settings = () => {
   // Branding/Integration states
   const [syncStatus, setSyncStatus] = useState('Terakhir disinkronisasi: Hari ini, 09:30');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [logoStatus, setLogoStatus] = useState('idle'); // 'idle' | 'processing' | 'saved' | 'error'
 
   const handleSyncHRIS = () => {
     setIsSyncing(true);
@@ -140,19 +141,29 @@ export const Settings = () => {
                       onChange={(e) => {
                         const file = e.target.files[0];
                         if (!file) return;
+                        setLogoStatus('processing');
                         const img = new Image();
                         const url = URL.createObjectURL(file);
                         img.onload = () => {
-                          const MAX_W = 400, MAX_H = 200;
-                          let w = img.width, h = img.height;
-                          if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
-                          if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
-                          const canvas = document.createElement('canvas');
-                          canvas.width = w; canvas.height = h;
-                          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                          updateTenantLogo(canvas.toDataURL('image/jpeg', 0.8));
-                          URL.revokeObjectURL(url);
+                          try {
+                            const MAX_W = 400, MAX_H = 200;
+                            let w = img.width, h = img.height;
+                            if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
+                            if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w; canvas.height = h;
+                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                            const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                            updateTenantLogo(compressed);
+                            setLogoStatus('saved');
+                            setTimeout(() => setLogoStatus('idle'), 3000);
+                          } catch {
+                            setLogoStatus('error');
+                          } finally {
+                            URL.revokeObjectURL(url);
+                          }
                         };
+                        img.onerror = () => { setLogoStatus('error'); URL.revokeObjectURL(url); };
                         img.src = url;
                       }}
                       style={{ 
@@ -161,9 +172,29 @@ export const Settings = () => {
                         cursor: 'pointer' 
                       }} 
                     />
-                    <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '4px' }}>
-                      Rekomendasi rasio landscape, background putih/transparan. Logo akan otomatis dipasang pada container putih di kiri atas menu navigasi.
-                    </div>
+                    {logoStatus === 'processing' && (
+                      <div style={{ fontSize: '12px', color: '#0369a1', marginTop: '6px', fontWeight: '600' }}>⏳ Memproses logo...</div>
+                    )}
+                    {logoStatus === 'saved' && (
+                      <div style={{ fontSize: '12px', color: '#16a34a', marginTop: '6px', fontWeight: '600' }}>✓ Logo berhasil disimpan! Sidebar sudah diperbarui.</div>
+                    )}
+                    {logoStatus === 'error' && (
+                      <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '6px', fontWeight: '600' }}>✕ Gagal menyimpan logo. Coba file gambar yang lebih kecil.</div>
+                    )}
+                    {logoStatus === 'idle' && (
+                      <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '4px' }}>
+                        Rekomendasi rasio landscape, background putih/transparan. Logo akan otomatis dipasang pada container putih di kiri atas menu navigasi.
+                      </div>
+                    )}
+                    {tenant.logo && logoStatus === 'idle' && (
+                      <button
+                        type="button"
+                        onClick={() => { updateTenantLogo(null); }}
+                        style={{ marginTop: '8px', fontSize: '11px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                      >
+                        Hapus logo
+                      </button>
+                    )}
                   </div>
                 </div>
 
