@@ -280,61 +280,77 @@ export const Settings = () => {
               </div>
 
               {/* HRIS SYNC INTEGRATION - ENTERPRISE LOCKED */}
-              <div className="card" style={{ padding: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div className="card" style={{ padding: '24px', position: 'relative', overflow: 'hidden', border: '1px solid var(--border)' }}>
                 {/* ENTERPRISE BADGE */}
-                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.05em' }}>
+                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '4px 12px', borderRadius: '20px', letterSpacing: '0.05em', boxShadow: '0 2px 4px rgba(124, 58, 237, 0.15)' }}>
                   ENTERPRISE
                 </div>
 
                 <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  🔄 Sinkronisasi Karyawan (HRIS Integration)
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                  </svg>
+                  Sinkronisasi Karyawan (HRIS Integration)
                 </h3>
-                <p style={{ color: 'var(--text3)', fontSize: '13px', margin: '0 0 20px 0' }}>
+                <p style={{ color: 'var(--text3)', fontSize: '13px', margin: '0 0 24px 0' }}>
                   Hubungkan LMS dengan sistem HRIS perusahaan untuk sinkronisasi data karyawan secara otomatis.
                 </p>
 
                 {/* BLURRED PREVIEW */}
                 <div style={{ position: 'relative' }}>
-                  <div style={{ filter: 'blur(3px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.5 }}>
+                  <div style={{ filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.35 }}>
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', flex: 1, minWidth: '180px' }}>
-                        <div style={{ fontSize: '22px' }}>💼</div>
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', background: '#ffffff', flex: 1, minWidth: '180px' }}>
+                        <div style={{ width: '36px', height: '36px', background: '#eff6ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justify: 'center', color: 'var(--accent)' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                          </svg>
+                        </div>
                         <div>
-                          <div style={{ fontSize: '13px', fontWeight: '700' }}>Mekari Talenta</div>
+                          <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)' }}>Mekari Talenta</div>
                           <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Belum Terhubung</div>
                         </div>
                       </div>
-                      <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', flex: 1, minWidth: '180px' }}>
-                        <div style={{ fontSize: '22px' }}>🧩</div>
+                      <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', background: '#ffffff', flex: 1, minWidth: '180px' }}>
+                        <div style={{ width: '36px', height: '36px', background: '#f5f3ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justify: 'center', color: '#7c3aed' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                          </svg>
+                        </div>
                         <div>
-                          <div style={{ fontSize: '13px', fontWeight: '700' }}>SAP SuccessFactors</div>
+                          <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)' }}>SAP SuccessFactors</div>
                           <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Belum Terhubung</div>
                         </div>
                       </div>
                     </div>
-                    <div style={{ background: '#f1f5f9', padding: '12px 16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
                       <span style={{ fontSize: '12px', color: 'var(--text2)' }}>Belum pernah disinkronisasi</span>
                       <div style={{ background: 'var(--accent)', color: '#fff', fontSize: '12px', padding: '6px 14px', borderRadius: '6px', fontWeight: '600' }}>Sinkronkan Sekarang</div>
                     </div>
                   </div>
 
                   {/* LOCK OVERLAY */}
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                    <div style={{ width: '44px', height: '44px', background: '#f1f5f9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)' }}>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#ffffff', borderRadius: '50%', display: 'flex', alignItems: 'center', justify: 'center', border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                       </svg>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)', marginBottom: '4px' }}>Fitur Eksklusif Enterprise</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text3)', maxWidth: '280px', lineHeight: '1.5' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '4px' }}>Fitur Eksklusif Enterprise</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text3)', maxWidth: '300px', lineHeight: '1.6' }}>
                         Sinkronisasi otomatis karyawan baru, penugasan divisi, dan status aktif dari Mekari Talenta atau SAP SuccessFactors.
                       </div>
                     </div>
                     <button
                       type="button"
-                      style={{ marginTop: '4px', padding: '7px 18px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                      style={{ marginTop: '6px', padding: '9px 22px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 10px rgba(124, 58, 237, 0.2)', transition: 'all 0.2s ease' }}
+                      onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                      onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                       onClick={() => alert('Hubungi tim Axara untuk upgrade ke Enterprise dan aktifkan HRIS Integration.')}
                     >
                       Hubungi Axara untuk Upgrade
