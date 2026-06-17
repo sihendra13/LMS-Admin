@@ -74,7 +74,7 @@ export const ReviewSertifikat = () => {
     );
   };
 
-  const Card = ({ sub, actions }) => {
+  const Card = ({ sub, actions, escalated = false }) => {
     const passed = sub.postScore != null && sub.postScore >= passingScore;
     const improvement = (sub.preScore != null && sub.postScore != null) ? sub.postScore - sub.preScore : null;
     const isSupervisorDecision = !isHRD && actions?.some(a => a.type === 'sup_ok');
@@ -255,7 +255,7 @@ export const ReviewSertifikat = () => {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
           <StatusBadge certStatus={sub.certStatus || 'pending'} />
           {actions && (() => {
-            const isPending = !sub.certStatus || sub.certStatus === 'pending' || sub.certStatus === 'remedial';
+            const isPending = !escalated && (!sub.certStatus || sub.certStatus === 'pending' || sub.certStatus === 'remedial');
             return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -281,6 +281,11 @@ export const ReviewSertifikat = () => {
               {isPending && (
                 <span style={{ fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' }}>
                   {sub.certStatus === 'remedial' ? 'Karyawan sedang mengerjakan ulang' : 'Menunggu review supervisor'}
+                </span>
+              )}
+              {escalated && (
+                <span style={{ fontSize: '10px', color: '#b91c1c', fontStyle: 'italic' }}>
+                  HRD mengambil alih
                 </span>
               )}
             </div>
@@ -513,10 +518,23 @@ export const ReviewSertifikat = () => {
         {isHRD && activeTab === 'in_progress' && (
           inProgressSubs.length === 0
             ? <EmptyState icon="📋" msg="Tidak ada yang sedang dalam proses." />
-            : inProgressSubs.map(sub => <Card key={sub.id} sub={sub} actions={[
-                { type: 'approve', label: '✓ Override & Terbitkan', color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
-                { type: 'reject',  label: '✕ Tolak',                color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
-              ]} />)
+            : inProgressSubs.map(sub => {
+                const isEscalated = (!sub.certStatus || sub.certStatus === 'pending') && daysSince(sub.date) >= 3;
+                const subPassed = sub.postScore != null && sub.postScore >= passingScore;
+                const actions = isEscalated
+                  ? [
+                      ...(subPassed
+                        ? [{ type: 'approve', label: '✓ Terbitkan Sertifikat', color: '#15803d', bg: '#f0fdf4', border: '#86efac' }]
+                        : [{ type: 'sup_rem', label: '↩ Minta Remedial',       color: '#b45309', bg: '#fff7ed', border: '#fed7aa' }]
+                      ),
+                      { type: 'reject', label: '✕ Tolak Final', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
+                    ]
+                  : [
+                      { type: 'approve', label: '✓ Terbitkan', color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
+                      { type: 'reject',  label: '✕ Tolak Final', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
+                    ];
+                return <Card key={sub.id} sub={sub} actions={actions} escalated={isEscalated} />;
+              })
         )}
 
         {/* ── HRD: Diterbitkan ── */}
