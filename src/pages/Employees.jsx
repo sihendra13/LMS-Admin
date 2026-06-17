@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
@@ -9,6 +10,67 @@ export const Employees = () => {
   const [name, setName] = useState('');
   const [dept, setDept] = useState(isSupervisor ? currentUser.dept : 'Sales');
   const [city, setCity] = useState('Jakarta');
+
+  const [showImport, setShowImport] = useState(false);
+  const [importRows, setImportRows] = useState([]);
+  const [importError, setImportError] = useState('');
+
+  const DEPT_OPTIONS = ['Sales', 'HRD', 'Operasional', 'Finance', 'CS', 'IT'];
+
+  const handleDownloadTemplate = () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['Nama Lengkap', 'Departemen', 'Cabang/Kota'],
+      ['Budi Santoso', 'Sales', 'Jakarta'],
+      ['Siti Rahayu', 'HRD', 'Bandung'],
+      ['Agus Wijaya', 'Operasional', 'Surabaya'],
+    ]);
+    ws['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Karyawan');
+    XLSX.writeFile(wb, 'Template_Import_Karyawan.xlsx');
+  };
+
+  const handleImportFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImportError('');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const wb = XLSX.read(ev.target.result, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const rows = raw.slice(1)
+          .filter(r => r[0] && String(r[0]).trim())
+          .map((r, idx) => {
+            const empName = String(r[0] || '').trim();
+            const empDept = String(r[1] || 'Sales').trim();
+            const empCity = String(r[2] || 'Jakarta').trim();
+            const validDept = DEPT_OPTIONS.find(d => d.toLowerCase() === empDept.toLowerCase()) || 'Sales';
+            const errors = [];
+            if (!empName) errors.push('Nama kosong');
+            return { _idx: idx + 2, name: empName, dept: validDept, city: empCity, errors };
+          });
+        if (!rows.length) { setImportError('File kosong atau format tidak sesuai template.'); return; }
+        setImportRows(rows);
+        setShowImport(true);
+      } catch {
+        setImportError('Gagal membaca file. Pastikan format .xlsx sesuai template.');
+      }
+    };
+    reader.readAsBinaryString(file);
+    e.target.value = '';
+  };
+
+  const handleConfirmImport = () => {
+    const validRows = importRows.filter(r => !r.errors.length);
+    const remaining = limit - totalCount;
+    const toAdd = limit === Infinity ? validRows : validRows.slice(0, remaining);
+    toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, dept: r.dept, city: r.city, score: 0 }));
+    setShowImport(false);
+    setImportRows([]);
+    alert(`${toAdd.length} karyawan berhasil ditambahkan!${toAdd.length < validRows.length ? `\n${validRows.length - toAdd.length} baris dilewati karena kuota penuh.` : ''}`);
+  };
 
   const limit = getEmployeeLimit(tenant.plan);
   
@@ -85,7 +147,28 @@ export const Employees = () => {
         <div>
           <div className="section-header">
             <div className="section-title">Registrasi Karyawan</div>
+            {!isSupervisor && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  style={{ fontSize: '12px', padding: '6px 12px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text2)', fontWeight: '600' }}
+                >
+                  ⬇ Template Excel
+                </button>
+                <label style={{ fontSize: '12px', padding: '6px 12px', background: 'var(--accent)', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#fff', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  📂 Import Excel
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImportFile} style={{ display: 'none' }} />
+                </label>
+              </div>
+            )}
           </div>
+
+          {importError && (
+            <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', color: '#dc2626', fontSize: '12px', fontWeight: '600' }}>
+              ⚠️ {importError}
+            </div>
+          )}
 
           <div className="card" style={{ padding: '20px' }}>
             {isFull ? (
@@ -154,6 +237,70 @@ export const Employees = () => {
         </div>
 
       </div>
+
+      {/* IMPORT PREVIEW MODAL */}
+      {showImport && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '640px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            {/* Modal header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)' }}>Preview Import Karyawan</div>
+                <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>
+                  {importRows.filter(r => !r.errors.length).length} valid · {importRows.filter(r => r.errors.length).length} error
+                  {limit !== Infinity && ` · kuota tersisa ${Math.max(0, limit - totalCount)}`}
+                </div>
+              </div>
+              <button onClick={() => { setShowImport(false); setImportRows([]); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text3)' }}>✕</button>
+            </div>
+
+            {/* Table */}
+            <div style={{ overflowY: 'auto', flex: 1 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ background: 'var(--surface2)', position: 'sticky', top: 0 }}>
+                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Baris</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Nama Lengkap</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang/Kota</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importRows.map((r) => (
+                    <tr key={r._idx} style={{ borderBottom: '1px solid var(--border)', background: r.errors.length ? '#fff5f5' : 'transparent' }}>
+                      <td style={{ padding: '10px 16px', color: 'var(--text3)' }}>{r._idx}</td>
+                      <td style={{ padding: '10px 16px', fontWeight: '500' }}>{r.name}</td>
+                      <td style={{ padding: '10px 16px' }}>{r.dept}</td>
+                      <td style={{ padding: '10px 16px', color: 'var(--text2)' }}>{r.city}</td>
+                      <td style={{ padding: '10px 16px' }}>
+                        {r.errors.length
+                          ? <span style={{ color: '#dc2626', fontWeight: '600', fontSize: '11px' }}>✕ {r.errors.join(', ')}</span>
+                          : <span style={{ color: '#16a34a', fontWeight: '600', fontSize: '11px' }}>✓ OK</span>
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal footer */}
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowImport(false); setImportRows([]); }} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmImport}
+                disabled={!importRows.filter(r => !r.errors.length).length || isFull}
+                style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: (!importRows.filter(r => !r.errors.length).length || isFull) ? 0.5 : 1 }}
+              >
+                Tambahkan {Math.min(importRows.filter(r => !r.errors.length).length, limit === Infinity ? Infinity : Math.max(0, limit - totalCount))} Karyawan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -134,18 +134,26 @@ export const Settings = () => {
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text2)', marginBottom: '6px' }}>
                       LOGO PERUSAHAAN (WHITE-LABEL BRANDING)
                     </label>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
+                    <input
+                      type="file"
+                      accept="image/*"
                       onChange={(e) => {
                         const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            updateTenantLogo(reader.result);
-                          };
-                          reader.readAsDataURL(file);
-                        }
+                        if (!file) return;
+                        const img = new Image();
+                        const url = URL.createObjectURL(file);
+                        img.onload = () => {
+                          const MAX_W = 400, MAX_H = 200;
+                          let w = img.width, h = img.height;
+                          if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
+                          if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
+                          const canvas = document.createElement('canvas');
+                          canvas.width = w; canvas.height = h;
+                          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                          updateTenantLogo(canvas.toDataURL('image/jpeg', 0.8));
+                          URL.revokeObjectURL(url);
+                        };
+                        img.src = url;
                       }}
                       style={{ 
                         fontSize: '14px', 
