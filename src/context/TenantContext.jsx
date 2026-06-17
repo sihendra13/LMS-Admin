@@ -191,7 +191,16 @@ export const TenantProvider = ({ children, authUser }) => {
       pendingEssays,
       activities,
     };
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    try {
+      localStorage.setItem(DB_KEY, JSON.stringify(db));
+    } catch {
+      // localStorage penuh — coba simpan tanpa logo agar data lain tidak hilang
+      try {
+        localStorage.setItem(DB_KEY, JSON.stringify({ ...db, tenant: { ...db.tenant, logo: null } }));
+      } catch {
+        // storage benar-benar penuh, lewati
+      }
+    }
   }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities]);
 
   // Supabase: fetch all quiz submissions + realtime sync

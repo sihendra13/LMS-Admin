@@ -143,40 +143,15 @@ export const Settings = () => {
                         if (!file) return;
                         setLogoStatus('processing');
                         const reader = new FileReader();
-                        reader.onload = (ev) => {
-                          const dataUrl = ev.target.result;
-                          const img = new Image();
-                          img.onload = () => {
-                            try {
-                              const MAX_W = 400, MAX_H = 200;
-                              let w = img.width, h = img.height;
-                              if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
-                              if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
-                              const canvas = document.createElement('canvas');
-                              canvas.width = w || 1; canvas.height = h || 1;
-                              const ctx = canvas.getContext('2d');
-                              if (ctx) {
-                                ctx.fillStyle = '#ffffff';
-                                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                updateTenantLogo(canvas.toDataURL('image/jpeg', 0.85));
-                              } else {
-                                // canvas tidak tersedia, simpan dataUrl langsung
-                                updateTenantLogo(dataUrl);
-                              }
-                              setLogoStatus('saved');
-                              setTimeout(() => setLogoStatus('idle'), 3000);
-                            } catch {
-                              // fallback: simpan langsung tanpa kompresi
-                              updateTenantLogo(dataUrl);
-                              setLogoStatus('saved');
-                              setTimeout(() => setLogoStatus('idle'), 3000);
-                            }
-                          };
-                          img.onerror = () => setLogoStatus('error');
-                          img.src = dataUrl;
+                        reader.onloadend = () => {
+                          if (reader.error || !reader.result) {
+                            setLogoStatus('error');
+                            return;
+                          }
+                          updateTenantLogo(reader.result);
+                          setLogoStatus('saved');
+                          setTimeout(() => setLogoStatus('idle'), 3000);
                         };
-                        reader.onerror = () => setLogoStatus('error');
                         reader.readAsDataURL(file);
                       }}
                       style={{ 
