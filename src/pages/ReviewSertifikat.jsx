@@ -63,12 +63,14 @@ export const ReviewSertifikat = () => {
   const daysSince = (str) => Math.floor((Date.now() - parseDateStr(str).getTime()) / 86400000);
 
   // ── sub-components ───────────────────────────────────────────────────
-  const StatusBadge = ({ certStatus }) => {
+  const StatusBadge = ({ certStatus, escalated = false }) => {
     const m = STATUS_META[certStatus] || STATUS_META.pending;
+    const escalatedMeta = { label: '⚠️ Eskalasi ke HRD', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' };
     // Supervisor melihat pending → label "Belum Direview" bukan "Menunggu Supervisor"
-    const label = (!isHRD && (certStatus === 'pending' || !certStatus)) ? 'Belum Direview' : m.label;
+    const label = escalated ? escalatedMeta.label : (!isHRD && (certStatus === 'pending' || !certStatus)) ? 'Belum Direview' : m.label;
+    const meta  = escalated ? escalatedMeta : m;
     return (
-      <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px', background: m.bg, color: m.color, border: `1px solid ${m.border}`, flexShrink: 0 }}>
+      <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px', background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`, flexShrink: 0 }}>
         {label}
       </span>
     );
@@ -253,7 +255,7 @@ export const ReviewSertifikat = () => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
-          <StatusBadge certStatus={sub.certStatus || 'pending'} />
+          <StatusBadge certStatus={sub.certStatus || 'pending'} escalated={escalated} />
           {actions && (() => {
             const isPending = !escalated && (!sub.certStatus || sub.certStatus === 'pending' || sub.certStatus === 'remedial');
             return (
