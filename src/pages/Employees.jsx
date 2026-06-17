@@ -74,9 +74,13 @@ export const Employees = () => {
 
   const limit = getEmployeeLimit(tenant.plan);
   
+  const [deptFilter, setDeptFilter] = useState('');
+
   const displayEmployees = isSupervisor
     ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
-    : employees;
+    : deptFilter
+      ? employees.filter(e => e.dept.toLowerCase() === deptFilter.toLowerCase())
+      : employees;
 
   const totalCount = employees.length;
   const isFull = totalCount >= limit;
@@ -109,8 +113,20 @@ export const Employees = () => {
         
         {/* EMPLOYEES LIST */}
         <div>
-          <div className="section-header">
-            <div className="section-title">Daftar Karyawan Terdaftar ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})</div>
+          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="section-title">
+              Daftar Karyawan Terdaftar ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
+            </div>
+            {!isSupervisor && (
+              <select
+                value={deptFilter}
+                onChange={e => setDeptFilter(e.target.value)}
+                style={{ fontSize: '12px', height: '32px', padding: '0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: '#fff', minWidth: '160px' }}
+              >
+                <option value="">Semua Departemen</option>
+                {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            )}
           </div>
 
           <div className="card">
