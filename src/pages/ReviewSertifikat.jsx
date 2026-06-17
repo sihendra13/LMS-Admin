@@ -224,9 +224,9 @@ export const ReviewSertifikat = () => {
               <span style={{ fontSize: '10px', fontWeight: '700', color: '#15803d', background: '#dcfce7', padding: '1px 6px', borderRadius: '8px' }}>↑{improvement}%</span>
             )}
             <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{sub.date}</span>
-            {sub.retakeCount > 0 && (
+            {(sub.retakeCount > 0 || sub.certStatus === 'remedial') && (
               <span style={{ fontSize: '10px', fontWeight: '700', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', padding: '1px 7px', borderRadius: '10px' }}>
-                Percobaan ke-{sub.retakeCount + 1}
+                {sub.certStatus === 'remedial' ? `🔄 Remedial · Percobaan ke-${sub.retakeCount + 1} dari ${MAX_RETAKES}` : `Percobaan ke-${sub.retakeCount + 1}`}
               </span>
             )}
           </div>
