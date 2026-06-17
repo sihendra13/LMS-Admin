@@ -15,6 +15,8 @@ export const useTenant = () => {
 export const TenantProvider = ({ children, authUser }) => {
   // Local storage synchronization key
   const DB_KEY = 'axara_lms_db';
+  const LOGO_KEY = 'axara_lms_logo';
+
   const getStoredDB = () => {
     try {
       const data = localStorage.getItem(DB_KEY);
@@ -31,7 +33,7 @@ export const TenantProvider = ({ children, authUser }) => {
     plan: storedDB.tenant?.plan || PLANS.BUSINESS, // Default plan in mockup
     status: storedDB.tenant?.status || 'Aktif',
     avatar: storedDB.tenant?.avatar || 'MB',
-    logo: storedDB.tenant?.logo || null,
+    logo: localStorage.getItem(LOGO_KEY) || storedDB.tenant?.logo || null,
   });
 
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'sop' | 'sertifikasi' | 'laporan' | 'karyawan' | 'departemen' | 'upload' | 'notifikasi' | 'pengaturan'
@@ -192,14 +194,11 @@ export const TenantProvider = ({ children, authUser }) => {
       activities,
     };
     try {
-      localStorage.setItem(DB_KEY, JSON.stringify(db));
+      // Simpan tanpa logo — logo disimpan terpisah di LOGO_KEY
+      const dbWithoutLogo = { ...db, tenant: { ...db.tenant, logo: undefined } };
+      localStorage.setItem(DB_KEY, JSON.stringify(dbWithoutLogo));
     } catch {
-      // localStorage penuh — coba simpan tanpa logo agar data lain tidak hilang
-      try {
-        localStorage.setItem(DB_KEY, JSON.stringify({ ...db, tenant: { ...db.tenant, logo: null } }));
-      } catch {
-        // storage benar-benar penuh, lewati
-      }
+      // storage penuh, lewati
     }
   }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities]);
 
@@ -251,6 +250,11 @@ export const TenantProvider = ({ children, authUser }) => {
   };
 
   const updateTenantLogo = (logoBase64) => {
+    if (logoBase64) {
+      try { localStorage.setItem(LOGO_KEY, logoBase64); } catch { /* quota full */ }
+    } else {
+      localStorage.removeItem(LOGO_KEY);
+    }
     setTenant(prev => ({ ...prev, logo: logoBase64 }));
   };
 
