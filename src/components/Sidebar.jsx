@@ -43,7 +43,7 @@ export const Sidebar = ({ onLogout }) => {
           borderRight: '1px solid #e2e8f0'
         }} onClick={() => setActivePage('dashboard')}>
           {tenant.logo ? (
-            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '100%', maxHeight: '42px', objectFit: 'contain' }} />
+            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '160px', maxHeight: '52px', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }} />
           ) : (
             <>
               <span style={{ fontSize: '15px', flexShrink: 0 }}>🏢</span>

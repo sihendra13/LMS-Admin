@@ -425,7 +425,8 @@ export const TenantProvider = ({ children, authUser }) => {
   };
 
   const exportDBString = () => {
-    const db = {
+    const exportData = {
+      tenant: { ...tenant, logo: localStorage.getItem(LOGO_KEY) || tenant.logo || null },
       passingScore,
       validityMonths,
       currentUser: { id: 1, name: 'Rini Wulandari', role: 'employee', dept: 'Sales', city: 'Jakarta', avatar: 'RW', streak: 7 },
@@ -434,7 +435,7 @@ export const TenantProvider = ({ children, authUser }) => {
       pendingEssays,
       activities
     };
-    return JSON.stringify(db, null, 2);
+    return JSON.stringify(exportData, null, 2);
   };
 
   const importDBString = (jsonStr) => {
