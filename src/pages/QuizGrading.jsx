@@ -30,7 +30,7 @@ export const QuizGrading = () => {
       {/* HEADER */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px' }}>Riwayat Kuis</h2>
+          <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px' }}>Hasil Penilaian Kuis</h2>
           <p style={{ color: 'var(--text3)', fontSize: '13px' }}>
             {isSupervisor
               ? `Riwayat hasil kuis pilihan ganda karyawan Divisi ${supervisorDept}. Penilaian dilakukan otomatis oleh sistem.`

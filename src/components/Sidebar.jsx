@@ -108,7 +108,7 @@ export const Sidebar = ({ onLogout }) => {
               <polyline points="10 9 9 9 8 9"/>
             </svg>
           </span>
-          Riwayat Kuis
+          Hasil Penilaian Kuis
         </a>
         <a className={getNavItemClass('laporan')} href="#laporan" onClick={(e) => { e.preventDefault(); setActivePage('laporan'); }}>
           <span className="nav-icon">
