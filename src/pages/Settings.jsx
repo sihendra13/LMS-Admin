@@ -348,9 +348,15 @@ export const Settings = () => {
                     </div>
                     <button
                       type="button"
-                      style={{ marginTop: '6px', padding: '9px 22px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 10px rgba(124, 58, 237, 0.2)', transition: 'all 0.2s ease' }}
-                      onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                      onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      style={{ marginTop: '6px', padding: '9px 22px', background: 'var(--navy)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 10px rgba(11, 22, 40, 0.15)', transition: 'all 0.2s ease' }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.background = 'var(--accent)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.background = 'var(--navy)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
                       onClick={() => alert('Hubungi tim Axara untuk upgrade ke Enterprise dan aktifkan HRIS Integration.')}
                     >
                       Hubungi Axara untuk Upgrade
