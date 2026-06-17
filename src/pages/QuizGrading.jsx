@@ -43,16 +43,55 @@ export const QuizGrading = () => {
         </div>
       </div>
 
-      {/* SUMMARY CHIPS */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '10px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', color: '#16a34a' }}>
-          ✓ Lulus: <strong>{passed}</strong>
+      {/* SUMMARY STATS CARDS */}
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '22px' }}>
+        <div className="stat-card green" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="stat-icon green" style={{ width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justify: 'center', marginBottom: '14px', background: '#ecfdf5', color: '#16a34a' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: '18px', height: '18px' }}>
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
+          <div className="stat-label" style={{ fontWarning: '500' }}>Karyawan Lulus</div>
+          <div className="stat-value" style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            {passed}
+            <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: 'normal' }}>karyawan</span>
+          </div>
         </div>
-        <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '10px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', color: '#dc2626' }}>
-          ✕ Remedi: <strong>{failed}</strong>
+
+        <div className="stat-card red" style={{ display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+          <style dangerouslySetInnerHTML={{__html: `
+            .stat-card.red::before { background: var(--red); }
+            .stat-icon.red { background: #fff5f5; color: var(--red); }
+          `}} />
+          <div className="stat-icon red" style={{ width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justify: 'center', marginBottom: '14px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: '18px', height: '18px' }}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+          </div>
+          <div className="stat-label">Perlu Remedi</div>
+          <div className="stat-value" style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            {failed}
+            <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: 'normal' }}>karyawan</span>
+          </div>
         </div>
-        <div style={{ background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
-          Total: <strong>{history.length}</strong>
+
+        <div className="stat-card blue" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="stat-icon blue" style={{ width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justify: 'center', marginBottom: '14px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: '18px', height: '18px' }}>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div className="stat-label">Total Percobaan Kuis</div>
+          <div className="stat-value" style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            {history.length}
+            <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: 'normal' }}>total</span>
+          </div>
         </div>
       </div>
 
