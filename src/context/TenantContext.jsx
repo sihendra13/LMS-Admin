@@ -488,7 +488,8 @@ export const TenantProvider = ({ children, authUser }) => {
       validityMonths,
       setValidityMonths,
       exportDBString,
-      importDBString
+      importDBString,
+      updateTenantLogo
     }}>
       {children}
     </TenantContext.Provider>
