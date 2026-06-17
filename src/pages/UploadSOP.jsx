@@ -588,13 +588,13 @@ export const UploadSOP = () => {
                     )}
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e40af' }}>
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e293b' }}>
                         <div style={{ fontWeight: '700', marginBottom: '4px' }}>🔑 Cara mengisi kunci jawaban:</div>
                         <ol style={{ margin: 0, paddingLeft: '18px', lineHeight: '1.8' }}>
                           <li>Isi teks masing-masing opsi jawaban (A, B, C, D) di kotak di bawah</li>
                           <li>Klik kotak opsi yang merupakan <strong>jawaban benar</strong> — kotak akan berwarna biru (✓)</li>
                         </ol>
-                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#3b82f6', fontStyle: 'italic' }}>
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>
                           Contoh: Pertanyaan "Ibukota Indonesia adalah?" → isi A=Jakarta, B=Bandung, C=Solo, D=Yogyakarta → klik opsi A (Jakarta) sebagai jawaban benar
                         </div>
                       </div>
@@ -683,13 +683,13 @@ export const UploadSOP = () => {
                     </div>
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e40af' }}>
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e293b' }}>
                         <div style={{ fontWeight: '700', marginBottom: '4px' }}>🔑 Cara mengisi kunci jawaban:</div>
                         <ol style={{ margin: 0, paddingLeft: '18px', lineHeight: '1.8' }}>
                           <li>Isi teks masing-masing opsi jawaban (A, B, C, D) di kotak di bawah</li>
                           <li>Klik kotak opsi yang merupakan <strong>jawaban benar</strong> — kotak akan berwarna biru (✓)</li>
                         </ol>
-                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#3b82f6', fontStyle: 'italic' }}>
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>
                           Contoh: Pertanyaan "Ibukota Indonesia adalah?" → isi A=Jakarta, B=Bandung, C=Solo, D=Yogyakarta → klik opsi A (Jakarta) sebagai jawaban benar
                         </div>
                       </div>
