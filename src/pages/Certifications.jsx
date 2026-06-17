@@ -13,8 +13,6 @@ export const Certifications = () => {
     setValidityMonths 
   } = useTenant();
 
-  // Settings states for Business plan simulation
-  const [selectedTemplate, setSelectedTemplate] = useState('modern-navy');
   const [autoEmail, setAutoEmail] = useState(true);
 
   // Modal preview state
@@ -172,21 +170,6 @@ export const Certifications = () => {
               </select>
             </div>
 
-            {/* BRANDING TEMPLATE */}
-            <div className="form-group">
-              <label className="form-label" style={{ fontSize: '11px', fontWeight: '600' }}>DESAIN TEMPLATE</label>
-              <select 
-                className="form-select"
-                style={{ fontSize: '12px', marginTop: '4px' }}
-                value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-              >
-                <option value="modern-navy">Elegant Navy (Corporate)</option>
-                <option value="luxury-gold">Luxury Gold (Premium)</option>
-                <option value="emerald-green">Emerald Compliance (Formal)</option>
-              </select>
-            </div>
-
             {/* OPTIONS TOGGLES */}
             <div style={{ marginTop: '6px', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px', color: 'var(--text2)' }}>
@@ -304,7 +287,7 @@ export const Certifications = () => {
 
             {/* Certificate Frame */}
             <div style={{
-              border: `8px double ${selectedTemplate === 'modern-navy' ? '#0f172a' : selectedTemplate === 'luxury-gold' ? '#d97706' : '#047857'}`,
+              border: '8px double #0f172a',
               padding: '30px',
               textAlign: 'center',
               background: '#fefefe',
@@ -315,34 +298,31 @@ export const Certifications = () => {
             }}>
               {/* Background badge decorations */}
               <div style={{
-                position: 'absolute',
-                bottom: '-20px',
-                right: '-20px',
-                width: '150px',
-                height: '150px',
-                borderRadius: '50%',
-                background: selectedTemplate === 'modern-navy' ? '#eff6ff' : selectedTemplate === 'luxury-gold' ? '#fffbeb' : '#f0fdf4',
-                opacity: 0.5,
-                zIndex: 1
+                position: 'absolute', bottom: '-20px', right: '-20px',
+                width: '150px', height: '150px', borderRadius: '50%',
+                background: '#eff6ff', opacity: 0.5, zIndex: 1
               }} />
 
               {/* Logo Area */}
-              <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '20px' }}>
-                🏢 {tenant.name} · Corporate LMS
-              </div>
+              {tenant.logo ? (
+                <div style={{ marginBottom: '16px' }}>
+                  <img src={tenant.logo} alt={tenant.name} style={{ maxHeight: '52px', maxWidth: '180px', objectFit: 'contain' }} />
+                </div>
+              ) : (
+                <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '20px' }}>
+                  🏢 {tenant.name} · Corporate LMS
+                </div>
+              )}
 
               {/* Title */}
-              <h1 style={{ 
-                fontFamily: "'Playfair Display', Georgia, serif", 
-                fontSize: '28px', 
-                fontWeight: '700', 
-                color: selectedTemplate === 'modern-navy' ? '#0f172a' : selectedTemplate === 'luxury-gold' ? '#b45309' : '#065f46',
-                margin: '0 0 10px 0',
-                letterSpacing: '1px'
+              <h1 style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: '28px', fontWeight: '700', color: '#0f172a',
+                margin: '0 0 10px 0', letterSpacing: '1px'
               }}>
                 SERTIFIKAT KELULUSAN
               </h1>
-              <div style={{ width: '60px', height: '2px', background: selectedTemplate === 'modern-navy' ? '#0f172a' : selectedTemplate === 'luxury-gold' ? '#d97706' : '#047857', margin: '0 auto 24px auto' }}></div>
+              <div style={{ width: '60px', height: '2px', background: '#0f172a', margin: '0 auto 24px auto' }}></div>
 
               {/* Sub-info */}
               <p style={{ fontSize: '13px', color: 'var(--text3)', margin: '0 0 20px 0', fontStyle: 'italic' }}>
