@@ -121,7 +121,7 @@ export const Employees = () => {
               <select
                 value={deptFilter}
                 onChange={e => setDeptFilter(e.target.value)}
-                style={{ fontSize: '12px', height: '32px', padding: '0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: '#fff', minWidth: '160px' }}
+                style={{ fontSize: '12px', height: '32px', padding: '0 28px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: '#fff', minWidth: '160px' }}
               >
                 <option value="">Semua Departemen</option>
                 {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
