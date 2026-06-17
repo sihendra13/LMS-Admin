@@ -65,7 +65,7 @@ export const ReviewSertifikat = () => {
   // ── sub-components ───────────────────────────────────────────────────
   const StatusBadge = ({ certStatus, escalated = false }) => {
     const m = STATUS_META[certStatus] || STATUS_META.pending;
-    const escalatedMeta = { label: '⚠️ Eskalasi ke HRD', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' };
+    const escalatedMeta = { label: '⚠️ Eskalasi ke HRD', color: '#92400e', bg: '#fffbeb', border: '#fde68a' };
     // Supervisor melihat pending → label "Belum Direview" bukan "Menunggu Supervisor"
     const label = escalated ? escalatedMeta.label : (!isHRD && (certStatus === 'pending' || !certStatus)) ? 'Belum Direview' : m.label;
     const meta  = escalated ? escalatedMeta : m;
@@ -238,7 +238,7 @@ export const ReviewSertifikat = () => {
             </div>
           )}
           {isHRD && (!sub.certStatus || sub.certStatus === 'pending') && daysSince(sub.date) >= 3 && (
-            <div style={{ marginTop: '5px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ marginTop: '5px', fontSize: '11px', color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               ⚠️ Supervisor tidak merespons ({daysSince(sub.date)} hari)
             </div>
           )}
@@ -286,7 +286,7 @@ export const ReviewSertifikat = () => {
                 </span>
               )}
               {escalated && (
-                <span style={{ fontSize: '10px', color: '#b91c1c', fontStyle: 'italic' }}>
+                <span style={{ fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' }}>
                   HRD mengambil alih
                 </span>
               )}
