@@ -119,91 +119,92 @@ export const Settings = () => {
                 </div>
 
                 {/* LOGO UPLOAD AREA */}
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '24px', background: '#f8fafc', padding: '18px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                <div style={{ marginBottom: '24px', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', color: 'var(--text2)', marginBottom: '14px', letterSpacing: '0.05em' }}>
+                    LOGO PERUSAHAAN (WHITE-LABEL BRANDING)
+                  </label>
+
+                  {/* PREVIEW BOX */}
                   <div style={{
-                    width: '120px',
-                    height: '60px',
+                    width: '100%',
+                    height: '90px',
                     background: '#ffffff',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    marginBottom: '14px',
                     overflow: 'hidden',
-                    border: '1px solid var(--border)',
-                    flexShrink: 0
                   }}>
                     {tenant.logo ? (
-                      <img src={tenant.logo} alt="Logo Perusahaan" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                      <img src={tenant.logo} alt="Logo Perusahaan" style={{ maxWidth: '240px', maxHeight: '64px', objectFit: 'contain' }} />
                     ) : (
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                      </svg>
+                      <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 6px' }}>
+                          <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                        </svg>
+                        <span style={{ fontSize: '11px' }}>Belum ada logo</span>
+                      </div>
                     )}
                   </div>
-                  <div style={{ flex: 1, textAlign: 'left' }}>
-                    <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', color: 'var(--text2)', marginBottom: '8px', letterSpacing: '0.05em' }}>
-                      LOGO PERUSAHAAN (WHITE-LABEL BRANDING)
-                    </label>
-                    
-                    {/* CUSTOM STYLED FILE UPLOAD TRIGGER */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+
+                  {/* BUTTONS */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="btn-sec"
+                      style={{
+                        padding: '7px 14px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        border: '1px solid var(--border)',
+                        background: '#ffffff',
+                        color: 'var(--text2)',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                      }}
+                      onClick={() => document.getElementById('company-logo-input').click()}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      {tenant.logo ? 'Ganti Logo' : 'Pilih File Gambar'}
+                    </button>
+
+                    {tenant.logo && logoStatus === 'idle' && (
                       <button
                         type="button"
-                        className="btn-sec"
                         style={{
-                          padding: '6px 14px',
+                          padding: '7px 14px',
                           borderRadius: '6px',
                           fontSize: '12px',
                           fontWeight: '600',
-                          border: '1px solid var(--border)',
-                          background: '#ffffff',
-                          color: 'var(--text2)',
+                          border: '1px solid #fee2e2',
+                          background: '#fff5f5',
+                          color: '#ef4444',
                           cursor: 'pointer',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '6px',
-                          transition: 'all 0.2s',
-                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                         }}
-                        onClick={() => document.getElementById('company-logo-input').click()}
+                        onClick={() => { updateTenantLogo(null); }}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <polyline points="17 8 12 3 7 8" />
-                          <line x1="12" y1="3" x2="12" y2="15" />
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                         </svg>
-                        Pilih File Gambar
+                        Hapus Logo
                       </button>
-                      
-                      {tenant.logo && logoStatus === 'idle' && (
-                        <button
-                          type="button"
-                          style={{
-                            padding: '6px 14px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            border: '1px solid #fee2e2',
-                            background: '#fff5f5',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s'
-                          }}
-                          onClick={() => { updateTenantLogo(null); }}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                          </svg>
-                          Hapus Logo
-                        </button>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
                     <input
                       id="company-logo-input"
@@ -250,7 +251,6 @@ export const Settings = () => {
                         Gagal memproses gambar. Coba format JPG atau PNG lain.
                       </div>
                     )}
-                  </div>
                 </div>
 
                 {/* FLAT TEXT VALUE CARDS TO PREVENT BOXY DEFAULT INPUT LOOKS */}
