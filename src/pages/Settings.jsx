@@ -141,6 +141,11 @@ export const Settings = () => {
                       onChange={(e) => {
                         const file = e.target.files[0];
                         if (!file) return;
+                        const MAX_MB = 10;
+                        if (file.size > MAX_MB * 1024 * 1024) {
+                          setLogoStatus('error');
+                          return;
+                        }
                         setLogoStatus('processing');
                         const img = new Image();
                         const url = URL.createObjectURL(file);
@@ -172,19 +177,20 @@ export const Settings = () => {
                         cursor: 'pointer' 
                       }} 
                     />
+                    <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '4px' }}>
+                      Format: JPG, PNG, SVG · <strong>Maks. 10 MB</strong> · Rasio landscape direkomendasikan
+                    </div>
                     {logoStatus === 'processing' && (
-                      <div style={{ fontSize: '12px', color: '#0369a1', marginTop: '6px', fontWeight: '600' }}>⏳ Memproses logo...</div>
+                      <div style={{ fontSize: '12px', color: '#0369a1', marginTop: '6px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid #0369a1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                        Memproses logo...
+                      </div>
                     )}
                     {logoStatus === 'saved' && (
                       <div style={{ fontSize: '12px', color: '#16a34a', marginTop: '6px', fontWeight: '600' }}>✓ Logo berhasil disimpan! Sidebar sudah diperbarui.</div>
                     )}
                     {logoStatus === 'error' && (
-                      <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '6px', fontWeight: '600' }}>✕ Gagal menyimpan logo. Coba file gambar yang lebih kecil.</div>
-                    )}
-                    {logoStatus === 'idle' && (
-                      <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '4px' }}>
-                        Rekomendasi rasio landscape, background putih/transparan. Logo akan otomatis dipasang pada container putih di kiri atas menu navigasi.
-                      </div>
+                      <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '6px', fontWeight: '600' }}>✕ File terlalu besar atau tidak valid. Maksimal 10 MB.</div>
                     )}
                     {tenant.logo && logoStatus === 'idle' && (
                       <button

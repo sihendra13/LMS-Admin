@@ -777,3 +777,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
 
 
 
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
