@@ -152,12 +152,64 @@ export const Employees = () => {
                 <button
                   type="button"
                   onClick={handleDownloadTemplate}
-                  style={{ fontSize: '12px', padding: '6px 12px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text2)', fontWeight: '600' }}
+                  style={{
+                    fontSize: '12px',
+                    padding: '8px 16px',
+                    background: '#ffffff',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: 'var(--text2)',
+                    fontWeight: '600',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    height: '38px',
+                    boxSizing: 'border-box',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#f8fafc';
+                    e.currentTarget.style.borderColor = 'var(--text3)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#ffffff';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
                 >
-                  ⬇ Template Excel
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Template Excel
                 </button>
-                <label style={{ fontSize: '12px', padding: '6px 12px', background: 'var(--accent)', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#fff', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  📂 Import Excel
+                <label
+                  style={{
+                    fontSize: '12px',
+                    padding: '8px 16px',
+                    background: 'var(--navy)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: '#fff',
+                    fontWeight: '600',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    height: '38px',
+                    boxSizing: 'border-box',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'var(--accent)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'var(--navy)'}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  Import Excel
                   <input type="file" accept=".xlsx,.xls" onChange={handleImportFile} style={{ display: 'none' }} />
                 </label>
               </div>
