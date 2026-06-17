@@ -18,6 +18,7 @@ export const ReviewSertifikat = () => {
   const [activeTab, setActiveTab] = useState(isHRD ? 'ready' : 'need_review');
   const [actionModal, setActionModal] = useState({ open: false, type: null, sub: null });
   const [modalNote, setModalNote] = useState('');
+  const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('rev-banner-dismissed') === '1');
 
   // ── filter helpers ───────────────────────────────────────────────────
   const myDept = currentUser.dept;
@@ -52,6 +53,14 @@ export const ReviewSertifikat = () => {
     if (s == null) return 'var(--text3)';
     return s >= passingScore ? '#16a34a' : '#dc2626';
   };
+
+  const parseDateStr = (str) => {
+    if (!str || str === 'Hari ini' || str === 'Baru saja') return new Date();
+    const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, Mei: 4, Jun: 5, Jul: 6, Agu: 7, Sep: 8, Okt: 9, Nov: 10, Des: 11 };
+    const [d, m, y] = str.split(' ');
+    return (d && m && y) ? new Date(+y, MONTHS[m] ?? 0, +d) : new Date();
+  };
+  const daysSince = (str) => Math.floor((Date.now() - parseDateStr(str).getTime()) / 86400000);
 
   // ── sub-components ───────────────────────────────────────────────────
   const StatusBadge = ({ certStatus }) => {
@@ -152,17 +161,40 @@ export const ReviewSertifikat = () => {
             <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)', marginBottom: '10px' }}>
               Apakah Anda merekomendasikan sertifikat untuk karyawan ini?
             </div>
+            <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '8px', fontStyle: 'italic' }}>
+              {passed
+                ? '✅ Nilai memenuhi standar — tombol Rekomendasikan aktif'
+                : '❌ Nilai di bawah standar — tombol Minta Ulang aktif'}
+            </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => openModal('sup_ok', sub)} style={{
-                flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
-                background: '#eff6ff', border: '1px solid #93c5fd', color: '#1d4ed8', cursor: 'pointer'
-              }}>
+              <button
+                onClick={() => passed ? openModal('sup_ok', sub) : null}
+                disabled={!passed}
+                title={!passed ? 'Nilai belum memenuhi standar kelulusan — hanya Minta Ulang yang tersedia' : ''}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
+                  background: passed ? '#eff6ff' : '#f1f5f9',
+                  border: `1px solid ${passed ? '#93c5fd' : '#cbd5e1'}`,
+                  color: passed ? '#1d4ed8' : '#94a3b8',
+                  cursor: passed ? 'pointer' : 'not-allowed',
+                  opacity: passed ? 1 : 0.55,
+                }}
+              >
                 ✓ Ya, Rekomendasikan
               </button>
-              <button onClick={() => openModal('sup_rem', sub)} style={{
-                flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
-                background: '#fff7ed', border: '1px solid #fed7aa', color: '#b45309', cursor: 'pointer'
-              }}>
+              <button
+                onClick={() => !passed ? openModal('sup_rem', sub) : null}
+                disabled={passed}
+                title={passed ? 'Nilai sudah memenuhi standar — hanya Rekomendasikan yang tersedia' : ''}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
+                  background: !passed ? '#fff7ed' : '#f1f5f9',
+                  border: `1px solid ${!passed ? '#fed7aa' : '#cbd5e1'}`,
+                  color: !passed ? '#b45309' : '#94a3b8',
+                  cursor: !passed ? 'pointer' : 'not-allowed',
+                  opacity: !passed ? 1 : 0.55,
+                }}
+              >
                 ↩ Belum, Minta Ulang
               </button>
             </div>
@@ -201,6 +233,11 @@ export const ReviewSertifikat = () => {
           {sub.supervisorNote && (
             <div style={{ marginTop: '5px', fontSize: '11px', color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '4px 8px', display: 'inline-block' }}>
               💬 {sub.supervisorName}: {sub.supervisorNote}
+            </div>
+          )}
+          {isHRD && (!sub.certStatus || sub.certStatus === 'pending') && daysSince(sub.date) >= 3 && (
+            <div style={{ marginTop: '5px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              ⚠️ Supervisor tidak merespons ({daysSince(sub.date)} hari)
             </div>
           )}
           {sub.certStatus === 'rejected' && sub.rejectionNote && (
@@ -416,6 +453,40 @@ export const ReviewSertifikat = () => {
           </div>
         </div>
       )}
+
+      {/* SNACKING BANNER: supervisor pending reminder */}
+      {!isHRD && !bannerDismissed && needReviewSubs.length > 0 && (() => {
+        const maxDays = Math.max(...needReviewSubs.map(s => daysSince(s.date)));
+        const variant = maxDays >= 3 ? 'red' : 'amber';
+        return (
+          <div style={{
+            background: variant === 'red' ? '#fff5f5' : '#fffbeb',
+            border: `1px solid ${variant === 'red' ? '#fecaca' : '#fde68a'}`,
+            borderRadius: '10px', padding: '12px 16px', marginBottom: '16px',
+            display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '18px' }}>{variant === 'red' ? '🚨' : '⏰'}</span>
+              <div>
+                <div style={{ fontWeight: '700', fontSize: '13px', color: variant === 'red' ? '#b91c1c' : '#92400e' }}>
+                  {variant === 'red'
+                    ? `${needReviewSubs.length} karyawan menunggu lebih dari 3 hari — segera review`
+                    : `${needReviewSubs.length} karyawan menunggu rekomendasi Anda`}
+                </div>
+                <div style={{ fontSize: '12px', color: variant === 'red' ? '#ef4444' : '#b45309', marginTop: '2px' }}>
+                  {variant === 'red'
+                    ? 'Jika tidak direspons, HRD dapat mengambil alih keputusan.'
+                    : 'Beri rekomendasi sesegera mungkin agar proses sertifikasi tidak terhambat.'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => { setBannerDismissed(true); sessionStorage.setItem('rev-banner-dismissed', '1'); }}
+              style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: variant === 'red' ? '#ef4444' : '#b45309', flexShrink: 0, lineHeight: 1, padding: '0 4px' }}
+            >×</button>
+          </div>
+        );
+      })()}
 
       {/* TABS */}
       <div style={{ display: 'flex', gap: '4px', borderBottom: '2px solid var(--border)', marginBottom: '16px' }}>
