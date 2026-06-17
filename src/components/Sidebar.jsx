@@ -3,9 +3,8 @@ import { useTenant } from '../context/TenantContext';
 import { PLANS, canUploadSOP } from '../utils/featureGates';
 
 export const Sidebar = ({ onLogout }) => {
-  const { tenant, activePage, setActivePage, videos, currentUser, pendingEssays, quizSubmissions } = useTenant();
+  const { tenant, activePage, setActivePage, videos, currentUser, quizSubmissions } = useTenant();
 
-  // Helper for active menu class
   const getNavItemClass = (page) => {
     return `nav-item ${activePage === page ? 'active' : ''}`;
   };
@@ -13,14 +12,6 @@ export const Sidebar = ({ onLogout }) => {
   const planLabel = tenant.plan.charAt(0).toUpperCase() + tenant.plan.slice(1);
 
   const isHRDAdmin = currentUser.role === 'admin';
-
-  // Calculate pending essays count based on role
-  const filteredPendingCount = pendingEssays.filter(essay => {
-    if (!isHRDAdmin) {
-      return essay.dept.toLowerCase() === currentUser.dept.toLowerCase();
-    }
-    return true;
-  }).length;
 
   const pendingCertCount = quizSubmissions.filter(s => !s.certStatus || s.certStatus === 'pending').length;
 
@@ -117,10 +108,7 @@ export const Sidebar = ({ onLogout }) => {
               <polyline points="10 9 9 9 8 9"/>
             </svg>
           </span>
-          Penilaian Kuis
-          {filteredPendingCount > 0 && (
-            <span className="nav-badge" style={{ background: '#f59e0b', color: '#ffffff' }}>{filteredPendingCount}</span>
-          )}
+          Riwayat Kuis
         </a>
         <a className={getNavItemClass('laporan')} href="#laporan" onClick={(e) => { e.preventDefault(); setActivePage('laporan'); }}>
           <span className="nav-icon">
