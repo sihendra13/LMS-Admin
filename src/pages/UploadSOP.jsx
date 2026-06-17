@@ -517,7 +517,7 @@ export const UploadSOP = () => {
                       <textarea
                         className="form-input"
                         style={{ minHeight: '80px', fontFamily: 'inherit', resize: 'vertical', fontSize: '14px', padding: '10px 14px', marginTop: '6px' }}
-                        placeholder="Contoh: Apa langkah pertama dalam prosedur packing barang pecah belah?"
+                        placeholder="Contoh: Ibukota Indonesia adalah?"
                         value={q.question}
                         onChange={(e) => handlePreQuestionChange(idx, 'question', e.target.value)}
                       />
@@ -588,14 +588,21 @@ export const UploadSOP = () => {
                     )}
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '8px 12px', marginBottom: '10px', fontSize: '12px', color: '#1e40af', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                        <span>🔑</span>
-                        <span><strong>Tandai jawaban yang benar</strong> — klik salah satu opsi di bawah. Sistem akan otomatis menilai jawaban karyawan berdasarkan pilihan ini.</span>
+                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e40af' }}>
+                        <div style={{ fontWeight: '700', marginBottom: '4px' }}>🔑 Cara mengisi kunci jawaban:</div>
+                        <ol style={{ margin: 0, paddingLeft: '18px', lineHeight: '1.8' }}>
+                          <li>Isi teks masing-masing opsi jawaban (A, B, C, D) di kotak di bawah</li>
+                          <li>Klik kotak opsi yang merupakan <strong>jawaban benar</strong> — kotak akan berwarna biru (✓)</li>
+                        </ol>
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#3b82f6', fontStyle: 'italic' }}>
+                          Contoh: Pertanyaan "Ibukota Indonesia adalah?" → isi A=Jakarta, B=Bandung, C=Solo, D=Yogyakarta → klik opsi A (Jakarta) sebagai jawaban benar
+                        </div>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
                           const letter = String.fromCharCode(65 + oIdx);
                           const isCorrect = q.answer === letter;
+                          const examples = ['Jakarta', 'Bandung', 'Solo', 'Yogyakarta'];
                           return (
                             <div
                               key={oIdx}
@@ -609,7 +616,7 @@ export const UploadSOP = () => {
                                 type="text"
                                 className="option-input"
                                 style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '14px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
-                                placeholder={`Opsi jawaban ${letter}`}
+                                placeholder={`Contoh: ${examples[oIdx]}`}
                                 value={opt}
                                 onChange={(e) => handlePreOptionChange(idx, oIdx, e.target.value)}
                                 required
@@ -676,14 +683,21 @@ export const UploadSOP = () => {
                     </div>
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '8px 12px', marginBottom: '10px', fontSize: '12px', color: '#1e40af', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                        <span>🔑</span>
-                        <span><strong>Tandai jawaban yang benar</strong> — klik salah satu opsi di bawah. Sistem akan otomatis menilai jawaban karyawan berdasarkan pilihan ini.</span>
+                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e40af' }}>
+                        <div style={{ fontWeight: '700', marginBottom: '4px' }}>🔑 Cara mengisi kunci jawaban:</div>
+                        <ol style={{ margin: 0, paddingLeft: '18px', lineHeight: '1.8' }}>
+                          <li>Isi teks masing-masing opsi jawaban (A, B, C, D) di kotak di bawah</li>
+                          <li>Klik kotak opsi yang merupakan <strong>jawaban benar</strong> — kotak akan berwarna biru (✓)</li>
+                        </ol>
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#3b82f6', fontStyle: 'italic' }}>
+                          Contoh: Pertanyaan "Ibukota Indonesia adalah?" → isi A=Jakarta, B=Bandung, C=Solo, D=Yogyakarta → klik opsi A (Jakarta) sebagai jawaban benar
+                        </div>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
                           const letter = String.fromCharCode(65 + oIdx);
                           const isCorrect = q.answer === letter;
+                          const examples = ['Jakarta', 'Bandung', 'Solo', 'Yogyakarta'];
                           return (
                             <div
                               key={oIdx}
@@ -697,7 +711,7 @@ export const UploadSOP = () => {
                                 type="text"
                                 className="option-input"
                                 style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '14px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
-                                placeholder={`Opsi jawaban ${letter}`}
+                                placeholder={`Contoh: ${examples[oIdx]}`}
                                 value={opt}
                                 onChange={(e) => handlePostOptionChange(idx, oIdx, e.target.value)}
                                 required
