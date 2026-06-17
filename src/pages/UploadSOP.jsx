@@ -588,9 +588,9 @@ export const UploadSOP = () => {
                     )}
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <label style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Kunci Jawaban</label>
-                        <span style={{ fontSize: '11px', color: 'var(--text3)' }}>— klik opsi untuk menandai jawaban yang benar</span>
+                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '8px 12px', marginBottom: '10px', fontSize: '12px', color: '#1e40af', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                        <span>🔑</span>
+                        <span><strong>Tandai jawaban yang benar</strong> — klik salah satu opsi di bawah. Sistem akan otomatis menilai jawaban karyawan berdasarkan pilihan ini.</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
@@ -676,9 +676,9 @@ export const UploadSOP = () => {
                     </div>
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <label style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Kunci Jawaban</label>
-                        <span style={{ fontSize: '11px', color: 'var(--text3)' }}>— klik opsi untuk menandai jawaban yang benar</span>
+                      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '8px 12px', marginBottom: '10px', fontSize: '12px', color: '#1e40af', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                        <span>🔑</span>
+                        <span><strong>Tandai jawaban yang benar</strong> — klik salah satu opsi di bawah. Sistem akan otomatis menilai jawaban karyawan berdasarkan pilihan ini.</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
