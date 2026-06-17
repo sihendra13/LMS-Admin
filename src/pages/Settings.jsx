@@ -141,11 +141,6 @@ export const Settings = () => {
                       onChange={(e) => {
                         const file = e.target.files[0];
                         if (!file) return;
-                        const MAX_MB = 10;
-                        if (file.size > MAX_MB * 1024 * 1024) {
-                          setLogoStatus('error');
-                          return;
-                        }
                         setLogoStatus('processing');
                         const img = new Image();
                         const url = URL.createObjectURL(file);
@@ -156,9 +151,13 @@ export const Settings = () => {
                             if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
                             if (h > MAX_H) { w = Math.round(w * MAX_H / h); h = MAX_H; }
                             const canvas = document.createElement('canvas');
-                            canvas.width = w; canvas.height = h;
-                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                            const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                            canvas.width = w || 1; canvas.height = h || 1;
+                            const ctx = canvas.getContext('2d');
+                            if (!ctx) throw new Error('Canvas tidak tersedia');
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            const compressed = canvas.toDataURL('image/jpeg', 0.85);
                             updateTenantLogo(compressed);
                             setLogoStatus('saved');
                             setTimeout(() => setLogoStatus('idle'), 3000);
@@ -178,7 +177,7 @@ export const Settings = () => {
                       }} 
                     />
                     <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '4px' }}>
-                      Format: JPG, PNG, SVG · <strong>Maks. 10 MB</strong> · Rasio landscape direkomendasikan
+                      Format: JPG, PNG · Otomatis dikompres · Rasio landscape direkomendasikan
                     </div>
                     {logoStatus === 'processing' && (
                       <div style={{ fontSize: '12px', color: '#0369a1', marginTop: '6px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -190,7 +189,7 @@ export const Settings = () => {
                       <div style={{ fontSize: '12px', color: '#16a34a', marginTop: '6px', fontWeight: '600' }}>✓ Logo berhasil disimpan! Sidebar sudah diperbarui.</div>
                     )}
                     {logoStatus === 'error' && (
-                      <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '6px', fontWeight: '600' }}>✕ File terlalu besar atau tidak valid. Maksimal 10 MB.</div>
+                      <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '6px', fontWeight: '600' }}>✕ Gagal memproses gambar. Coba format JPG atau PNG lain.</div>
                     )}
                     {tenant.logo && logoStatus === 'idle' && (
                       <button
