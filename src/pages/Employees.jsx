@@ -170,8 +170,12 @@ export const Employees = () => {
             </div>
           )}
 
-          <div className="card" style={{ padding: '20px' }}>
-            {isFull ? (
+          <div className="card" style={{ padding: '20px', opacity: isSupervisor ? 0.6 : 1 }}>
+            {isSupervisor ? (
+              <div style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--text2)' }}>
+                <div style={{ fontWeight: '600', fontSize: '13px' }}>🔒 Hanya HRD Admin yang dapat mendaftarkan karyawan.</div>
+              </div>
+            ) : isFull ? (
               <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--red)' }}>
                 <div style={{ fontWeight: '600', fontSize: '13px', marginBottom: '4px' }}>⚠️ Kuota Paket Penuh!</div>
                 <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
@@ -195,7 +199,7 @@ export const Employees = () => {
                   placeholder="Contoh: Budi Santoso"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  disabled={isFull}
+                  disabled={isFull || isSupervisor}
                 />
               </div>
 
@@ -225,12 +229,12 @@ export const Employees = () => {
                   placeholder="Contoh: Jakarta"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  disabled={isFull}
+                  disabled={isFull || isSupervisor}
                 />
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={isFull}>
-                {isFull ? '🔒 Kuota Karyawan Penuh' : 'Daftarkan Karyawan'}
+              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={isFull || isSupervisor}>
+                {isSupervisor ? '🔒 Hanya HRD Admin' : isFull ? '🔒 Kuota Karyawan Penuh' : 'Daftarkan Karyawan'}
               </button>
             </form>
           </div>
