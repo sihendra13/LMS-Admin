@@ -106,9 +106,17 @@ export const UploadSOP = () => {
     setPostQuestions(prev => prev.filter((_, i) => i !== index));
   };
 
+  const toSecs = (q) => Number(q.triggerMin || 0) * 60 + Number(q.triggerSec || 0);
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return alert('Judul SOP tidak boleh kosong!');
+    for (let i = 1; i < preQuestions.length; i++) {
+      if (preQuestions[i].question.trim() === '') continue;
+      if (toSecs(preQuestions[i]) <= toSecs(preQuestions[i - 1])) {
+        return alert(`Pertanyaan Pre-Test #${i + 1}: waktu pemicu harus lebih besar dari pertanyaan sebelumnya. Kuis harus muncul secara kronologis.`);
+      }
+    }
     setShowPublishConfirm(true);
   };
 
@@ -515,27 +523,6 @@ export const UploadSOP = () => {
                       />
                     </div>
 
-                    {/* QUESTION TYPE CHIPS SELECTOR */}
-                    <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Tipe Pertanyaan</label>
-                      <div className="type-chips-container" style={{ marginTop: '4px' }}>
-                        <button
-                          type="button"
-                          className={`type-chip ${q.type === 'multiple' ? 'active' : ''}`}
-                          onClick={() => handlePreQuestionChange(idx, 'type', 'multiple')}
-                        >
-                          Pilihan Ganda
-                        </button>
-                        <button
-                          type="button"
-                          className={`type-chip ${q.type === 'essay' ? 'active' : ''}`}
-                          onClick={() => handlePreQuestionChange(idx, 'type', 'essay')}
-                        >
-                          Pertanyaan Biasa / Esai
-                        </button>
-                      </div>
-                    </div>
-
                     {/* TIMESTAMP TRIGGER (IN-VIDEO TIMESTAMP) */}
                     <div className="form-group" style={{ marginBottom: '16px', marginTop: '12px' }}>
                       <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
@@ -594,8 +581,18 @@ export const UploadSOP = () => {
                       </div>
                     </div>
 
-                    {q.type === 'multiple' ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+                    {idx > 0 && toSecs(q) <= toSecs(preQuestions[idx - 1]) && (toSecs(q) > 0 || toSecs(preQuestions[idx - 1]) > 0) && (
+                      <div style={{ marginTop: '6px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 10px' }}>
+                        ⚠️ Waktu pemicu harus lebih besar dari pertanyaan #{idx} ({preQuestions[idx - 1].triggerMin}m {preQuestions[idx - 1].triggerSec}s)
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <label style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Kunci Jawaban</label>
+                        <span style={{ fontSize: '11px', color: 'var(--text3)' }}>— klik opsi untuk menandai jawaban yang benar</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
                           const letter = String.fromCharCode(65 + oIdx);
                           const isCorrect = q.answer === letter;
@@ -621,11 +618,7 @@ export const UploadSOP = () => {
                           );
                         })}
                       </div>
-                    ) : (
-                      <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '8px', border: '1px solid var(--border)', marginTop: '10px', fontSize: '13px', color: 'var(--text3)' }}>
-                        📝 Karyawan akan menjawab pertanyaan kuis ini dengan mengetikkan esai/teks bebas di portal mereka.
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -682,29 +675,12 @@ export const UploadSOP = () => {
                       />
                     </div>
 
-                    {/* QUESTION TYPE CHIPS SELECTOR */}
-                    <div className="form-group" style={{ marginBottom: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Tipe Pertanyaan</label>
-                      <div className="type-chips-container" style={{ marginTop: '4px' }}>
-                        <button
-                          type="button"
-                          className={`type-chip ${q.type === 'multiple' ? 'active' : ''}`}
-                          onClick={() => handlePostQuestionChange(idx, 'type', 'multiple')}
-                        >
-                          Pilihan Ganda
-                        </button>
-                        <button
-                          type="button"
-                          className={`type-chip ${q.type === 'essay' ? 'active' : ''}`}
-                          onClick={() => handlePostQuestionChange(idx, 'type', 'essay')}
-                        >
-                          Pertanyaan Biasa / Esai
-                        </button>
+                    <div style={{ marginTop: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <label style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Kunci Jawaban</label>
+                        <span style={{ fontSize: '11px', color: 'var(--text3)' }}>— klik opsi untuk menandai jawaban yang benar</span>
                       </div>
-                    </div>
-
-                    {q.type === 'multiple' ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
                           const letter = String.fromCharCode(65 + oIdx);
                           const isCorrect = q.answer === letter;
@@ -730,11 +706,7 @@ export const UploadSOP = () => {
                           );
                         })}
                       </div>
-                    ) : (
-                      <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '8px', border: '1px solid var(--border)', marginTop: '10px', fontSize: '13px', color: 'var(--text3)' }}>
-                        📝 Karyawan akan menjawab pertanyaan kuis ini dengan mengetikkan esai/teks bebas di portal mereka.
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))}
