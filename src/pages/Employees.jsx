@@ -121,7 +121,7 @@ export const Employees = () => {
               <select
                 value={deptFilter}
                 onChange={e => setDeptFilter(e.target.value)}
-                style={{ fontSize: '12px', height: '32px', padding: '0 28px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: '#fff', minWidth: '160px' }}
+                style={{ fontSize: '12px', height: '32px', padding: '0 32px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, appearance: 'none', WebkitAppearance: 'none', minWidth: '160px', cursor: 'pointer' }}
               >
                 <option value="">Semua Departemen</option>
                 {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
