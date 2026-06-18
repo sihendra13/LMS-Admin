@@ -161,16 +161,21 @@ export const Employees = () => {
 
         {/* REGISTER EMPLOYEE (ADD FORM WITH QUOTA GATING) */}
         <div>
-          <div className="section-header">
-            <div className="section-title">Registrasi Karyawan</div>
+          {/* TITLE & HEADER SECTION */}
+          <div style={{ marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0 0 12px 0', letterSpacing: '0.05em' }}>
+              REGISTRASI KARYAWAN
+            </h3>
+            
             {!isSupervisor && (
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
                   onClick={handleDownloadTemplate}
                   style={{
+                    flex: 1,
                     fontSize: '12px',
-                    padding: '8px 16px',
+                    padding: '8px 12px',
                     background: '#ffffff',
                     border: '1px solid var(--border)',
                     borderRadius: '6px',
@@ -179,6 +184,7 @@ export const Employees = () => {
                     fontWeight: '600',
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '6px',
                     height: '38px',
                     boxSizing: 'border-box',
@@ -202,8 +208,9 @@ export const Employees = () => {
                 </button>
                 <label
                   style={{
+                    flex: 1,
                     fontSize: '12px',
-                    padding: '8px 16px',
+                    padding: '8px 12px',
                     background: 'var(--navy)',
                     border: 'none',
                     borderRadius: '6px',
@@ -212,6 +219,7 @@ export const Employees = () => {
                     fontWeight: '600',
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '6px',
                     height: '38px',
                     boxSizing: 'border-box',
