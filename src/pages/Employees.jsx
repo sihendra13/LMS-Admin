@@ -161,70 +161,51 @@ export const Employees = () => {
 
         {/* REGISTER EMPLOYEE (ADD FORM WITH QUOTA GATING) */}
         <div>
-          <div className="section-header">
-            <div className="section-title">Registrasi Karyawan</div>
+          {/* HEADER & EXCEL BUTTONS ROW */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', gap: '12px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text1)', letterSpacing: '0.05em', lineHeight: '1.2', paddingTop: '4px' }}>
+              REGISTRASI<br />KARYAWAN
+            </div>
             {!isSupervisor && (
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                 <button
                   type="button"
                   onClick={handleDownloadTemplate}
                   style={{
-                    fontSize: '12px',
-                    padding: '8px 16px',
+                    fontSize: '11px',
+                    padding: '6px 12px',
                     background: '#ffffff',
-                    border: '1px solid var(--border)',
+                    border: '1px solid #cbd5e1',
                     borderRadius: '6px',
                     cursor: 'pointer',
-                    color: 'var(--text2)',
-                    fontWeight: '600',
+                    color: '#0f172a',
+                    fontWeight: '700',
+                    height: '32px',
+                    boxSizing: 'border-box',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    height: '38px',
-                    boxSizing: 'border-box',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#f8fafc';
-                    e.currentTarget.style.borderColor = 'var(--text3)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#ffffff';
-                    e.currentTarget.style.borderColor = 'var(--border)';
+                    justifyContent: 'center'
                   }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
                   Template Excel
                 </button>
                 <label
                   style={{
-                    fontSize: '12px',
-                    padding: '8px 16px',
-                    background: 'var(--navy)',
+                    fontSize: '11px',
+                    padding: '6px 12px',
+                    background: '#0f172a',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
-                    color: '#fff',
-                    fontWeight: '600',
+                    color: '#ffffff',
+                    fontWeight: '700',
+                    height: '32px',
+                    boxSizing: 'border-box',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    height: '38px',
-                    boxSizing: 'border-box',
-                    transition: 'all 0.2s ease'
+                    justifyContent: 'center'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.background = 'var(--accent)'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'var(--navy)'}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
                   Import Excel
                   <input type="file" accept=".xlsx,.xls" onChange={handleImportFile} style={{ display: 'none' }} />
                 </label>
@@ -238,29 +219,26 @@ export const Employees = () => {
             </div>
           )}
 
-          <div className="card" style={{ padding: '20px', opacity: isSupervisor ? 0.6 : 1 }}>
+          {/* CARD CONTAINER FOR FORM */}
+          <div className="card" style={{ padding: '24px', border: '1px solid var(--border)', borderRadius: '12px', background: '#ffffff' }}>
             {isSupervisor ? (
-              <div style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--text2)' }}>
-                <div style={{ fontWeight: '600', fontSize: '13px' }}>🔒 Hanya HRD Admin yang dapat mendaftarkan karyawan.</div>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', marginBottom: '20px', color: '#64748b', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', lineHeight: '1.5' }}>
+                <span>🔒 Hanya HRD Admin yang dapat mendaftarkan karyawan.</span>
               </div>
             ) : isFull ? (
-              <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--red)' }}>
-                <div style={{ fontWeight: '600', fontSize: '13px', marginBottom: '4px' }}>⚠️ Kuota Paket Penuh!</div>
-                <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                  Jumlah karyawan telah mencapai limit {limit} orang untuk Paket {tenant.plan.toUpperCase()}. Upgrade paket untuk menambah lebih banyak akun karyawan.
-                </div>
+              <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', padding: '16px', marginBottom: '20px', color: 'var(--red)', fontSize: '12px', lineHeight: '1.5' }}>
+                <div style={{ fontWeight: '700', marginBottom: '2px' }}>⚠️ Kuota Paket Penuh!</div>
+                <div>Jumlah karyawan mencapai limit {limit} orang. Upgrade paket untuk menambah lebih banyak.</div>
               </div>
             ) : (
-              <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--green)' }}>
-                <div style={{ fontSize: '12px' }}>
-                  Kuota Tersisa: <strong>{limit - totalCount} akun</strong> lagi.
-                </div>
+              <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', color: '#059669', fontSize: '13px', fontWeight: '500' }}>
+                Kuota Tersisa: <span style={{ fontWeight: '700' }}>{limit - totalCount} akun lagi.</span>
               </div>
             )}
 
             <form onSubmit={handleAddEmployee}>
-              <div className="form-group">
-                <label className="form-label">Nama Lengkap</label>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" style={{ color: '#475569', fontWeight: '600', fontSize: '13px', marginBottom: '6px', display: 'block' }}>Nama Lengkap</label>
                 <input
                   type="text"
                   className="form-input"
@@ -268,12 +246,34 @@ export const Employees = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={isFull || isSupervisor}
+                  style={{
+                    fontSize: '13px',
+                    height: '40px',
+                    borderColor: '#e2e8f0',
+                    background: (isFull || isSupervisor) ? '#f8fafc' : '#ffffff',
+                    cursor: (isFull || isSupervisor) ? 'not-allowed' : 'text'
+                  }}
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Departemen</label>
-                <select className="form-select" value={dept} onChange={(e) => setDept(e.target.value)} disabled={isFull || isSupervisor}>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" style={{ color: '#475569', fontWeight: '600', fontSize: '13px', marginBottom: '6px', display: 'block' }}>Departemen</label>
+                <select 
+                  className="form-select" 
+                  value={dept} 
+                  onChange={(e) => setDept(e.target.value)} 
+                  disabled={isFull || isSupervisor}
+                  style={{
+                    fontSize: '13px',
+                    height: '40px',
+                    borderColor: '#e2e8f0',
+                    background: (isFull || isSupervisor) ? '#f8fafc' : `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center`,
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    paddingRight: '36px',
+                    cursor: (isFull || isSupervisor) ? 'not-allowed' : 'pointer'
+                  }}
+                >
                   {isSupervisor ? (
                     <option value={currentUser.dept}>{currentUser.dept}</option>
                   ) : (
@@ -289,8 +289,8 @@ export const Employees = () => {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Cabang / Kota</label>
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label className="form-label" style={{ color: '#475569', fontWeight: '600', fontSize: '13px', marginBottom: '6px', display: 'block' }}>Cabang / Kota</label>
                 <input
                   type="text"
                   className="form-input"
@@ -298,12 +298,77 @@ export const Employees = () => {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   disabled={isFull || isSupervisor}
+                  style={{
+                    fontSize: '13px',
+                    height: '40px',
+                    borderColor: '#e2e8f0',
+                    background: (isFull || isSupervisor) ? '#f8fafc' : '#ffffff',
+                    cursor: (isFull || isSupervisor) ? 'not-allowed' : 'text'
+                  }}
                 />
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={isFull || isSupervisor}>
-                {isSupervisor ? '🔒 Hanya HRD Admin' : isFull ? '🔒 Kuota Karyawan Penuh' : 'Daftarkan Karyawan'}
-              </button>
+              {isSupervisor ? (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{
+                    width: '100%',
+                    height: '42px',
+                    background: '#64748b',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'not-allowed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                  disabled
+                >
+                  🔒 Hanya HRD Admin
+                </button>
+              ) : isFull ? (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{
+                    width: '100%',
+                    height: '42px',
+                    background: '#64748b',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'not-allowed'
+                  }}
+                  disabled
+                >
+                  🔒 Kuota Karyawan Penuh
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{
+                    width: '100%',
+                    height: '42px',
+                    background: '#0b1628',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Daftarkan Karyawan
+                </button>
+              )}
             </form>
           </div>
         </div>
