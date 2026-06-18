@@ -113,12 +113,18 @@ export const Employees = () => {
         
         {/* EMPLOYEES LIST */}
         <div>
-          <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
-              DAFTAR KARYAWAN TERDAFTAR ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
-            </h3>
-            <div style={{ display: 'flex', height: '38px', alignItems: 'center' }}>
-              {!isSupervisor && (
+          {isSupervisor ? (
+            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="section-title">
+                Daftar Karyawan Terdaftar ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
+                DAFTAR KARYAWAN TERDAFTAR ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
+              </h3>
+              <div style={{ display: 'flex', height: '38px', alignItems: 'center' }}>
                 <select
                   value={deptFilter}
                   onChange={e => setDeptFilter(e.target.value)}
@@ -127,9 +133,9 @@ export const Employees = () => {
                   <option value="">Semua Departemen</option>
                   {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="card">
             <div className="card-body">
@@ -164,12 +170,16 @@ export const Employees = () => {
         {/* REGISTER EMPLOYEE (ADD FORM WITH QUOTA GATING) */}
         <div>
           {/* TITLE & HEADER SECTION */}
-          <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
-              REGISTRASI KARYAWAN
-            </h3>
-            
-            {!isSupervisor && (
+          {isSupervisor ? (
+            <div className="section-header" style={{ marginBottom: '16px' }}>
+              <div className="section-title">Registrasi Karyawan</div>
+            </div>
+          ) : (
+            <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
+                REGISTRASI KARYAWAN
+              </h3>
+              
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
@@ -239,8 +249,8 @@ export const Employees = () => {
                   <input type="file" accept=".xlsx,.xls" onChange={handleImportFile} style={{ display: 'none' }} />
                 </label>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {importError && (
             <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', color: '#dc2626', fontSize: '12px', fontWeight: '600' }}>
