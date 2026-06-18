@@ -79,6 +79,11 @@ export const UploadSOP = () => {
   // State for confirm delete modal
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, type: 'pre', index: null });
 
+  // Kuis Pemicu Slide — hanya untuk PPT, muncul saat user sampai di slide tertentu
+  const [triggerQuizzes, setTriggerQuizzes] = useState([
+    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerSlide: '2' }
+  ]);
+
   // Handlers for Pre-Test Questions
   const handlePreQuestionChange = (index, field, value) => {
     setPreQuestions(prev => {
@@ -127,6 +132,28 @@ export const UploadSOP = () => {
 
   const removePostQuestion = (index) => {
     setPostQuestions(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Handlers untuk Kuis Pemicu Slide
+  const handleTriggerQuizChange = (index, field, value) => {
+    setTriggerQuizzes(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+  const handleTriggerOptionChange = (qIndex, oIndex, value) => {
+    setTriggerQuizzes(prev => {
+      const updated = [...prev];
+      updated[qIndex].options[oIndex] = value;
+      return updated;
+    });
+  };
+  const addTriggerQuiz = () => {
+    setTriggerQuizzes(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerSlide: '2' }]);
+  };
+  const removeTriggerQuiz = (index) => {
+    setTriggerQuizzes(prev => prev.filter((_, i) => i !== index));
   };
 
   const toSecs = (q) => Number(q.triggerMin || 0) * 60 + Number(q.triggerSec || 0);
@@ -262,6 +289,19 @@ export const UploadSOP = () => {
       IT: '#2a1024',
     };
 
+    const triggerList = contentType === 'ppt'
+      ? triggerQuizzes
+          .filter(q => q.question.trim() !== '')
+          .map((q, idx) => ({
+            id: idx + 1,
+            question: q.question,
+            type: q.type,
+            triggerSlide: Math.max(1, Math.min(Number(q.triggerSlide) || 2, slideCount || 999)),
+            options: q.options.map((o, oIdx) => o.trim() || `Opsi ${String.fromCharCode(65 + oIdx)}`),
+            answer: q.answer
+          }))
+      : null;
+
     const newVideo = {
       id: Date.now(),
       title,
@@ -277,6 +317,7 @@ export const UploadSOP = () => {
       type: contentType,
       slideCount: contentType === 'ppt' ? slideCount : null,
       slideImages: contentType === 'ppt' ? slideImages : null,
+      triggerQuizzes: triggerList,
       preQuizzes: preList,
       postQuizzes: postList
     };
@@ -842,6 +883,115 @@ export const UploadSOP = () => {
             </div>
 
           </div>
+
+          {/* KUIS PEMICU SLIDE — Full width, hanya untuk PPT */}
+          {contentType === 'ppt' && (
+            <div style={{ marginTop: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #fde68a' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                    ⚡ Kuis Pemicu Slide (Muncul Di Tengah Presentasi)
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#78350f' }}>
+                    Tentukan di slide berapa kuis muncul. Learner tidak bisa melanjutkan ke slide berikutnya sebelum menjawab.
+                  </div>
+                </div>
+                {slideCount > 0 && (
+                  <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', fontWeight: '700', color: '#92400e', whiteSpace: 'nowrap' }}>
+                    Total {slideCount} slide
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {triggerQuizzes.map((q, idx) => (
+                  <div key={idx} className="card" style={{ border: '1px solid #fde68a', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fffbeb', padding: '12px 20px', borderBottom: '1px solid #fde68a' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#b45309', letterSpacing: '0.05em' }}>
+                        ⚡ Kuis Pemicu #{idx + 1}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '600', color: '#78350f' }}>Muncul di slide</span>
+                          <input
+                            type="number"
+                            min="1"
+                            max={slideCount || 999}
+                            value={q.triggerSlide}
+                            onChange={(e) => handleTriggerQuizChange(idx, 'triggerSlide', e.target.value)}
+                            style={{ width: '64px', fontSize: '14px', padding: '4px 8px', textAlign: 'center', fontWeight: '700', border: '1px solid #fcd34d', borderRadius: '6px', color: '#92400e', background: '#fef9c3' }}
+                          />
+                          {slideCount > 0 && (
+                            <span style={{ fontSize: '11px', color: '#b45309' }}>/ {slideCount}</span>
+                          )}
+                        </div>
+                        {triggerQuizzes.length > 1 && (
+                          <button
+                            type="button"
+                            className="delete-question-btn"
+                            title="Hapus Kuis Pemicu"
+                            onClick={() => removeTriggerQuiz(idx)}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '16px', height: '16px' }}>
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '20px', textAlign: 'left', background: '#fffdf0' }}>
+                      <div className="form-group" style={{ marginBottom: '16px' }}>
+                        <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: '#92400e' }}>Teks Pertanyaan</label>
+                        <textarea
+                          className="form-input"
+                          style={{ minHeight: '72px', fontFamily: 'inherit', resize: 'vertical', fontSize: '14px', padding: '10px 14px', marginTop: '6px', borderColor: '#fcd34d' }}
+                          placeholder={`Contoh: Apa yang harus dilakukan ketika menerima keluhan pelanggan? (muncul di slide ${q.triggerSlide})`}
+                          value={q.question}
+                          onChange={(e) => handleTriggerQuizChange(idx, 'question', e.target.value)}
+                        />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        {q.options.map((opt, oIdx) => {
+                          const letter = String.fromCharCode(65 + oIdx);
+                          const isCorrect = q.answer === letter;
+                          return (
+                            <div
+                              key={oIdx}
+                              className={`option-pill ${isCorrect ? 'correct' : ''}`}
+                              onClick={() => handleTriggerQuizChange(idx, 'answer', letter)}
+                            >
+                              <div className="option-circle">
+                                {isCorrect && <span className="option-checkmark">✓</span>}
+                              </div>
+                              <input
+                                type="text"
+                                className="option-input"
+                                style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '14px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
+                                placeholder={`Opsi ${letter}`}
+                                value={opt}
+                                onChange={(e) => handleTriggerOptionChange(idx, oIdx, e.target.value)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  style={{ background: '#fffbeb', border: '1px dashed #fcd34d', color: '#b45309', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                  onClick={addTriggerQuiz}
+                >
+                  ➕ Tambah Kuis Pemicu Slide
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* BOTTOM FORM ACTIONS */}
