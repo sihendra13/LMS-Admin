@@ -113,20 +113,22 @@ export const Employees = () => {
         
         {/* EMPLOYEES LIST */}
         <div>
-          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="section-title">
-              Daftar Karyawan Terdaftar ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
+          <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
+              DAFTAR KARYAWAN TERDAFTAR ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
+            </h3>
+            <div style={{ display: 'flex', height: '38px', alignItems: 'center' }}>
+              {!isSupervisor && (
+                <select
+                  value={deptFilter}
+                  onChange={e => setDeptFilter(e.target.value)}
+                  style={{ fontSize: '12px', height: '38px', padding: '0 32px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, appearance: 'none', WebkitAppearance: 'none', minWidth: '180px', cursor: 'pointer' }}
+                >
+                  <option value="">Semua Departemen</option>
+                  {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              )}
             </div>
-            {!isSupervisor && (
-              <select
-                value={deptFilter}
-                onChange={e => setDeptFilter(e.target.value)}
-                style={{ fontSize: '12px', height: '32px', padding: '0 32px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, appearance: 'none', WebkitAppearance: 'none', minWidth: '160px', cursor: 'pointer' }}
-              >
-                <option value="">Semua Departemen</option>
-                {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-            )}
           </div>
 
           <div className="card">
@@ -162,8 +164,8 @@ export const Employees = () => {
         {/* REGISTER EMPLOYEE (ADD FORM WITH QUOTA GATING) */}
         <div>
           {/* TITLE & HEADER SECTION */}
-          <div style={{ marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0 0 12px 0', letterSpacing: '0.05em' }}>
+          <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
               REGISTRASI KARYAWAN
             </h3>
             
