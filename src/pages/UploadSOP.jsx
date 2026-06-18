@@ -169,6 +169,14 @@ export const UploadSOP = () => {
         }
       }
     }
+    if (contentType === 'ppt') {
+      const filledTriggers = triggerQuizzes.filter(q => q.question.trim() !== '');
+      for (let i = 1; i < filledTriggers.length; i++) {
+        if (Number(filledTriggers[i].triggerSlide) <= Number(filledTriggers[i - 1].triggerSlide)) {
+          return alert(`Kuis Pemicu #${i + 1}: nomor slide harus lebih besar dari kuis pemicu sebelumnya (slide ${filledTriggers[i - 1].triggerSlide}). Kuis harus muncul secara berurutan.`);
+        }
+      }
+    }
     setShowPublishConfirm(true);
   };
 
@@ -919,7 +927,11 @@ export const UploadSOP = () => {
                             max={slideCount || 999}
                             value={q.triggerSlide}
                             onChange={(e) => handleTriggerQuizChange(idx, 'triggerSlide', e.target.value)}
-                            style={{ width: '64px', fontSize: '14px', padding: '4px 8px', textAlign: 'center', fontWeight: '700', border: '1px solid #fcd34d', borderRadius: '6px', color: '#92400e', background: '#fef9c3' }}
+                            style={{
+                              width: '64px', fontSize: '14px', padding: '4px 8px', textAlign: 'center', fontWeight: '700',
+                              border: `1px solid ${idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) ? '#f87171' : '#fcd34d'}`,
+                              borderRadius: '6px', color: '#92400e', background: idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) ? '#fef2f2' : '#fef9c3'
+                            }}
                           />
                           {slideCount > 0 && (
                             <span style={{ fontSize: '11px', color: '#b45309' }}>/ {slideCount}</span>
@@ -942,6 +954,11 @@ export const UploadSOP = () => {
                     </div>
 
                     <div style={{ padding: '20px', textAlign: 'left', background: '#fffdf0' }}>
+                      {idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) && (
+                        <div style={{ marginBottom: '12px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '6px 10px' }}>
+                          ⚠️ Nomor slide harus lebih besar dari Kuis Pemicu #{idx} (slide {triggerQuizzes[idx - 1].triggerSlide}). Kuis harus muncul secara berurutan.
+                        </div>
+                      )}
                       <div className="form-group" style={{ marginBottom: '16px' }}>
                         <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: '#92400e' }}>Teks Pertanyaan</label>
                         <textarea
