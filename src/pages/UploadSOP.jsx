@@ -145,18 +145,54 @@ export const UploadSOP = () => {
     setShowPublishConfirm(true);
   };
 
+  const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
+
   const handleConfirmPublish = async () => {
     setShowPublishConfirm(false);
     let videoUrl = null;
     let filePath = null;
+    let slideImages = null;
 
-    const uploadFile = contentType === 'ppt' ? pptFile : videoFile;
-    const bucket = 'videos';
+    if (contentType === 'ppt' && pptFile) {
+      // Kirim PPTX ke backend → konversi jadi PNG per slide
+      setUploading(true);
+      setUploadProgress(10);
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => prev < 85 ? prev + 3 : prev);
+      }, 800);
 
-    if (uploadFile) {
+      try {
+        const formData = new FormData();
+        formData.append('file', pptFile);
+        const resp = await fetch(`${BACKEND_URL}/api/v1/ppt/convert`, {
+          method: 'POST',
+          body: formData,
+        });
+        clearInterval(progressInterval);
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          setUploading(false);
+          setUploadProgress(0);
+          return alert(`Gagal konversi PPT: ${errData.error || resp.statusText}`);
+        }
+        const result = await resp.json();
+        slideImages = result.slideUrls;
+        setSlideCount(result.slideCount);
+        setDuration(`${result.slideCount} slide`);
+        setUploadProgress(100);
+        await new Promise(r => setTimeout(r, 300));
+      } catch (err) {
+        clearInterval(progressInterval);
+        setUploading(false);
+        setUploadProgress(0);
+        return alert(`Koneksi ke server gagal: ${err.message}`);
+      }
+      setUploading(false);
+
+    } else if (contentType === 'video' && videoFile) {
       setUploading(true);
       setUploadProgress(5);
-      const fileExt = uploadFile.name.split('.').pop();
+      const fileExt = videoFile.name.split('.').pop();
       const fileName = `${Date.now()}_${title.replace(/\s+/g, '_')}.${fileExt}`;
       filePath = fileName;
 
@@ -165,19 +201,19 @@ export const UploadSOP = () => {
       }, 300);
 
       const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, uploadFile, { cacheControl: '3600', upsert: false });
+        .from('videos')
+        .upload(fileName, videoFile, { cacheControl: '3600', upsert: false });
 
       clearInterval(progressInterval);
 
       if (error) {
         setUploading(false);
         setUploadProgress(0);
-        return alert(`Gagal upload file: ${error.message}`);
+        return alert(`Gagal upload video: ${error.message}`);
       }
 
       setUploadProgress(95);
-      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(data.path);
       videoUrl = urlData.publicUrl;
       setUploadProgress(100);
       await new Promise(r => setTimeout(r, 400));
@@ -240,6 +276,7 @@ export const UploadSOP = () => {
       archived: false,
       type: contentType,
       slideCount: contentType === 'ppt' ? slideCount : null,
+      slideImages: contentType === 'ppt' ? slideImages : null,
       preQuizzes: preList,
       postQuizzes: postList
     };
