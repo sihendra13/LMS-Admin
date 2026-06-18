@@ -1,20 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
+import JSZip from 'jszip';
 import { useTenant } from '../context/TenantContext';
-import { canUploadSOP } from '../utils/featureGates';
+import { canUploadSOP, canUploadPPT, getPPTLimit } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
 
 export const UploadSOP = () => {
-  const { tenant, addSOP, setActivePage } = useTenant();
+  const { tenant, addSOP, setActivePage, videos } = useTenant();
+  const [contentType, setContentType] = useState('video'); // 'video' | 'ppt'
   const [title, setTitle] = useState('');
   const [dept, setDept] = useState('Sales');
   const [duration, setDuration] = useState('5:00');
   const [videoFile, setVideoFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [pptFile, setPptFile] = useState(null);
+  const [slideCount, setSlideCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef(null);
+  const pptInputRef = useRef(null);
 
   useEffect(() => {
     return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
@@ -36,6 +41,24 @@ export const UploadSOP = () => {
       URL.revokeObjectURL(tempVideo.src);
     };
     tempVideo.src = URL.createObjectURL(file);
+  };
+
+  const selectPptFile = async (file) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'pptx') return alert('Hanya file .pptx yang didukung.');
+    setPptFile(file);
+    try {
+      const zip = await JSZip.loadAsync(file);
+      const slides = Object.keys(zip.files).filter(name =>
+        /^ppt\/slides\/slide\d+\.xml$/.test(name)
+      );
+      setSlideCount(slides.length);
+      setDuration(`${slides.length} slide`);
+    } catch {
+      setSlideCount(0);
+      setDuration('? slide');
+    }
   };
 
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
@@ -111,10 +134,12 @@ export const UploadSOP = () => {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return alert('Judul SOP tidak boleh kosong!');
-    for (let i = 1; i < preQuestions.length; i++) {
-      if (preQuestions[i].question.trim() === '') continue;
-      if (toSecs(preQuestions[i]) <= toSecs(preQuestions[i - 1])) {
-        return alert(`Pertanyaan Pre-Test #${i + 1}: waktu pemicu harus lebih besar dari pertanyaan sebelumnya. Kuis harus muncul secara kronologis.`);
+    if (contentType === 'video') {
+      for (let i = 1; i < preQuestions.length; i++) {
+        if (preQuestions[i].question.trim() === '') continue;
+        if (toSecs(preQuestions[i]) <= toSecs(preQuestions[i - 1])) {
+          return alert(`Pertanyaan Pre-Test #${i + 1}: waktu pemicu harus lebih besar dari pertanyaan sebelumnya. Kuis harus muncul secara kronologis.`);
+        }
       }
     }
     setShowPublishConfirm(true);
@@ -125,32 +150,34 @@ export const UploadSOP = () => {
     let videoUrl = null;
     let filePath = null;
 
-    if (videoFile) {
+    const uploadFile = contentType === 'ppt' ? pptFile : videoFile;
+    const bucket = 'videos';
+
+    if (uploadFile) {
       setUploading(true);
       setUploadProgress(5);
-      const fileExt = videoFile.name.split('.').pop();
+      const fileExt = uploadFile.name.split('.').pop();
       const fileName = `${Date.now()}_${title.replace(/\s+/g, '_')}.${fileExt}`;
       filePath = fileName;
 
-      // Simulasi progress saat upload berlangsung
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => prev < 80 ? prev + 5 : prev);
       }, 300);
 
       const { data, error } = await supabase.storage
-        .from('videos')
-        .upload(fileName, videoFile, { cacheControl: '3600', upsert: false });
+        .from(bucket)
+        .upload(fileName, uploadFile, { cacheControl: '3600', upsert: false });
 
       clearInterval(progressInterval);
 
       if (error) {
         setUploading(false);
         setUploadProgress(0);
-        return alert('Gagal upload video: ' + error.message);
+        return alert(`Gagal upload file: ${error.message}`);
       }
 
       setUploadProgress(95);
-      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(data.path);
+      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
       videoUrl = urlData.publicUrl;
       setUploadProgress(100);
       await new Promise(r => setTimeout(r, 400));
@@ -211,6 +238,8 @@ export const UploadSOP = () => {
       videoUrl: videoUrl || null,
       filePath: filePath,
       archived: false,
+      type: contentType,
+      slideCount: contentType === 'ppt' ? slideCount : null,
       preQuizzes: preList,
       postQuizzes: postList
     };
@@ -250,11 +279,64 @@ export const UploadSOP = () => {
       {/* HEADER LEFT ALIGNED */}
       <div style={{ textAlign: 'left', marginBottom: '24px' }}>
         <h2 style={{ fontSize: '20px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: '600', color: '#0f172a' }}>
-          Konfigurasi Video Training & SOP
+          Konfigurasi Materi Training & SOP
         </h2>
         <p style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '4px' }}>
-          Sistematisasi pengetahuan perusahaan Anda. Unggah video instruksi dan buat parameter ujian untuk memastikan standar kualitas kerja.
+          Unggah video instruksi atau presentasi PPT dan buat parameter ujian untuk memastikan standar kualitas kerja.
         </p>
+      </div>
+
+      {/* CONTENT TYPE TOGGLE */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        <button
+          type="button"
+          onClick={() => { setContentType('video'); setPptFile(null); setSlideCount(0); }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
+            border: contentType === 'video' ? '2px solid #0B1628' : '2px solid var(--border)',
+            background: contentType === 'video' ? '#0B1628' : '#fff',
+            color: contentType === 'video' ? '#fff' : 'var(--text2)',
+            cursor: 'pointer', transition: 'all 0.2s'
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="23 7 16 12 23 17 23 7" />
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+          Video
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (!canUploadPPT(tenant.plan)) {
+              return alert('Fitur upload PPT hanya tersedia untuk paket Business dan Enterprise. Hubungi tim Axara untuk upgrade.');
+            }
+            setContentType('ppt'); setVideoFile(null); setPreviewUrl(null);
+          }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
+            border: contentType === 'ppt' ? '2px solid #7c3aed' : '2px solid var(--border)',
+            background: contentType === 'ppt' ? '#7c3aed' : '#fff',
+            color: contentType === 'ppt' ? '#fff' : canUploadPPT(tenant.plan) ? 'var(--text2)' : '#94a3b8',
+            cursor: 'pointer', transition: 'all 0.2s', position: 'relative'
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          Presentasi PPT
+          {!canUploadPPT(tenant.plan) && (
+            <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#64748b', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', marginLeft: '4px' }}>
+              Business+
+            </span>
+          )}
+        </button>
       </div>
 
       <form onSubmit={handleFormSubmit}>
@@ -264,29 +346,18 @@ export const UploadSOP = () => {
           {/* SINGLE COLUMN: Media Upload & Video Preview (Dynamic Layout) */}
           <div style={{ marginBottom: '24px' }}>
             
-            {/* SECTION 1: MEDIA UPLOAD / VIDEO PLAYER */}
+            {/* SECTION 1: MEDIA UPLOAD / VIDEO PLAYER / PPT */}
             <div style={{ marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)' }}>Media Training & SOP</div>
-                {videoFile && !uploading && (
+                <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)' }}>
+                  {contentType === 'ppt' ? 'File Presentasi (PPTX)' : 'Media Training & SOP'}
+                </div>
+                {contentType === 'video' && videoFile && !uploading && (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
                       type="button"
                       className="btn-sec"
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        border: '1px solid var(--border)',
-                        background: '#ffffff',
-                        color: 'var(--text2)',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.2s'
-                      }}
+                      style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', background: '#ffffff', color: 'var(--text2)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
                       onClick={() => fileInputRef.current.click()}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -296,21 +367,33 @@ export const UploadSOP = () => {
                     </button>
                     <button
                       type="button"
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        border: '1px solid #fee2e2',
-                        background: '#fff5f5',
-                        color: '#ef4444',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.2s'
-                      }}
+                      style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #fee2e2', background: '#fff5f5', color: '#ef4444', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
                       onClick={() => { setVideoFile(null); if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } fileInputRef.current.value = ''; }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                      Hapus
+                    </button>
+                  </div>
+                )}
+                {contentType === 'ppt' && pptFile && !uploading && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', background: '#fff', color: 'var(--text2)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      onClick={() => pptInputRef.current.click()}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                      </svg>
+                      Ganti File
+                    </button>
+                    <button
+                      type="button"
+                      style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #fee2e2', background: '#fff5f5', color: '#ef4444', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      onClick={() => { setPptFile(null); setSlideCount(0); setDuration('5:00'); pptInputRef.current.value = ''; }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -322,104 +405,113 @@ export const UploadSOP = () => {
                 )}
               </div>
 
-              {/* FILE INPUT — always in DOM so ref works even when preview is showing */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="video/*"
-                style={{ display: 'none' }}
-                onChange={(e) => selectVideoFile(e.target.files[0])}
-              />
+              {/* HIDDEN FILE INPUTS */}
+              <input type="file" ref={fileInputRef} accept="video/*" style={{ display: 'none' }} onChange={(e) => selectVideoFile(e.target.files[0])} />
+              <input type="file" ref={pptInputRef} accept=".pptx" style={{ display: 'none' }} onChange={(e) => selectPptFile(e.target.files[0])} />
 
-              {previewUrl ? (
-                /* VIDEO PLAYER WITH DETAILED FILE INFO BAR */
-                <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#0f172a', border: '1px solid var(--border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '340px', background: '#000' }}>
-                    <video
-                      src={previewUrl}
-                      controls
-                      controlsList="nodownload"
-                      style={{ width: '100%', maxHeight: '420px', objectFit: 'contain' }}
-                    />
-                  </div>
-                  {/* DETAILED FILE INFO FOOTER */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1329', padding: '12px 18px', color: '#fff', fontSize: '12.5px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ background: '#3b82f6', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>HD</span>
-                      <span style={{ fontWeight: '500', opacity: 0.95 }}>{videoFile?.name}</span>
-                      <span style={{ opacity: 0.4 }}>•</span>
-                      <span style={{ color: '#94a3b8' }}>{videoFile ? (videoFile.size / 1024 / 1024).toFixed(1) : '0'} MB</span>
+              {contentType === 'video' ? (
+                previewUrl ? (
+                  <div style={{ borderRadius: '12px', overflow: 'hidden', background: '#0f172a', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '340px', background: '#000' }}>
+                      <video src={previewUrl} controls controlsList="nodownload" style={{ width: '100%', maxHeight: '420px', objectFit: 'contain' }} />
                     </div>
-                    {duration && (
-                      <div style={{ color: '#94a3b8', fontWeight: '500' }}>
-                        Durasi: {duration}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0b1329', padding: '12px 18px', color: '#fff', fontSize: '12.5px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ background: '#3b82f6', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>HD</span>
+                        <span style={{ fontWeight: '500', opacity: 0.95 }}>{videoFile?.name}</span>
+                        <span style={{ opacity: 0.4 }}>•</span>
+                        <span style={{ color: '#94a3b8' }}>{videoFile ? (videoFile.size / 1024 / 1024).toFixed(1) : '0'} MB</span>
+                      </div>
+                      {duration && <div style={{ color: '#94a3b8', fontWeight: '500' }}>Durasi: {duration}</div>}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="upload-zone"
+                    style={{ margin: '0', padding: '60px 20px', border: '2px dashed #cbd5e1', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: '#f8fafc', transition: 'border-color 0.2s', cursor: 'pointer' }}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => { e.preventDefault(); selectVideoFile(e.dataTransfer.files[0]); }}
+                    onClick={() => fileInputRef.current.click()}
+                  >
+                    <div style={{ color: '#94a3b8', marginBottom: '16px' }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                    </div>
+                    <div className="upload-title" style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Seret dan letakkan file video Anda</div>
+                    <div className="upload-desc" style={{ fontSize: '11.5px', color: '#94a3b8', margin: '0 0 20px 0', lineHeight: '1.4' }}>Format MP4, MKV, atau AVI. Maksimal 500MB.</div>
+                    {uploading ? (
+                      <div style={{ width: '280px', padding: '0 10px', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
+                          <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#0B1628', transition: 'width 0.3s ease' }} />
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
+                      </div>
+                    ) : (
+                      <button type="button" className="btn-primary" style={{ padding: '10px 24px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', boxShadow: '0 4px 6px -1px rgba(11, 22, 40, 0.15)', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}>
+                        Pilih File Video
+                      </button>
+                    )}
+                  </div>
+                )
+              ) : (
+                /* PPT DROP ZONE / PREVIEW */
+                pptFile ? (
+                  <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', background: '#faf5ff' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '24px' }}>
+                      <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e1b4b', marginBottom: '4px' }}>{pptFile.name}</div>
+                        <div style={{ fontSize: '12px', color: '#7c3aed', fontWeight: '600' }}>{slideCount} slide terdeteksi</div>
+                        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{(pptFile.size / 1024 / 1024).toFixed(1)} MB</div>
+                      </div>
+                      <div style={{ background: '#ede9fe', color: '#6d28d9', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' }}>
+                        PPTX
+                      </div>
+                    </div>
+                    {uploading && (
+                      <div style={{ padding: '0 24px 20px' }}>
+                        <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
+                          <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#7c3aed', transition: 'width 0.3s ease' }} />
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
                       </div>
                     )}
                   </div>
-                </div>
-              ) : (
-                /* LARGE DROP ZONE AREA */
-                <div
-                  className="upload-zone"
-                  style={{ 
-                    margin: '0', 
-                    padding: '60px 20px', 
-                    border: '2px dashed #cbd5e1', 
-                    borderRadius: '16px',
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    justifyContent: 'center', 
-                    alignItems: 'center',
-                    background: '#f8fafc',
-                    transition: 'border-color 0.2s',
-                    cursor: 'pointer'
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    selectVideoFile(e.dataTransfer.files[0]);
-                  }}
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  {/* SVG CLOUD WITH UP ARROW */}
-                  <div style={{ color: '#94a3b8', marginBottom: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="17 8 12 3 7 8"></polyline>
-                      <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                  </div>
-
-                  <div className="upload-title" style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Seret dan letakkan file video Anda</div>
-                  <div className="upload-desc" style={{ fontSize: '11.5px', color: '#94a3b8', margin: '0 0 20px 0', lineHeight: '1.4' }}>
-                    Format MP4, MKV, atau AVI. Maksimal 500MB.
-                  </div>
-
-                  {uploading ? (
-                    <div style={{ width: '280px', padding: '0 10px', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
-                      <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
-                        <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#0B1628', transition: 'width 0.3s ease' }} />
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
+                ) : (
+                  <div
+                    className="upload-zone"
+                    style={{ margin: '0', padding: '60px 20px', border: '2px dashed #c4b5fd', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: '#faf5ff', transition: 'border-color 0.2s', cursor: 'pointer' }}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => { e.preventDefault(); selectPptFile(e.dataTransfer.files[0]); }}
+                    onClick={() => pptInputRef.current.click()}
+                  >
+                    <div style={{ color: '#7c3aed', marginBottom: '16px' }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <line x1="12" y1="20" x2="12" y2="9" />
+                        <polyline points="9 12 12 9 15 12" />
+                      </svg>
                     </div>
-                  ) : (
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      style={{ 
-                        padding: '10px 24px', 
-                        borderRadius: '8px', 
-                        fontSize: '12px',
-                        fontWeight: '700',
-                        boxShadow: '0 4px 6px -1px rgba(11, 22, 40, 0.15)',
-                        cursor: 'pointer'
-                      }}
-                      onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}
-                    >
-                      Pilih File Video
+                    <div className="upload-title" style={{ fontSize: '14px', fontWeight: '700', color: '#4c1d95', marginBottom: '6px' }}>Seret dan letakkan file PowerPoint Anda</div>
+                    <div className="upload-desc" style={{ fontSize: '11.5px', color: '#7c3aed', margin: '0 0 20px 0', lineHeight: '1.4', opacity: 0.7 }}>Format PPTX. Jumlah slide akan otomatis terdeteksi.</div>
+                    <button type="button" style={{ padding: '10px 24px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', background: '#7c3aed', color: '#fff', border: 'none', boxShadow: '0 4px 6px -1px rgba(124, 58, 237, 0.3)', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); pptInputRef.current.click(); }}>
+                      Pilih File PPTX
                     </button>
-                  )}
-                </div>
+                  </div>
+                )
               )}
             </div>
 
@@ -428,12 +520,14 @@ export const UploadSOP = () => {
               <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px' }}>Detail Informasi</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="form-group" style={{ margin: '0' }}>
-                  <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Judul Video Training / SOP</label>
+                  <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>
+                    {contentType === 'ppt' ? 'Judul Presentasi / SOP' : 'Judul Video Training / SOP'}
+                  </label>
                   <input
                     type="text"
                     className="form-input"
                     style={{ fontSize: '14px', padding: '10px 12px' }}
-                    placeholder="Contoh: SOP Operasional: Tata Cara Packing Barang Baru"
+                    placeholder={contentType === 'ppt' ? 'Contoh: Presentasi: Standar Layanan Pelanggan 2024' : 'Contoh: SOP Operasional: Tata Cara Packing Barang Baru'}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
@@ -455,13 +549,15 @@ export const UploadSOP = () => {
                   </div>
 
                   <div className="form-group" style={{ margin: '0' }}>
-                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Durasi Video</label>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>
+                      {contentType === 'ppt' ? 'Jumlah Slide' : 'Durasi Video'}
+                    </label>
                     <input
                       type="text"
                       className="form-input"
                       style={{ fontSize: '14px', padding: '10px 12px', textAlign: 'center', background: '#f1f5f9', color: 'var(--text2)', cursor: 'default' }}
                       placeholder="Otomatis terisi"
-                      value={duration}
+                      value={contentType === 'ppt' ? (slideCount > 0 ? `${slideCount} slide` : 'Belum ada file') : duration}
                       readOnly
                     />
                   </div>
@@ -476,7 +572,11 @@ export const UploadSOP = () => {
         <div style={{ marginBottom: '24px' }}>
           <div className="step-header" style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <div className="step-title" style={{ fontSize: '15px' }}>Konfigurasi Ujian</div>
-            <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>Buat parameter kuis yang muncul di tengah video (Pre-Test) dan evaluasi akhir setelah selesai menonton (Post-Test).</div>
+            <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>
+              {contentType === 'ppt'
+                ? 'Kuis Pre-Test muncul sebelum presentasi dimulai. Kuis Post-Test muncul setelah karyawan menekan tombol Selesai.'
+                : 'Buat parameter kuis yang muncul di tengah video (Pre-Test) dan evaluasi akhir setelah selesai menonton (Post-Test).'}
+            </div>
           </div>
 
           {/* TWO COLUMN GRID FOR PRE-TEST AND POST-TEST */}
@@ -485,7 +585,7 @@ export const UploadSOP = () => {
             {/* COLUMN 1: PRE-TEST */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '8px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                ✍️ Kuis Pre-Test (Tengah Video)
+                {contentType === 'ppt' ? '✍️ Kuis Pre-Test (Sebelum Presentasi)' : '✍️ Kuis Pre-Test (Tengah Video)'}
               </div>
               
               {preQuestions.map((q, idx) => (
@@ -523,67 +623,35 @@ export const UploadSOP = () => {
                       />
                     </div>
 
-                    {/* TIMESTAMP TRIGGER (IN-VIDEO TIMESTAMP) */}
-                    <div className="form-group" style={{ marginBottom: '16px', marginTop: '12px' }}>
-                      <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
-                        Waktu Pemicu Kuis (Muncul Di Tengah Video)
-                      </label>
-                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end', marginTop: '8px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Menit</span>
-                          <input
-                            type="number"
-                            min="0"
-                            className="form-input"
-                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
-                            placeholder="0"
-                            value={q.triggerMin}
-                            onChange={(e) => handlePreQuestionChange(idx, 'triggerMin', e.target.value)}
-                          />
+                    {/* TIMESTAMP TRIGGER — hanya untuk Video */}
+                    {contentType === 'video' && (
+                      <div className="form-group" style={{ marginBottom: '16px', marginTop: '12px' }}>
+                        <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
+                          Waktu Pemicu Kuis (Muncul Di Tengah Video)
+                        </label>
+                        <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end', marginTop: '8px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Menit</span>
+                            <input type="number" min="0" className="form-input" style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }} placeholder="0" value={q.triggerMin} onChange={(e) => handlePreQuestionChange(idx, 'triggerMin', e.target.value)} />
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Detik</span>
+                            <input type="number" min="0" max="59" className="form-input" style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }} placeholder="0" value={q.triggerSec} onChange={(e) => handlePreQuestionChange(idx, 'triggerSec', e.target.value)} />
+                          </div>
+                          <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '240px', height: '46px', boxSizing: 'border-box' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="12" y1="16" x2="12" y2="12"></line>
+                              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic', lineHeight: '1.4' }}>Video akan otomatis terhenti di waktu ini untuk menampilkan kuis.</span>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Detik</span>
-                          <input
-                            type="number"
-                            min="0"
-                            max="59"
-                            className="form-input"
-                            style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }}
-                            placeholder="0"
-                            value={q.triggerSec}
-                            onChange={(e) => handlePreQuestionChange(idx, 'triggerSec', e.target.value)}
-                          />
-                        </div>
-
-                        {/* INFO BOX WITH SVG OUTLINE ICON MATCHING THE TRASH ICON STYLE */}
-                        <div style={{
-                          background: '#f8fafc',
-                          border: '1px solid var(--border)',
-                          borderRadius: '8px',
-                          padding: '10px 16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          flex: 1,
-                          minWidth: '240px',
-                          height: '46px',
-                          boxSizing: 'border-box'
-                        }}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                          </svg>
-                          <span style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic', lineHeight: '1.4' }}>
-                            Video akan otomatis terhenti di waktu ini untuk menampilkan kuis.
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {idx > 0 && toSecs(q) <= toSecs(preQuestions[idx - 1]) && (toSecs(q) > 0 || toSecs(preQuestions[idx - 1]) > 0) && (
-                      <div style={{ marginTop: '6px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 10px' }}>
-                        ⚠️ Waktu pemicu harus lebih besar dari pertanyaan #{idx} ({preQuestions[idx - 1].triggerMin}m {preQuestions[idx - 1].triggerSec}s)
+                        {idx > 0 && toSecs(q) <= toSecs(preQuestions[idx - 1]) && (toSecs(q) > 0 || toSecs(preQuestions[idx - 1]) > 0) && (
+                          <div style={{ marginTop: '6px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 10px' }}>
+                            ⚠️ Waktu pemicu harus lebih besar dari pertanyaan #{idx} ({preQuestions[idx - 1].triggerMin}m {preQuestions[idx - 1].triggerSec}s)
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -644,7 +712,7 @@ export const UploadSOP = () => {
             {/* COLUMN 2: POST-TEST */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '8px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                📝 Kuis Post-Test (Setelah Video Selesai)
+                {contentType === 'ppt' ? '📝 Kuis Post-Test (Setelah Presentasi Selesai)' : '📝 Kuis Post-Test (Setelah Video Selesai)'}
               </div>
               
               {postQuestions.map((q, idx) => (
@@ -772,7 +840,7 @@ export const UploadSOP = () => {
             }}
             disabled={uploading}
           >
-            {uploading ? `Mengupload Video... ${uploadProgress}%` : 'Terbitkan SOP & Ujian'}
+            {uploading ? `Mengupload ${contentType === 'ppt' ? 'PPT' : 'Video'}... ${uploadProgress}%` : 'Terbitkan Materi & Ujian'}
           </button>
         </div>
       </form>

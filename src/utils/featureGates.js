@@ -37,3 +37,15 @@ export const hasCustomBranding = (plan) => {
 export const hasMultiBranch = (plan) => {
   return plan === PLANS.ENTERPRISE;
 };
+
+// Check if PPT presentation upload is enabled
+export const canUploadPPT = (plan) => {
+  return plan === PLANS.BUSINESS || plan === PLANS.ENTERPRISE;
+};
+
+// Get PPT upload limit per plan
+export const getPPTLimit = (plan) => {
+  if (plan === PLANS.BUSINESS) return 30;
+  if (plan === PLANS.ENTERPRISE) return Infinity;
+  return 0;
+};
