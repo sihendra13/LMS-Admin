@@ -1937,22 +1937,49 @@ export const UploadSOP = () => {
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               display: 'flex', flexDirection: 'column'
             }} onClick={(e) => e.stopPropagation()}>
-              {/* MODAL HEADER */}
-              <div style={{ padding: '24px 28px 0', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#fffbeb', border: '1px solid #fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                      <line x1="12" y1="9" x2="12" y2="13"></line>
-                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>{isEditMode ? 'Konfirmasi Simpan Perubahan' : 'Konfirmasi Terbitkan SOP'}</h3>
-                    <p style={{ fontSize: '12px', color: 'var(--text3)', margin: 0 }}>{isEditMode ? 'Tinjau kembali perubahan sebelum disimpan' : 'Tinjau kembali sebelum menerbitkan'}</p>
-                  </div>
-                </div>
-              </div>
+               {/* MODAL HEADER */}
+               <div style={{ padding: '24px 28px 0', borderBottom: '1px solid var(--border)', paddingBottom: '16px', position: 'relative' }}>
+                 <button
+                   type="button"
+                   onClick={() => setShowPublishConfirm(false)}
+                   style={{
+                     position: 'absolute',
+                     top: '24px',
+                     right: '28px',
+                     background: 'none',
+                     border: 'none',
+                     color: 'var(--text3)',
+                     cursor: 'pointer',
+                     padding: '6px',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     borderRadius: '50%',
+                     transition: 'all 0.15s ease'
+                   }}
+                   onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = 'var(--text1)'; }}
+                   onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text3)'; }}
+                   title="Tutup"
+                 >
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <line x1="18" y1="6" x2="6" y2="18"></line>
+                     <line x1="6" y1="6" x2="18" y2="18"></line>
+                   </svg>
+                 </button>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                   <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#fffbeb', border: '1px solid #fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                       <line x1="12" y1="9" x2="12" y2="13"></line>
+                       <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                     </svg>
+                   </div>
+                   <div>
+                     <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>{isEditMode ? 'Konfirmasi Simpan Perubahan' : 'Konfirmasi Terbitkan SOP'}</h3>
+                     <p style={{ fontSize: '12px', color: 'var(--text3)', margin: 0 }}>{isEditMode ? 'Tinjau kembali perubahan sebelum disimpan' : 'Tinjau kembali sebelum menerbitkan'}</p>
+                   </div>
+                 </div>
+               </div>
 
               {/* MODAL BODY */}
               <div style={{ padding: '20px 28px', flex: 1 }}>
