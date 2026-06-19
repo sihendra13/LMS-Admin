@@ -538,8 +538,16 @@ export const UploadSOP = () => {
             ← Kembali ke Daftar SOP
           </button>
         )}
-        <h2 style={{ fontSize: '20px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: '600', color: '#0f172a' }}>
-          {isEditMode ? `✏️ Edit SOP — ${editVideo.title}` : 'Konfigurasi Materi Training & SOP'}
+        <h2 style={{ fontSize: '20px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {isEditMode ? (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+              Edit SOP — {editVideo.title}
+            </>
+          ) : 'Konfigurasi Materi Training & SOP'}
         </h2>
         <p style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '4px' }}>
           {isEditMode
