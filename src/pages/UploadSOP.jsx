@@ -1229,25 +1229,77 @@ export const UploadSOP = () => {
             {narasiMode === 'none' && (
               <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
                 {[
-                  { val: 'none', label: 'Tidak Ada Narasi', icon: '🚫' },
-                  { val: 'teks', label: 'Teks Narasi', icon: '📝' },
-                  { val: 'audio', label: 'Audio Narasi', icon: '🔊' },
-                  { val: 'keduanya', label: 'Teks + Audio', icon: '🎙️' },
-                ].map(opt => (
-                  <button
-                    key={opt.val}
-                    type="button"
-                    onClick={() => setNarasiMode(opt.val)}
-                    style={{
-                      padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
-                      cursor: 'pointer', border: narasiMode === opt.val ? '2px solid #2F7BFF' : '1px solid var(--border)',
-                      background: narasiMode === opt.val ? '#eff6ff' : '#fff',
-                      color: narasiMode === opt.val ? '#1d4ed8' : 'var(--text2)',
-                    }}
-                  >
-                    {opt.icon} {opt.label}
-                  </button>
-                ))}
+                  {
+                    val: 'none',
+                    label: 'Tidak Ada Narasi',
+                    icon: (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                      </svg>
+                    )
+                  },
+                  {
+                    val: 'teks',
+                    label: 'Teks Narasi',
+                    icon: (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                      </svg>
+                    )
+                  },
+                  {
+                    val: 'audio',
+                    label: 'Audio Narasi',
+                    icon: (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                      </svg>
+                    )
+                  },
+                  {
+                    val: 'keduanya',
+                    label: 'Teks + Audio',
+                    icon: (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                      </svg>
+                    )
+                  },
+                ].map(opt => {
+                  const isActive = narasiMode === opt.val;
+                  return (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => setNarasiMode(opt.val)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)',
+                        background: isActive ? '#eff6ff' : '#ffffff',
+                        color: isActive ? 'var(--accent)' : 'var(--text2)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {opt.icon}
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -1390,26 +1442,77 @@ export const UploadSOP = () => {
                 {/* MODE SWITCHER — di dalam carousel agar mudah ganti tanpa scroll naik */}
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '4px 0' }}>
                   {[
-                    { val: 'none', label: 'Tidak Ada Narasi', icon: '🚫' },
-                    { val: 'teks', label: 'Teks Narasi', icon: '📝' },
-                    { val: 'audio', label: 'Audio Narasi', icon: '🔊' },
-                    { val: 'keduanya', label: 'Teks + Audio', icon: '🎙️' },
-                  ].map(opt => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => setNarasiMode(opt.val)}
-                      style={{
-                        padding: '7px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '600',
-                        cursor: 'pointer', border: narasiMode === opt.val ? '2px solid #2F7BFF' : '1px solid var(--border)',
-                        background: narasiMode === opt.val ? '#eff6ff' : '#fff',
-                        color: narasiMode === opt.val ? '#1d4ed8' : 'var(--text2)',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      {opt.icon} {opt.label}
-                    </button>
-                  ))}
+                    {
+                      val: 'none',
+                      label: 'Tidak Ada Narasi',
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                        </svg>
+                      )
+                    },
+                    {
+                      val: 'teks',
+                      label: 'Teks Narasi',
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                          <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                      )
+                    },
+                    {
+                      val: 'audio',
+                      label: 'Audio Narasi',
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                        </svg>
+                      )
+                    },
+                    {
+                      val: 'keduanya',
+                      label: 'Teks + Audio',
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                          <line x1="12" y1="19" x2="12" y2="22"/>
+                        </svg>
+                      )
+                    },
+                  ].map(opt => {
+                    const isActive = narasiMode === opt.val;
+                    return (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => setNarasiMode(opt.val)}
+                        style={{
+                          padding: '7px 14px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)',
+                          background: isActive ? '#eff6ff' : '#ffffff',
+                          color: isActive ? 'var(--accent)' : 'var(--text2)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {opt.icon}
+                        {opt.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* ACTIVE SLIDE CONTENT EDITOR */}
@@ -1580,17 +1683,23 @@ export const UploadSOP = () => {
                                 borderRadius: '6px',
                                 fontSize: '12px',
                                 cursor: 'pointer',
-                                background: '#dc2626',
+                                background: 'var(--navy)',
                                 color: '#ffffff',
                                 fontWeight: '700',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
                                 transition: 'all 0.15s ease',
-                                boxShadow: '0 2px 4px rgba(220, 38, 38, 0.12)'
+                                boxShadow: '0 2px 4px rgba(11, 22, 40, 0.12)'
                               }}
-                              onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
-                              onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.background = 'var(--accent)';
+                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(47, 123, 255, 0.2)';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.background = 'var(--navy)';
+                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(11, 22, 40, 0.12)';
+                              }}
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
