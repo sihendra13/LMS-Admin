@@ -1067,10 +1067,76 @@ export const UploadSOP = () => {
         </div>
       )}
 
+      {/* PPT PROCESSING LOADING MODAL */}
+      {uploading && contentType === 'ppt' && (
+        <>
+          <style>{`@keyframes ppt-spin { to { transform: rotate(360deg); } }`}</style>
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99998
+          }}>
+            <div style={{
+              background: '#ffffff', borderRadius: '20px', padding: '40px 44px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '22px',
+              width: '380px', maxWidth: '90vw', textAlign: 'center'
+            }}>
+              <div style={{ position: 'relative', width: '72px', height: '72px' }}>
+                <div style={{
+                  width: '72px', height: '72px', borderRadius: '18px', background: '#f3f0ff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                </div>
+                <div style={{
+                  position: 'absolute', bottom: '-2px', right: '-2px',
+                  width: '22px', height: '22px', borderRadius: '50%',
+                  border: '3px solid #7c3aed', borderTopColor: 'transparent',
+                  animation: 'ppt-spin 0.75s linear infinite'
+                }} />
+              </div>
+
+              <div>
+                <div style={{ fontSize: '17px', fontWeight: '700', color: '#1e1b4b', marginBottom: '8px' }}>
+                  Memproses Presentasi
+                </div>
+                <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6' }}>
+                  {uploadProgress < 20 ? 'Mengirim file ke server...' :
+                   uploadProgress < 85 ? 'Mengkonversi setiap slide menjadi gambar...' :
+                   'Menyimpan gambar slide ke cloud...'}
+                </div>
+              </div>
+
+              <div style={{ width: '100%' }}>
+                <div style={{ height: '8px', background: '#ede9fe', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px' }}>
+                  <div style={{
+                    height: '100%', width: `${uploadProgress}%`,
+                    background: 'linear-gradient(90deg, #7c3aed, #a78bfa)',
+                    borderRadius: '8px', transition: 'width 0.4s ease'
+                  }} />
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#7c3aed' }}>{uploadProgress}%</div>
+              </div>
+
+              <div style={{ fontSize: '11.5px', color: '#94a3b8', background: '#f8fafc', borderRadius: '8px', padding: '10px 16px', lineHeight: '1.6', border: '1px solid #e2e8f0' }}>
+                Jangan tutup halaman ini. Proses konversi biasanya membutuhkan <strong>1–3 menit</strong>.
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* PUBLISH CONFIRMATION MODAL */}
       {showPublishConfirm && (() => {
         const preToShow = preQuestions.filter(q => q.question.trim() !== '');
         const postToShow = postQuestions.filter(q => q.question.trim() !== '');
+        const triggersToShow = contentType === 'ppt' ? triggerQuizzes.filter(q => q.question.trim() !== '') : [];
         const formatTrigger = (q) => {
           const secs = (Number(q.triggerMin || 0) * 60) + Number(q.triggerSec || 0);
           if (secs === 0) return null;
@@ -1122,12 +1188,12 @@ export const UploadSOP = () => {
                       <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{dept === 'Semua' ? 'Semua Departemen' : dept}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Durasi Video</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>{contentType === 'ppt' ? 'Jumlah Slide' : 'Durasi Video'}</span>
                       <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{duration || '—'}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>File Video</span>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{videoFile ? videoFile.name : 'Tidak ada video'}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>{contentType === 'ppt' ? 'File PPTX' : 'File Video'}</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{contentType === 'ppt' ? (pptFile ? pptFile.name : 'Tidak ada file') : (videoFile ? videoFile.name : 'Tidak ada video')}</span>
                     </div>
                   </div>
                 </div>
@@ -1195,7 +1261,32 @@ export const UploadSOP = () => {
                   </div>
                 )}
 
-                {preToShow.length === 0 && postToShow.length === 0 && (
+                {/* KUIS PEMICU SLIDE — hanya untuk PPT */}
+                {triggersToShow.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
+                      Kuis Pemicu Slide ({triggersToShow.length} kuis)
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {triggersToShow.map((q, i) => (
+                        <div key={i} style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 14px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                            <div style={{ fontSize: '13px', color: 'var(--text1)', lineHeight: '1.4', flex: 1 }}>
+                              <span style={{ fontWeight: '700', color: 'var(--text3)', marginRight: '6px' }}>#{i + 1}</span>
+                              {q.question}
+                            </div>
+                            <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '4px', background: '#fef3c7', color: '#92400e', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                              Slide {q.triggerSlide}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {preToShow.length === 0 && postToShow.length === 0 && triggersToShow.length === 0 && (
                   <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--text3)', textAlign: 'center' }}>
                     Tidak ada soal kuis yang dikonfigurasi
                   </div>
