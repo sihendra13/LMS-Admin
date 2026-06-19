@@ -111,6 +111,7 @@ export const UploadSOP = () => {
       ? editVideo.slideNarasi.map(s => ({ teks: s.teks || '', audioFile: null, audioUrl: s.audioUrl || null, audioInputMode: 'upload' }))
       : []
   );
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0); // Carousel active slide index
   const [recordingSlide, setRecordingSlide] = useState(null); // index slide yang sedang direkam
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const mediaRecorderRef = useRef(null);
@@ -1248,187 +1249,299 @@ export const UploadSOP = () => {
               ))}
             </div>
 
-            {/* Input narasi per slide */}
+            {/* Input narasi per slide (CAROUSEL UI) */}
             {narasiMode !== 'none' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {Array.from({ length: slideCount }, (_, i) => (
-                  <div key={i} style={{ border: '1px solid #bfdbfe', borderRadius: '10px', overflow: 'hidden' }}>
-                    <div style={{ background: '#eff6ff', padding: '10px 16px', borderBottom: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Slide {i + 1}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
+                
+                {/* CAROUSEL NAVIGATION HEADER */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '14px', borderBottom: '1px dashed var(--border)', marginBottom: '6px' }}>
+                  <button
+                    type="button"
+                    disabled={activeSlideIndex === 0}
+                    onClick={() => setActiveSlideIndex(prev => Math.max(0, prev - 1))}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      border: '1px solid var(--border)',
+                      background: activeSlideIndex === 0 ? '#f1f5f9' : '#fff',
+                      color: activeSlideIndex === 0 ? 'var(--text3)' : 'var(--text2)',
+                      cursor: activeSlideIndex === 0 ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    Prev Slide
+                  </button>
+
+                  <div style={{ textAlign: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Slide {activeSlideIndex + 1} dari {slideCount}
+                    </span>
+                    {slideNarasi[activeSlideIndex]?.audioUrl && (
+                      <span style={{ marginLeft: '8px', fontSize: '11px', background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>
+                        ✓ Audio Terpasang
                       </span>
-                      {slideNarasi[i]?.audioUrl && (
-                        <span style={{ fontSize: '11px', background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
-                          ✓ Audio terupload
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {(narasiMode === 'teks' || narasiMode === 'keduanya') && (
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text3)', display: 'block', marginBottom: '6px' }}>TEKS NARASI</label>
-                          <textarea
-                            rows={3}
-                            placeholder={`Ketik penjelasan untuk slide ${i + 1}...`}
-                            value={slideNarasi[i]?.teks || ''}
-                            onChange={e => {
-                              setSlideNarasi(prev => {
+                    )}
+                    {(!slideNarasi[activeSlideIndex]?.audioUrl && slideNarasi[activeSlideIndex]?.audioFile) && (
+                      <span style={{ marginLeft: '8px', fontSize: '11px', background: '#eff6ff', color: 'var(--accent)', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>
+                        ✓ Audio Rekaman Baru
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={activeSlideIndex === slideCount - 1}
+                    onClick={() => setActiveSlideIndex(prev => Math.min(slideCount - 1, prev + 1))}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      border: '1px solid var(--border)',
+                      background: activeSlideIndex === slideCount - 1 ? '#f1f5f9' : '#fff',
+                      color: activeSlideIndex === slideCount - 1 ? 'var(--text3)' : 'var(--text2)',
+                      cursor: activeSlideIndex === slideCount - 1 ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    Next Slide
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </button>
+                </div>
+
+                {/* DOTS PAGINATION FOR QUICK JUMP */}
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '10px', padding: '0 10px' }}>
+                  {Array.from({ length: slideCount }).map((_, idx) => {
+                    const hasData = slideNarasi[idx]?.teks?.trim() || slideNarasi[idx]?.audioFile || slideNarasi[idx]?.audioUrl;
+                    const isActive = activeSlideIndex === idx;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveSlideIndex(idx)}
+                        title={`Lompat ke Slide ${idx + 1}`}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          fontSize: '10px',
+                          fontWeight: '700',
+                          border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)',
+                          background: isActive ? '#eff6ff' : hasData ? '#ecfdf5' : '#ffffff',
+                          color: isActive ? 'var(--accent)' : hasData ? '#059669' : 'var(--text3)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isActive ? '0 0 0 3px rgba(47, 123, 255, 0.15)' : 'none'
+                        }}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* ACTIVE SLIDE CONTENT EDITOR */}
+                <div style={{ background: '#ffffff', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: '#eff6ff', padding: '12px 18px', borderBottom: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '800', color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Konfigurasi Slide {activeSlideIndex + 1}
+                    </span>
+                  </div>
+
+                  <div style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {/* Teks Narasi Input */}
+                    {(narasiMode === 'teks' || narasiMode === 'keduanya') && (
+                      <div>
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '6px', letterSpacing: '0.02em' }}>TEKS NARASI</label>
+                        <textarea
+                          rows={4}
+                          placeholder={`Ketik penjelasan atau naskah presentasi untuk slide ${activeSlideIndex + 1}...`}
+                          value={slideNarasi[activeSlideIndex]?.teks || ''}
+                          onChange={e => {
+                            setSlideNarasi(prev => {
+                              const updated = [...prev];
+                              updated[activeSlideIndex] = { ...updated[activeSlideIndex], teks: e.target.value };
+                              return updated;
+                            });
+                          }}
+                          style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '13px', resize: 'vertical', fontFamily: 'inherit', color: 'var(--text1)', lineHeight: '1.5' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Audio Narasi Input */}
+                    {(narasiMode === 'audio' || narasiMode === 'keduanya') && (
+                      <div style={{ borderTop: (narasiMode === 'keduanya') ? '1px dashed var(--border)' : 'none', paddingTop: (narasiMode === 'keduanya') ? '14px' : '0' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '8px', letterSpacing: '0.02em' }}>AUDIO NARASI</label>
+                        
+                        {/* Toggle: Upload vs Rekam */}
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                          {['upload', 'rekam'].map(mode => (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => setSlideNarasi(prev => {
                                 const updated = [...prev];
-                                updated[i] = { ...updated[i], teks: e.target.value };
+                                updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioInputMode: mode, audioFile: null, audioUrl: null };
                                 return updated;
-                              });
-                            }}
-                            style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', resize: 'vertical', fontFamily: 'inherit', color: 'var(--text1)' }}
-                          />
+                              })}
+                              style={{
+                                padding: '6px 14px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                border: slideNarasi[activeSlideIndex]?.audioInputMode === mode ? '1.5px solid var(--navy)' : '1px solid var(--border)',
+                                background: slideNarasi[activeSlideIndex]?.audioInputMode === mode ? '#f1f5f9' : '#ffffff',
+                                color: slideNarasi[activeSlideIndex]?.audioInputMode === mode ? 'var(--navy)' : 'var(--text2)',
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              {mode === 'upload' ? '📁 Upload File Audio' : '🎙️ Rekam Suara'}
+                            </button>
+                          ))}
                         </div>
-                      )}
-                      {(narasiMode === 'audio' || narasiMode === 'keduanya') && (
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text3)', display: 'block', marginBottom: '6px' }}>AUDIO NARASI</label>
-                          {/* Toggle: Upload vs Rekam */}
-                          <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
-                            {['upload', 'rekam'].map(mode => (
-                              <button
-                                key={mode}
-                                type="button"
-                                onClick={() => setSlideNarasi(prev => {
+
+                        {/* Upload mode */}
+                        {(slideNarasi[activeSlideIndex]?.audioInputMode === 'upload') && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <input
+                              type="file"
+                              accept="audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/*"
+                              id={`audio-slide-${activeSlideIndex}`}
+                              style={{ display: 'none' }}
+                              onChange={e => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                setSlideNarasi(prev => {
                                   const updated = [...prev];
-                                  updated[i] = { ...updated[i], audioInputMode: mode, audioFile: null, audioUrl: null };
+                                  updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioFile: file, audioUrl: null };
                                   return updated;
-                                })}
-                                style={{
-                                  padding: '5px 12px',
-                                  fontSize: '12px',
-                                  fontWeight: '600',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  border: slideNarasi[i]?.audioInputMode === mode ? '1.5px solid #4f46e5' : '1px solid var(--border)',
-                                  background: slideNarasi[i]?.audioInputMode === mode ? '#ede9fe' : '#f8fafc',
-                                  color: slideNarasi[i]?.audioInputMode === mode ? '#4f46e5' : 'var(--text2)',
-                                }}
-                              >
-                                {mode === 'upload' ? '📁 Upload File' : '🎙️ Rekam Langsung'}
-                              </button>
-                            ))}
-                          </div>
-                          {/* Upload mode */}
-                          {(slideNarasi[i]?.audioInputMode === 'upload') && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <input
-                                type="file"
-                                accept="audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/*"
-                                id={`audio-slide-${i}`}
-                                style={{ display: 'none' }}
-                                onChange={e => {
-                                  const file = e.target.files[0];
-                                  if (!file) return;
-                                  setSlideNarasi(prev => {
+                                });
+                              }}
+                            />
+                            <label
+                              htmlFor={`audio-slide-${activeSlideIndex}`}
+                              style={{ padding: '8px 16px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', background: '#f8fafc', color: 'var(--text2)', fontWeight: '700', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}
+                              onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                              onMouseOut={(e) => e.currentTarget.style.background = '#f8fafc'}
+                            >
+                              📁 Pilih File Audio (MP3/WAV)
+                            </label>
+                            {slideNarasi[activeSlideIndex]?.audioFile && (
+                              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
+                                  ✓ {slideNarasi[activeSlideIndex].audioFile.name}
+                                </span>
+                                <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
+                                  ({(slideNarasi[activeSlideIndex].audioFile.size / 1024 / 1024).toFixed(1)} MB)
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setSlideNarasi(prev => {
                                     const updated = [...prev];
-                                    updated[i] = { ...updated[i], audioFile: file, audioUrl: null };
+                                    updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioFile: null, audioUrl: null };
                                     return updated;
-                                  });
-                                }}
-                              />
-                              <label
-                                htmlFor={`audio-slide-${i}`}
-                                style={{ padding: '7px 14px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', background: '#f8fafc', color: 'var(--text2)', fontWeight: '600', whiteSpace: 'nowrap' }}
-                              >
-                                📁 Pilih File Audio
-                              </label>
-                              {slideNarasi[i]?.audioFile && (
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  })}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '0 4px', fontWeight: '700' }}
+                                >✕</button>
+                              </div>
+                            )}
+                            {!slideNarasi[activeSlideIndex]?.audioFile && (
+                              <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Belum ada file audio terpasang</span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Rekam mode */}
+                        {(slideNarasi[activeSlideIndex]?.audioInputMode === 'rekam') && (
+                          <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                            {recordingSlide === activeSlideIndex ? (
+                              /* Sedang merekam */
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#dc2626', fontWeight: '700' }}>
+                                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#dc2626', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+                                  Merekam Suara...
+                                </span>
+                                <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text1)', fontVariantNumeric: 'tabular-nums' }}>
+                                  {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={stopRecording}
+                                  style={{ padding: '6px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)' }}
+                                >
+                                  ⏹ Hentikan Rekaman
+                                </button>
+                              </div>
+                            ) : slideNarasi[activeSlideIndex]?.audioFile ? (
+                              /* Ada hasil rekaman */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <audio
+                                  controls
+                                  src={URL.createObjectURL(slideNarasi[activeSlideIndex].audioFile)}
+                                  style={{ width: '100%', height: '36px' }}
+                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                   <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
-                                    ✓ {slideNarasi[i].audioFile.name}
-                                  </span>
-                                  <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-                                    ({(slideNarasi[i].audioFile.size / 1024 / 1024).toFixed(1)} MB)
+                                    ✓ {slideNarasi[activeSlideIndex].audioFile.name}
                                   </span>
                                   <button
                                     type="button"
                                     onClick={() => setSlideNarasi(prev => {
                                       const updated = [...prev];
-                                      updated[i] = { ...updated[i], audioFile: null, audioUrl: null };
+                                      updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioFile: null, audioUrl: null };
                                       return updated;
                                     })}
-                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '0 4px' }}
-                                  >✕</button>
-                                </div>
-                              )}
-                              {!slideNarasi[i]?.audioFile && (
-                                <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Belum ada file dipilih (MP3/WAV/M4A)</span>
-                              )}
-                            </div>
-                          )}
-                          {/* Rekam mode */}
-                          {(slideNarasi[i]?.audioInputMode === 'rekam') && (
-                            <div>
-                              {recordingSlide === i ? (
-                                /* Sedang merekam */
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#dc2626', fontWeight: '600' }}>
-                                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#dc2626', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-                                    Merekam...
-                                  </span>
-                                  <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)', fontVariantNumeric: 'tabular-nums' }}>
-                                    {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
-                                  </span>
+                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '0', fontWeight: '700' }}
+                                  >
+                                    🗑 Hapus Audio
+                                  </button>
                                   <button
                                     type="button"
-                                    onClick={stopRecording}
-                                    style={{ padding: '6px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                    onClick={() => startRecording(activeSlideIndex)}
+                                    style={{ background: '#ffffff', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', cursor: 'pointer', fontSize: '12px', padding: '4px 12px', fontWeight: '700', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}
                                   >
-                                    ⏹ Stop
+                                    🔄 Rekam Ulang
                                   </button>
                                 </div>
-                              ) : slideNarasi[i]?.audioFile ? (
-                                /* Ada hasil rekaman */
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                  <audio
-                                    controls
-                                    src={URL.createObjectURL(slideNarasi[i].audioFile)}
-                                    style={{ width: '100%', height: '36px' }}
-                                  />
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
-                                      ✓ {slideNarasi[i].audioFile.name}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => setSlideNarasi(prev => {
-                                        const updated = [...prev];
-                                        updated[i] = { ...updated[i], audioFile: null, audioUrl: null };
-                                        return updated;
-                                      })}
-                                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '0' }}
-                                    >
-                                      🗑 Hapus
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => startRecording(i)}
-                                      style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '5px', color: 'var(--text2)', cursor: 'pointer', fontSize: '12px', padding: '3px 10px' }}
-                                    >
-                                      🔄 Rekam Ulang
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                /* Belum rekam */
+                              </div>
+                            ) : (
+                              /* Belum rekam */
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <button
                                   type="button"
-                                  onClick={() => startRecording(i)}
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                                  onClick={() => startRecording(activeSlideIndex)}
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 4px rgba(220, 38, 38, 0.15)' }}
                                 >
-                                  ⏺ Mulai Rekam
+                                  ⏺ Mulai Rekam Suara
                                 </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                                <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Gunakan mikrofon untuk merekam penjelasan secara langsung</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
+
               </div>
             )}
           </div>
