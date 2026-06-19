@@ -308,24 +308,20 @@ export const UploadSOP = () => {
 
       // Upload audio narasi per slide ke Supabase (jika ada)
       if (narasiMode === 'audio' || narasiMode === 'keduanya') {
-        const audioFiles = slideNarasi.filter(s => s.audioFile);
-        if (audioFiles.length > 0) {
+        const newAudio = latestSlideNarasi.filter(s => s.audioFile);
+        if (newAudio.length > 0) {
           setUploadProgress(5);
           const sopId = Date.now();
-          for (let i = 0; i < slideNarasi.length; i++) {
-            const s = slideNarasi[i];
+          for (let i = 0; i < latestSlideNarasi.length; i++) {
+            const s = latestSlideNarasi[i];
             if (!s.audioFile) continue;
             const ext = s.audioFile.name.split('.').pop();
             const path = `narasi/${sopId}/slide-${i + 1}.${ext}`;
             const { error } = await supabase.storage.from('narasi').upload(path, s.audioFile, { upsert: true });
             if (error) return alert(`Gagal upload audio slide ${i + 1}: ${error.message}`);
             const { data: urlData } = supabase.storage.from('narasi').getPublicUrl(path);
-            setSlideNarasi(prev => {
-              const updated = [...prev];
-              updated[i] = { ...updated[i], audioUrl: urlData.publicUrl };
-              return updated;
-            });
-            setUploadProgress(Math.round((i + 1) / slideNarasi.length * 90));
+            latestSlideNarasi[i] = { ...latestSlideNarasi[i], audioUrl: urlData.publicUrl };
+            setUploadProgress(Math.round((i + 1) / latestSlideNarasi.length * 90));
           }
           setUploadProgress(100);
           await new Promise(r => setTimeout(r, 200));
@@ -495,7 +491,7 @@ export const UploadSOP = () => {
       postQuizzes: postList,
       narasiMode: contentType === 'ppt' ? narasiMode : null,
       slideNarasi: contentType === 'ppt' && narasiMode !== 'none'
-        ? slideNarasi.map(s => ({
+        ? latestSlideNarasi.map(s => ({
             teks: s.teks || '',
             audioUrl: s.audioUrl || null,
           }))
