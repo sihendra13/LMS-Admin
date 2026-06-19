@@ -1322,6 +1322,35 @@ export const UploadSOP = () => {
                   </button>
                 </div>
 
+                {/* SLIDE IMAGE PREVIEW */}
+                {(() => {
+                  const imgUrl = (editVideo?.slideImages || [])[activeSlideIndex];
+                  const hasNarasi = slideNarasi[activeSlideIndex]?.teks?.trim();
+                  const hasAudio = slideNarasi[activeSlideIndex]?.audioFile || slideNarasi[activeSlideIndex]?.audioUrl;
+                  return (
+                    <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', background: '#1e293b', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '180px' }}>
+                      {imgUrl ? (
+                        <img src={imgUrl} alt={`Slide ${activeSlideIndex + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                      ) : (
+                        <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>
+                          <div style={{ fontSize: '48px', fontWeight: '900', color: '#334155', lineHeight: 1 }}>{activeSlideIndex + 1}</div>
+                          <div style={{ fontSize: '12px', marginTop: '8px' }}>Slide {activeSlideIndex + 1} dari {slideCount}</div>
+                          <div style={{ fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Preview gambar tersedia setelah dipublikasi</div>
+                        </div>
+                      )}
+                      {/* Slide number badge */}
+                      <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '3px 9px', borderRadius: '5px', backdropFilter: 'blur(4px)' }}>
+                        {activeSlideIndex + 1} / {slideCount}
+                      </div>
+                      {/* Narasi status badges */}
+                      <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
+                        {hasNarasi && <span style={{ background: 'rgba(5,150,105,0.85)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', backdropFilter: 'blur(4px)' }}>✓ Teks</span>}
+                        {hasAudio && <span style={{ background: 'rgba(124,58,237,0.85)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', backdropFilter: 'blur(4px)' }}>✓ Audio</span>}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* DOTS PAGINATION FOR QUICK JUMP */}
                 <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '10px', padding: '0 10px' }}>
                   {Array.from({ length: slideCount }).map((_, idx) => {
