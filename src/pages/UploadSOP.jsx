@@ -865,13 +865,35 @@ export const UploadSOP = () => {
             </div>
           </div>
 
+          {/* SINGLE TUTORIAL GUIDELINE BOX */}
+          <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', fontSize: '12.5px', color: 'var(--text2)', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#eff6ff', color: 'var(--accent)', display: 'flex', alignItems: 'center', justify: 'center', flexShrink: 0, marginTop: '2px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontWeight: '800', color: 'var(--text1)', marginBottom: '6px', fontSize: '13px' }}>Cara Mengisi Kunci Jawaban:</div>
+              <ol style={{ margin: 0, paddingLeft: '16px', lineHeight: '1.6', color: 'var(--text2)' }}>
+                <li>Ketik teks masing-masing opsi jawaban (A, B, C, D) di kotak yang disediakan pada setiap pertanyaan.</li>
+                <li>Klik pil/kotak opsi tersebut untuk menentukan <strong>jawaban benar</strong> — kotak opsi yang dipilih akan otomatis berubah warna menjadi biru dengan tanda centang (✓).</li>
+              </ol>
+            </div>
+          </div>
+
           {/* TWO COLUMN GRID FOR PRE-TEST AND POST-TEST */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
             
             {/* COLUMN 1: PRE-TEST */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '8px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {contentType === 'ppt' ? '✍️ Kuis Pre-Test (Sebelum Presentasi)' : '✍️ Kuis Pre-Test (Tengah Video)'}
+              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '10px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                {contentType === 'ppt' ? 'Kuis Pre-Test (Sebelum Presentasi)' : 'Kuis Pre-Test (Tengah Video)'}
               </div>
               
               {preQuestions.map((q, idx) => (
@@ -942,16 +964,6 @@ export const UploadSOP = () => {
                     )}
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e293b' }}>
-                        <div style={{ fontWeight: '700', marginBottom: '4px' }}>🔑 Cara mengisi kunci jawaban:</div>
-                        <ol style={{ margin: 0, paddingLeft: '18px', lineHeight: '1.8' }}>
-                          <li>Isi teks masing-masing opsi jawaban (A, B, C, D) di kotak di bawah</li>
-                          <li>Klik kotak opsi yang merupakan <strong>jawaban benar</strong> — kotak akan berwarna biru (✓)</li>
-                        </ol>
-                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>
-                          Contoh: Pertanyaan "Ibukota Indonesia adalah?" → isi A=Jakarta, B=Bandung, C=Solo, D=Yogyakarta → klik opsi A (Jakarta) sebagai jawaban benar
-                        </div>
-                      </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
                           const letter = String.fromCharCode(65 + oIdx);
@@ -991,14 +1003,25 @@ export const UploadSOP = () => {
                 style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text2)', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer' }}
                 onClick={addPreQuestion}
               >
-                ➕ Tambah Pertanyaan Pre-Test
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Tambah Pertanyaan Pre-Test
               </button>
             </div>
 
             {/* COLUMN 2: POST-TEST */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '8px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {contentType === 'ppt' ? '📝 Kuis Post-Test (Setelah Presentasi Selesai)' : '📝 Kuis Post-Test (Setelah Video Selesai)'}
+              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text2)', paddingBottom: '10px', borderBottom: '1px solid var(--border)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+                {contentType === 'ppt' ? 'Kuis Post-Test (Setelah Presentasi Selesai)' : 'Kuis Post-Test (Setelah Video Selesai)'}
               </div>
               
               {postQuestions.map((q, idx) => (
@@ -1037,16 +1060,6 @@ export const UploadSOP = () => {
                     </div>
 
                     <div style={{ marginTop: '16px' }}>
-                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '12px', color: '#1e293b' }}>
-                        <div style={{ fontWeight: '700', marginBottom: '4px' }}>🔑 Cara mengisi kunci jawaban:</div>
-                        <ol style={{ margin: 0, paddingLeft: '18px', lineHeight: '1.8' }}>
-                          <li>Isi teks masing-masing opsi jawaban (A, B, C, D) di kotak di bawah</li>
-                          <li>Klik kotak opsi yang merupakan <strong>jawaban benar</strong> — kotak akan berwarna biru (✓)</li>
-                        </ol>
-                        <div style={{ marginTop: '6px', fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>
-                          Contoh: Pertanyaan "Ibukota Indonesia adalah?" → isi A=Jakarta, B=Bandung, C=Solo, D=Yogyakarta → klik opsi A (Jakarta) sebagai jawaban benar
-                        </div>
-                      </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         {q.options.map((opt, oIdx) => {
                           const letter = String.fromCharCode(65 + oIdx);
@@ -1086,7 +1099,11 @@ export const UploadSOP = () => {
                 style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text2)', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer' }}
                 onClick={addPostQuestion}
               >
-                ➕ Tambah Pertanyaan Post-Test
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Tambah Pertanyaan Post-Test
               </button>
             </div>
 
@@ -1095,17 +1112,20 @@ export const UploadSOP = () => {
           {/* KUIS PEMICU SLIDE — Full width, hanya untuk PPT */}
           {contentType === 'ppt' && (
             <div style={{ marginTop: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #fde68a' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
-                    ⚡ Kuis Pemicu Slide (Muncul Di Tengah Presentasi)
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text1)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                    Kuis Pemicu Slide (Muncul Di Tengah Presentasi)
                   </div>
-                  <div style={{ fontSize: '12px', color: '#78350f' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
                     Tentukan di slide berapa kuis muncul. Learner tidak bisa melanjutkan ke slide berikutnya sebelum menjawab.
                   </div>
                 </div>
                 {slideCount > 0 && (
-                  <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', fontWeight: '700', color: '#92400e', whiteSpace: 'nowrap' }}>
+                  <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', fontWeight: '700', color: '#1d4ed8', whiteSpace: 'nowrap' }}>
                     Total {slideCount} slide
                   </div>
                 )}
@@ -1113,14 +1133,17 @@ export const UploadSOP = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {triggerQuizzes.map((q, idx) => (
-                  <div key={idx} className="card" style={{ border: '1px solid #fde68a', borderRadius: '10px', overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fffbeb', padding: '12px 20px', borderBottom: '1px solid #fde68a' }}>
-                      <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#b45309', letterSpacing: '0.05em' }}>
-                        ⚡ Kuis Pemicu #{idx + 1}
+                  <div key={idx} className="card" style={{ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                        Kuis Pemicu #{idx + 1}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: '600', color: '#78350f' }}>Muncul di slide</span>
+                          <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text2)' }}>Muncul di slide</span>
                           <input
                             type="number"
                             min="1"
@@ -1129,12 +1152,12 @@ export const UploadSOP = () => {
                             onChange={(e) => handleTriggerQuizChange(idx, 'triggerSlide', e.target.value)}
                             style={{
                               width: '64px', fontSize: '14px', padding: '4px 8px', textAlign: 'center', fontWeight: '700',
-                              border: `1px solid ${idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) ? '#f87171' : '#fcd34d'}`,
-                              borderRadius: '6px', color: '#92400e', background: idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) ? '#fef2f2' : '#fef9c3'
+                              border: `1px solid ${idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) ? '#f87171' : 'var(--border)'}`,
+                              borderRadius: '6px', color: 'var(--text1)', background: idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) ? '#fef2f2' : 'var(--background)'
                             }}
                           />
                           {slideCount > 0 && (
-                            <span style={{ fontSize: '11px', color: '#b45309' }}>/ {slideCount}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>/ {slideCount}</span>
                           )}
                         </div>
                         {triggerQuizzes.length > 1 && (
@@ -1147,23 +1170,30 @@ export const UploadSOP = () => {
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '16px', height: '16px' }}>
                               <polyline points="3 6 5 6 21 6" />
                               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              <line x1="10" y1="11" x2="10" y2="17" />
+                              <line x1="14" y1="11" x2="14" y2="17" />
                             </svg>
                           </button>
                         )}
                       </div>
                     </div>
 
-                    <div style={{ padding: '20px', textAlign: 'left', background: '#fffdf0' }}>
+                    <div style={{ padding: '20px', textAlign: 'left' }}>
                       {idx > 0 && Number(q.triggerSlide) <= Number(triggerQuizzes[idx - 1].triggerSlide) && (
-                        <div style={{ marginBottom: '12px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '6px 10px' }}>
-                          ⚠️ Nomor slide harus lebih besar dari Kuis Pemicu #{idx} (slide {triggerQuizzes[idx - 1].triggerSlide}). Kuis harus muncul secara berurutan.
+                        <div style={{ marginBottom: '12px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                          Nomor slide harus lebih besar dari Kuis Pemicu #{idx} (slide {triggerQuizzes[idx - 1].triggerSlide}). Kuis harus muncul secara berurutan.
                         </div>
                       )}
                       <div className="form-group" style={{ marginBottom: '16px' }}>
-                        <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: '#92400e' }}>Teks Pertanyaan</label>
+                        <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Teks Pertanyaan</label>
                         <textarea
                           className="form-input"
-                          style={{ minHeight: '72px', fontFamily: 'inherit', resize: 'vertical', fontSize: '14px', padding: '10px 14px', marginTop: '6px', borderColor: '#fcd34d' }}
+                          style={{ minHeight: '72px', fontFamily: 'inherit', resize: 'vertical', fontSize: '14px', padding: '10px 14px', marginTop: '6px' }}
                           placeholder={`Contoh: Apa yang harus dilakukan ketika menerima keluhan pelanggan? (muncul di slide ${q.triggerSlide})`}
                           value={q.question}
                           onChange={(e) => handleTriggerQuizChange(idx, 'question', e.target.value)}
@@ -1201,10 +1231,15 @@ export const UploadSOP = () => {
 
                 <button
                   type="button"
-                  style={{ background: '#fffbeb', border: '1px dashed #fcd34d', color: '#b45309', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                  className="btn-primary"
+                  style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text2)', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer' }}
                   onClick={addTriggerQuiz}
                 >
-                  ➕ Tambah Kuis Pemicu Slide
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Tambah Kuis Pemicu Slide
                 </button>
               </div>
             </div>
@@ -1214,12 +1249,17 @@ export const UploadSOP = () => {
         {/* NARASI PER SLIDE — hanya untuk PPT */}
         {contentType === 'ppt' && slideCount > 0 && (
           <div style={{ marginTop: '32px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #bfdbfe' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: '800', color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
-                  🎙️ Narasi per Slide (Opsional)
+                <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text1)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                  </svg>
+                  Narasi per Slide (Opsional)
                 </div>
-                <div style={{ fontSize: '12px', color: '#1e40af' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
                   Tambahkan penjelasan teks atau rekaman suara untuk setiap slide agar learner lebih mudah memahami materi.
                 </div>
               </div>
@@ -1554,8 +1594,8 @@ export const UploadSOP = () => {
                         
                         {/* CASE 1: SEDANG MEREKAM */}
                         {recordingSlide === activeSlideIndex ? (
-                          <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', padding: '14px 18px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#dc2626', fontWeight: '700' }}>
+                          <div style={{ background: '#f8fafc', border: '1px solid var(--border)', padding: '14px 18px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text1)', fontWeight: '700' }}>
                               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#dc2626', display: 'inline-block', animation: 'pulse 1s infinite' }} />
                               Merekam Suara...
                             </span>
@@ -1567,7 +1607,7 @@ export const UploadSOP = () => {
                               onClick={stopRecording}
                               style={{
                                 padding: '6px 14px',
-                                background: '#dc2626',
+                                background: '#1e293b',
                                 color: '#fff',
                                 border: 'none',
                                 borderRadius: '6px',
@@ -1577,7 +1617,7 @@ export const UploadSOP = () => {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
-                                boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
+                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                               }}
                             >
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2">
@@ -1912,20 +1952,15 @@ export const UploadSOP = () => {
                           : (videoFile ? videoFile.name : isEditMode ? 'Menggunakan file yang ada (tidak diganti)' : 'Tidak ada video')}
                       </span>
                     </div>
-                    {contentType === 'ppt' && narasiMode !== 'none' && (
+                    {contentType === 'ppt' && (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
                         <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Narasi</span>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>
-                          {narasiMode === 'teks' ? 'Teks Narasi' : narasiMode === 'audio' ? 'Audio Narasi' : 'Teks + Audio'}
-                          {' — '}
-                          {slideNarasi.filter(s => s.teks?.trim() || s.audioFile || s.audioUrl).length} dari {slideCount} slide diisi
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: narasiMode === 'none' ? 'var(--text3)' : 'var(--text1)' }}>
+                          {narasiMode === 'none'
+                            ? 'Tidak Ada Narasi'
+                            : `Narasi ${narasiMode === 'teks' ? 'Teks' : narasiMode === 'audio' ? 'Audio' : 'Teks + Audio'} : ${slideNarasi.filter(s => s.teks?.trim() || s.audioFile || s.audioUrl).length} dari ${slideCount} Slide terisi`
+                          }
                         </span>
-                      </div>
-                    )}
-                    {contentType === 'ppt' && narasiMode === 'none' && (
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
-                        <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Narasi</span>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text3)' }}>Tidak Ada Narasi</span>
                       </div>
                     )}
                   </div>
