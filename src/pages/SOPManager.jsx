@@ -97,19 +97,21 @@ export const SOPManager = () => {
               {/* ACTION BUTTONS */}
               {!isSupervisor && (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '16px', flexShrink: 0 }}>
-                  {/* Edit — semua SOP */}
-                  <button
-                    type="button"
-                    onClick={() => openEdit(video)}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
-                      border: '1px solid #ddd6fe', background: '#f5f3ff', color: '#7c3aed',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ✏️ Edit
-                  </button>
+                  {/* Edit — hanya kalau belum ditonton */}
+                  {video.views === 0 && (
+                    <button
+                      type="button"
+                      onClick={() => openEdit(video)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
+                        border: '1px solid #ddd6fe', background: '#f5f3ff', color: '#7c3aed',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                  )}
                   {video.views === 0 ? (
                     <button
                       type="button"
