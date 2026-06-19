@@ -1754,7 +1754,7 @@ export const UploadSOP = () => {
             }}
             disabled={uploading}
           >
-            {uploading ? `Mengupload ${contentType === 'ppt' ? 'PPT' : 'Video'}... ${uploadProgress}%` : 'Terbitkan Materi & Ujian'}
+            {uploading ? `Mengupload ${contentType === 'ppt' ? 'PPT' : 'Video'}... ${uploadProgress}%` : isEditMode ? 'Simpan Perubahan' : 'Terbitkan Materi & Ujian'}
           </button>
         </div>
       </form>
@@ -1877,8 +1877,8 @@ export const UploadSOP = () => {
                     </svg>
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>Konfirmasi Terbitkan SOP</h3>
-                    <p style={{ fontSize: '12px', color: 'var(--text3)', margin: 0 }}>Tinjau kembali sebelum menerbitkan</p>
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>{isEditMode ? 'Konfirmasi Simpan Perubahan' : 'Konfirmasi Terbitkan SOP'}</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text3)', margin: 0 }}>{isEditMode ? 'Tinjau kembali perubahan sebelum disimpan' : 'Tinjau kembali sebelum menerbitkan'}</p>
                   </div>
                 </div>
               </div>
@@ -2031,7 +2031,7 @@ export const UploadSOP = () => {
                   style={{ padding: '10px 24px', fontWeight: '700', fontSize: '13px', borderRadius: '8px', cursor: 'pointer' }}
                   onClick={handleConfirmPublish}
                 >
-                  Terbitkan Sekarang
+                  {isEditMode ? 'Simpan Perubahan' : 'Terbitkan Sekarang'}
                 </button>
               </div>
             </div>
