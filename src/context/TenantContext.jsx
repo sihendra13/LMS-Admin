@@ -295,6 +295,10 @@ export const TenantProvider = ({ children, authUser }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
+  const updateSOP = (id, fields) => {
+    setVideos(prev => prev.map(v => v.id === id ? { ...v, ...fields } : v));
+  };
+
   const addEmployee = (newEmp) => {
     setEmployees(prev => [newEmp, ...prev]);
     // Add activity
@@ -467,6 +471,7 @@ export const TenantProvider = ({ children, authUser }) => {
       addEmployee,
       videos,
       addSOP,
+      updateSOP,
       deleteSOP,
       archiveSOP,
       unarchiveSOP,
