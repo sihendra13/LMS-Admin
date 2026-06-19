@@ -1225,29 +1225,31 @@ export const UploadSOP = () => {
               </div>
             </div>
 
-            {/* Pilih mode narasi */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              {[
-                { val: 'none', label: 'Tidak Ada Narasi', icon: '🚫' },
-                { val: 'teks', label: 'Teks Narasi', icon: '📝' },
-                { val: 'audio', label: 'Audio Narasi', icon: '🔊' },
-                { val: 'keduanya', label: 'Teks + Audio', icon: '🎙️' },
-              ].map(opt => (
-                <button
-                  key={opt.val}
-                  type="button"
-                  onClick={() => setNarasiMode(opt.val)}
-                  style={{
-                    padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
-                    cursor: 'pointer', border: narasiMode === opt.val ? '2px solid #2F7BFF' : '1px solid var(--border)',
-                    background: narasiMode === opt.val ? '#eff6ff' : '#fff',
-                    color: narasiMode === opt.val ? '#1d4ed8' : 'var(--text2)',
-                  }}
-                >
-                  {opt.icon} {opt.label}
-                </button>
-              ))}
-            </div>
+            {/* Pilih mode narasi — tampil di sini hanya saat belum memilih mode */}
+            {narasiMode === 'none' && (
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                {[
+                  { val: 'none', label: 'Tidak Ada Narasi', icon: '🚫' },
+                  { val: 'teks', label: 'Teks Narasi', icon: '📝' },
+                  { val: 'audio', label: 'Audio Narasi', icon: '🔊' },
+                  { val: 'keduanya', label: 'Teks + Audio', icon: '🎙️' },
+                ].map(opt => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setNarasiMode(opt.val)}
+                    style={{
+                      padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
+                      cursor: 'pointer', border: narasiMode === opt.val ? '2px solid #2F7BFF' : '1px solid var(--border)',
+                      background: narasiMode === opt.val ? '#eff6ff' : '#fff',
+                      color: narasiMode === opt.val ? '#1d4ed8' : 'var(--text2)',
+                    }}
+                  >
+                    {opt.icon} {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Input narasi per slide (CAROUSEL UI) */}
             {narasiMode !== 'none' && (
@@ -1383,6 +1385,31 @@ export const UploadSOP = () => {
                       </button>
                     );
                   })}
+                </div>
+
+                {/* MODE SWITCHER — di dalam carousel agar mudah ganti tanpa scroll naik */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '4px 0' }}>
+                  {[
+                    { val: 'none', label: 'Tidak Ada Narasi', icon: '🚫' },
+                    { val: 'teks', label: 'Teks Narasi', icon: '📝' },
+                    { val: 'audio', label: 'Audio Narasi', icon: '🔊' },
+                    { val: 'keduanya', label: 'Teks + Audio', icon: '🎙️' },
+                  ].map(opt => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => setNarasiMode(opt.val)}
+                      style={{
+                        padding: '7px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '600',
+                        cursor: 'pointer', border: narasiMode === opt.val ? '2px solid #2F7BFF' : '1px solid var(--border)',
+                        background: narasiMode === opt.val ? '#eff6ff' : '#fff',
+                        color: narasiMode === opt.val ? '#1d4ed8' : 'var(--text2)',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {opt.icon} {opt.label}
+                    </button>
+                  ))}
                 </div>
 
                 {/* ACTIVE SLIDE CONTENT EDITOR */}
