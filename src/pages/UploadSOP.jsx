@@ -269,6 +269,7 @@ export const UploadSOP = () => {
     let videoUrl = null;
     let filePath = null;
     let slideImages = null;
+    let latestSlideNarasi = slideNarasi.map(s => ({ ...s })); // local copy untuk track audio URLs baru
 
     if (contentType === 'ppt' && pptFile) {
       // Kirim PPTX ke backend → konversi jadi PNG per slide
@@ -332,6 +333,29 @@ export const UploadSOP = () => {
       }
 
       setUploading(false);
+
+    } else if (contentType === 'ppt' && !pptFile && (narasiMode === 'audio' || narasiMode === 'keduanya')) {
+      // Edit mode: PPT tidak diganti, tapi ada audio narasi baru yang perlu diupload
+      const newAudioSlides = latestSlideNarasi.filter(s => s.audioFile);
+      if (newAudioSlides.length > 0) {
+        setUploading(true);
+        setUploadProgress(5);
+        const sopId = isEditMode ? editVideo.id : Date.now();
+        for (let i = 0; i < latestSlideNarasi.length; i++) {
+          const s = latestSlideNarasi[i];
+          if (!s.audioFile) continue;
+          const ext = s.audioFile.name.split('.').pop();
+          const path = `narasi/${sopId}/slide-${i + 1}.${ext}`;
+          const { error } = await supabase.storage.from('narasi').upload(path, s.audioFile, { upsert: true });
+          if (error) { setUploading(false); return alert(`Gagal upload audio slide ${i + 1}: ${error.message}`); }
+          const { data: urlData } = supabase.storage.from('narasi').getPublicUrl(path);
+          latestSlideNarasi[i] = { ...latestSlideNarasi[i], audioUrl: urlData.publicUrl };
+          setUploadProgress(Math.round((i + 1) / latestSlideNarasi.length * 90));
+        }
+        setUploadProgress(100);
+        await new Promise(r => setTimeout(r, 200));
+        setUploading(false);
+      }
 
     } else if (contentType === 'video' && videoFile) {
       setUploading(true);
@@ -432,7 +456,7 @@ export const UploadSOP = () => {
         postQuizzes: postList,
         narasiMode: contentType === 'ppt' ? narasiMode : null,
         slideNarasi: contentType === 'ppt' && narasiMode !== 'none'
-          ? slideNarasi.map(s => ({ teks: s.teks || '', audioUrl: s.audioUrl || null }))
+          ? latestSlideNarasi.map(s => ({ teks: s.teks || '', audioUrl: s.audioUrl || null }))
           : null,
       };
       // Kalau ada file baru diunggah
@@ -1958,7 +1982,7 @@ export const UploadSOP = () => {
                         <span style={{ fontSize: '13px', fontWeight: '600', color: narasiMode === 'none' ? 'var(--text3)' : 'var(--text1)' }}>
                           {narasiMode === 'none'
                             ? 'Tidak Ada Narasi'
-                            : `Narasi ${narasiMode === 'teks' ? 'Teks' : narasiMode === 'audio' ? 'Audio' : 'Teks + Audio'} : ${slideNarasi.filter(s => s.teks?.trim() || s.audioFile || s.audioUrl).length} dari ${slideCount} Slide terisi`
+                            : `Narasi Teks + Audio : ${slideNarasi.filter(s => s.teks?.trim() || s.audioFile || s.audioUrl).length} dari ${slideCount} Slide terisi`
                           }
                         </span>
                       </div>
