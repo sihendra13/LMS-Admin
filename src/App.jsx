@@ -17,6 +17,7 @@ import { Departments } from './pages/Departments';
 import { QuizGrading } from './pages/QuizGrading';
 import { Settings } from './pages/Settings';
 import { ReviewSertifikat } from './pages/ReviewSertifikat';
+import { EditSOP } from './pages/EditSOP';
 
 const AppContent = ({ onLogout }) => {
   const { activePage } = useTenant();
@@ -28,6 +29,7 @@ const AppContent = ({ onLogout }) => {
       case 'karyawan':     return <Employees />;
       case 'laporan':      return <Reports />;
       case 'upload':       return <UploadSOP />;
+      case 'edit-sop':    return <EditSOP />;
       case 'heygen':       return <HeyGen />;
       case 'sertifikasi':  return <Certifications />;
       case 'departemen':   return <Departments />;
