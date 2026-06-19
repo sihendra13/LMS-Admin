@@ -1446,37 +1446,87 @@ export const UploadSOP = () => {
                       <div style={{ borderTop: (narasiMode === 'keduanya') ? '1px dashed var(--border)' : 'none', paddingTop: (narasiMode === 'keduanya') ? '14px' : '0' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '8px', letterSpacing: '0.02em' }}>AUDIO NARASI</label>
                         
-                        {/* Toggle: Upload vs Rekam */}
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                          {['upload', 'rekam'].map(mode => (
+                        {/* CASE 1: SEDANG MEREKAM */}
+                        {recordingSlide === activeSlideIndex ? (
+                          <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', padding: '14px 18px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#dc2626', fontWeight: '700' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#dc2626', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+                              Merekam Suara...
+                            </span>
+                            <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text1)', fontVariantNumeric: 'tabular-nums' }}>
+                              {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
+                            </span>
                             <button
-                              key={mode}
                               type="button"
-                              onClick={() => setSlideNarasi(prev => {
-                                const updated = [...prev];
-                                updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioInputMode: mode, audioFile: null, audioUrl: null };
-                                return updated;
-                              })}
+                              onClick={stopRecording}
                               style={{
                                 padding: '6px 14px',
+                                background: '#dc2626',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
                                 fontSize: '12px',
                                 fontWeight: '700',
-                                borderRadius: '6px',
                                 cursor: 'pointer',
-                                border: slideNarasi[activeSlideIndex]?.audioInputMode === mode ? '1.5px solid var(--navy)' : '1px solid var(--border)',
-                                background: slideNarasi[activeSlideIndex]?.audioInputMode === mode ? '#f1f5f9' : '#ffffff',
-                                color: slideNarasi[activeSlideIndex]?.audioInputMode === mode ? 'var(--navy)' : 'var(--text2)',
-                                transition: 'all 0.15s ease'
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)'
                               }}
                             >
-                              {mode === 'upload' ? '📁 Upload File Audio' : '🎙️ Rekam Suara'}
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2">
+                                <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
+                              </svg>
+                              Stop
                             </button>
-                          ))}
-                        </div>
-
-                        {/* Upload mode */}
-                        {(slideNarasi[activeSlideIndex]?.audioInputMode === 'upload') && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          </div>
+                        ) : (slideNarasi[activeSlideIndex]?.audioFile || slideNarasi[activeSlideIndex]?.audioUrl) ? (
+                          /* CASE 2: AUDIO SUDAH TERSEDIA (FILE ATAU URL) */
+                          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <audio
+                              controls
+                              src={slideNarasi[activeSlideIndex].audioFile ? URL.createObjectURL(slideNarasi[activeSlideIndex].audioFile) : slideNarasi[activeSlideIndex].audioUrl}
+                              style={{ width: '100%', height: '36px' }}
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                {slideNarasi[activeSlideIndex].audioFile ? slideNarasi[activeSlideIndex].audioFile.name : 'Audio Terpasang'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setSlideNarasi(prev => {
+                                  const updated = [...prev];
+                                  updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioFile: null, audioUrl: null };
+                                  return updated;
+                                })}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#ef4444',
+                                  cursor: 'pointer',
+                                  fontSize: '12px',
+                                  fontWeight: '700',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  marginLeft: 'auto'
+                                }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                                Hapus Audio
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* CASE 3: BELUM ADA AUDIO (TAMPILKAN 2 OPSI LANGSUNG BERDAMPINGAN) */
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            {/* Hidden file input */}
                             <input
                               type="file"
                               accept="audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/*"
@@ -1492,105 +1542,64 @@ export const UploadSOP = () => {
                                 });
                               }}
                             />
+                            {/* Button Option 1: Upload */}
                             <label
                               htmlFor={`audio-slide-${activeSlideIndex}`}
-                              style={{ padding: '8px 16px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', background: '#f8fafc', color: 'var(--text2)', fontWeight: '700', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}
-                              onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                              onMouseOut={(e) => e.currentTarget.style.background = '#f8fafc'}
+                              style={{
+                                padding: '8px 16px',
+                                border: '1px solid var(--border)',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                background: '#ffffff',
+                                color: 'var(--text2)',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'}
+                              onMouseOut={(e) => e.currentTarget.style.background = '#ffffff'}
                             >
-                              📁 Pilih File Audio (MP3/WAV)
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                              </svg>
+                              Unggah File Audio
                             </label>
-                            {slideNarasi[activeSlideIndex]?.audioFile && (
-                              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
-                                  ✓ {slideNarasi[activeSlideIndex].audioFile.name}
-                                </span>
-                                <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-                                  ({(slideNarasi[activeSlideIndex].audioFile.size / 1024 / 1024).toFixed(1)} MB)
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => setSlideNarasi(prev => {
-                                    const updated = [...prev];
-                                    updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioFile: null, audioUrl: null };
-                                    return updated;
-                                  })}
-                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '0 4px', fontWeight: '700' }}
-                                >✕</button>
-                              </div>
-                            )}
-                            {!slideNarasi[activeSlideIndex]?.audioFile && (
-                              <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Belum ada file audio terpasang</span>
-                            )}
-                          </div>
-                        )}
 
-                        {/* Rekam mode */}
-                        {(slideNarasi[activeSlideIndex]?.audioInputMode === 'rekam') && (
-                          <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                            {recordingSlide === activeSlideIndex ? (
-                              /* Sedang merekam */
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#dc2626', fontWeight: '700' }}>
-                                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#dc2626', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-                                  Merekam Suara...
-                                </span>
-                                <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text1)', fontVariantNumeric: 'tabular-nums' }}>
-                                  {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={stopRecording}
-                                  style={{ padding: '6px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 4px rgba(220, 38, 38, 0.2)' }}
-                                >
-                                  ⏹ Hentikan Rekaman
-                                </button>
-                              </div>
-                            ) : slideNarasi[activeSlideIndex]?.audioFile ? (
-                              /* Ada hasil rekaman */
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <audio
-                                  controls
-                                  src={URL.createObjectURL(slideNarasi[activeSlideIndex].audioFile)}
-                                  style={{ width: '100%', height: '36px' }}
-                                />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
-                                    ✓ {slideNarasi[activeSlideIndex].audioFile.name}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setSlideNarasi(prev => {
-                                      const updated = [...prev];
-                                      updated[activeSlideIndex] = { ...updated[activeSlideIndex], audioFile: null, audioUrl: null };
-                                      return updated;
-                                    })}
-                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', padding: '0', fontWeight: '700' }}
-                                  >
-                                    🗑 Hapus Audio
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => startRecording(activeSlideIndex)}
-                                    style={{ background: '#ffffff', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', cursor: 'pointer', fontSize: '12px', padding: '4px 12px', fontWeight: '700', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}
-                                  >
-                                    🔄 Rekam Ulang
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              /* Belum rekam */
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => startRecording(activeSlideIndex)}
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 4px rgba(220, 38, 38, 0.15)' }}
-                                >
-                                  ⏺ Mulai Rekam Suara
-                                </button>
-                                <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Gunakan mikrofon untuk merekam penjelasan secara langsung</span>
-                              </div>
-                            )}
+                            {/* Button Option 2: Record */}
+                            <button
+                              type="button"
+                              onClick={() => startRecording(activeSlideIndex)}
+                              style={{
+                                padding: '8px 16px',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                background: '#dc2626',
+                                color: '#ffffff',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.15s ease',
+                                boxShadow: '0 2px 4px rgba(220, 38, 38, 0.12)'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.background = '#b91c1c'}
+                              onMouseOut={(e) => e.currentTarget.style.background = '#dc2626'}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                <line x1="12" y1="19" x2="12" y2="22" />
+                              </svg>
+                              Rekam Suara
+                            </button>
+                            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>Format didukung: MP3, WAV, M4A</span>
                           </div>
                         )}
                       </div>
