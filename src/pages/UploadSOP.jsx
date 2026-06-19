@@ -5,15 +5,18 @@ import { canUploadSOP, canUploadPPT, getPPTLimit } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
 
 export const UploadSOP = () => {
-  const { tenant, addSOP, setActivePage, videos } = useTenant();
-  const [contentType, setContentType] = useState('video'); // 'video' | 'ppt'
-  const [title, setTitle] = useState('');
-  const [dept, setDept] = useState('Sales');
-  const [duration, setDuration] = useState('5:00');
+  const { tenant, addSOP, updateSOP, setActivePage, videos, editingVideoId, setEditingVideoId } = useTenant();
+  const editVideo = editingVideoId ? videos.find(v => v.id === editingVideoId) : null;
+  const isEditMode = !!editVideo;
+
+  const [contentType, setContentType] = useState(editVideo?.type || 'video');
+  const [title, setTitle] = useState(editVideo?.title || '');
+  const [dept, setDept] = useState(editVideo?.dept || 'Sales');
+  const [duration, setDuration] = useState(editVideo?.duration || '5:00');
   const [videoFile, setVideoFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [pptFile, setPptFile] = useState(null);
-  const [slideCount, setSlideCount] = useState(0);
+  const [slideCount, setSlideCount] = useState(editVideo?.slideImages?.length || editVideo?.slideCount || 0);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
@@ -61,32 +64,53 @@ export const UploadSOP = () => {
     }
   };
 
+  // Helper convert saved quiz → edit format
+  const toEditQuiz = (q) => ({
+    question: q.question || '',
+    type: q.type || 'multiple',
+    options: q.options?.length ? [...q.options] : ['', '', '', ''],
+    answer: q.answer || 'A',
+    triggerMin: String(Math.floor((q.triggerTime || 0) / 60)),
+    triggerSec: String((q.triggerTime || 0) % 60),
+  });
+  const emptyQuiz = { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' };
+
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
   const [activeTab, setActiveTab] = useState('pre'); // 'pre' | 'post'
 
   // Dynamic state for Pre-Test Questions
-  const [preQuestions, setPreQuestions] = useState([
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' },
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }
-  ]);
+  const [preQuestions, setPreQuestions] = useState(
+    editVideo?.preQuizzes?.length ? editVideo.preQuizzes.map(toEditQuiz) : [{ ...emptyQuiz }, { ...emptyQuiz }]
+  );
 
   // Dynamic state for Post-Test Questions
-  const [postQuestions, setPostQuestions] = useState([
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' },
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }
-  ]);
+  const [postQuestions, setPostQuestions] = useState(
+    editVideo?.postQuizzes?.length ? editVideo.postQuizzes.map(toEditQuiz) : [{ ...emptyQuiz }, { ...emptyQuiz }]
+  );
 
   // State for confirm delete modal
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, type: 'pre', index: null });
 
   // Kuis Pemicu Slide — hanya untuk PPT, muncul saat user sampai di slide tertentu
-  const [triggerQuizzes, setTriggerQuizzes] = useState([
-    { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerSlide: '2' }
-  ]);
+  const [triggerQuizzes, setTriggerQuizzes] = useState(
+    editVideo?.triggerQuizzes?.length
+      ? editVideo.triggerQuizzes.map(q => ({
+          question: q.question || '',
+          type: 'multiple',
+          options: q.options?.length ? [...q.options] : ['', '', '', ''],
+          answer: q.answer || 'A',
+          triggerSlide: String(q.triggerSlide || 2),
+        }))
+      : [{ question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerSlide: '2' }]
+  );
 
   // Narasi per Slide — teks dan/atau audio per slide
-  const [narasiMode, setNarasiMode] = useState('none'); // 'none' | 'teks' | 'audio' | 'keduanya'
-  const [slideNarasi, setSlideNarasi] = useState([]); // [{ teks, audioFile, audioUrl, audioInputMode }]
+  const [narasiMode, setNarasiMode] = useState(editVideo?.narasiMode || 'none');
+  const [slideNarasi, setSlideNarasi] = useState(
+    editVideo?.slideNarasi?.length
+      ? editVideo.slideNarasi.map(s => ({ teks: s.teks || '', audioFile: null, audioUrl: s.audioUrl || null, audioInputMode: 'upload' }))
+      : []
+  );
   const [recordingSlide, setRecordingSlide] = useState(null); // index slide yang sedang direkam
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const mediaRecorderRef = useRef(null);
@@ -394,6 +418,35 @@ export const UploadSOP = () => {
           }))
       : null;
 
+    if (isEditMode) {
+      // Edit mode: update existing SOP
+      const updatedFields = {
+        title,
+        dept,
+        duration,
+        color: deptColors[dept] || '#1e3a5f',
+        tagClass: deptClasses[dept] || 'dt-sales',
+        triggerQuizzes: triggerList,
+        preQuizzes: preList,
+        postQuizzes: postList,
+        narasiMode: contentType === 'ppt' ? narasiMode : null,
+        slideNarasi: contentType === 'ppt' && narasiMode !== 'none'
+          ? slideNarasi.map(s => ({ teks: s.teks || '', audioUrl: s.audioUrl || null }))
+          : null,
+      };
+      // Kalau ada file baru diunggah
+      if (videoUrl) updatedFields.videoUrl = videoUrl;
+      if (filePath) updatedFields.filePath = filePath;
+      if (slideImages) {
+        updatedFields.slideImages = slideImages;
+        updatedFields.slideCount = slideCount;
+      }
+      updateSOP(editVideo.id, updatedFields);
+      setEditingVideoId(null);
+      setActivePage('sop');
+      return;
+    }
+
     const newVideo = {
       id: Date.now(),
       title,
@@ -455,16 +508,24 @@ export const UploadSOP = () => {
       
       {/* HEADER LEFT ALIGNED */}
       <div style={{ textAlign: 'left', marginBottom: '24px' }}>
+        {isEditMode && (
+          <button type="button" onClick={() => { setEditingVideoId(null); setActivePage('sop'); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', fontSize: '13px', padding: 0, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            ← Kembali ke Daftar SOP
+          </button>
+        )}
         <h2 style={{ fontSize: '20px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: '600', color: '#0f172a' }}>
-          Konfigurasi Materi Training & SOP
+          {isEditMode ? `✏️ Edit SOP — ${editVideo.title}` : 'Konfigurasi Materi Training & SOP'}
         </h2>
         <p style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '4px' }}>
-          Unggah video instruksi atau presentasi PPT dan buat parameter ujian untuk memastikan standar kualitas kerja.
+          {isEditMode
+            ? 'Edit metadata, kuis, narasi, atau ganti file SOP ini.'
+            : 'Unggah video instruksi atau presentasi PPT dan buat parameter ujian untuk memastikan standar kualitas kerja.'}
         </p>
       </div>
 
-      {/* CONTENT TYPE TOGGLE */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+      {/* CONTENT TYPE TOGGLE — disembunyikan di edit mode */}
+      <div style={{ display: isEditMode ? 'none' : 'flex', gap: '8px', marginBottom: '20px' }}>
         <button
           type="button"
           onClick={() => { setContentType('video'); setPptFile(null); setSlideCount(0); }}
@@ -602,6 +663,27 @@ export const UploadSOP = () => {
                       {duration && <div style={{ color: '#94a3b8', fontWeight: '500' }}>Durasi: {duration}</div>}
                     </div>
                   </div>
+                ) : isEditMode && !videoFile && editVideo?.videoUrl ? (
+                  <div style={{ borderRadius: '12px', border: '1px solid var(--border)', background: '#f0f9ff', padding: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: '#0b1628', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                        </svg>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '700', fontSize: '14px', color: '#0f172a', marginBottom: '4px' }}>File video sudah ada</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>Durasi: {editVideo.duration} · Klik "Ganti File" untuk mengganti</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current.click()}
+                        style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', background: '#fff', border: '1px solid #cbd5e1', color: '#334155', cursor: 'pointer' }}
+                      >
+                        Ganti File
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div
                     className="upload-zone"
@@ -637,6 +719,7 @@ export const UploadSOP = () => {
                 /* PPT DROP ZONE / PREVIEW */
                 pptFile ? (
                   <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', background: '#faf5ff' }}>
+
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '24px' }}>
                       <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -663,6 +746,28 @@ export const UploadSOP = () => {
                         <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>Mengupload... {uploadProgress}%</div>
                       </div>
                     )}
+                  </div>
+                ) : isEditMode && !pptFile && editVideo?.slideImages ? (
+                  <div style={{ borderRadius: '12px', border: '1px solid #ddd6fe', background: '#faf5ff', padding: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e1b4b', marginBottom: '4px' }}>File PPT sudah ada</div>
+                        <div style={{ fontSize: '12px', color: '#7c3aed', fontWeight: '600' }}>{editVideo.slideImages.length} slide · Klik "Ganti File" untuk mengganti</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => pptInputRef.current.click()}
+                        style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', background: '#fff', border: '1px solid #ddd6fe', color: '#6d28d9', cursor: 'pointer' }}
+                      >
+                        Ganti File
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div

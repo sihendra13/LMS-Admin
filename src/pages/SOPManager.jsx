@@ -11,7 +11,7 @@ export const SOPManager = () => {
 
   const openEdit = (video) => {
     setEditingVideoId(video.id);
-    setActivePage('edit-sop');
+    setActivePage('upload');
   };
 
   const activeVideos = videos.filter(v => !v.archived);
