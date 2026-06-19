@@ -443,8 +443,11 @@ export const UploadSOP = () => {
         updatedFields.slideCount = slideCount;
       }
       updateSOP(editVideo.id, updatedFields);
-      setEditingVideoId(null);
-      setActivePage('sop');
+      setUploadSuccess(true);
+      setTimeout(() => {
+        setEditingVideoId(null);
+        setActivePage('sop');
+      }, 1800);
       return;
     }
 
@@ -1773,7 +1776,7 @@ export const UploadSOP = () => {
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-          <span>SOP berhasil diterbitkan! Mengalihkan ke halaman video...</span>
+          <span>{isEditMode ? 'Perubahan berhasil disimpan!' : 'SOP berhasil diterbitkan! Mengalihkan ke halaman video...'}</span>
         </div>
       )}
 
