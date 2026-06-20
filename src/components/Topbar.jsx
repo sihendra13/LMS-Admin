@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTenant } from '../context/TenantContext';
-import { SyncPanel } from './SyncPanel';
 
 export const Topbar = () => {
   const { tenant, activePage } = useTenant();
-  const [syncOpen, setSyncOpen] = useState(false);
 
   // Helper to get descriptive title
   const getPageTitle = () => {
@@ -37,23 +35,6 @@ export const Topbar = () => {
           </div>
         </div>
         <div className="topbar-right">
-          <button 
-            onClick={() => setSyncOpen(true)}
-            style={{
-              background: '#0B1628',
-              color: '#fff',
-              border: '1px solid rgba(255,255,255,0.2)',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              marginRight: '8px'
-            }}
-          >
-            🔄 Sync State
-          </button>
-
           <div className="search-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Cari video Training & SOP...
@@ -66,7 +47,6 @@ export const Topbar = () => {
         </div>
       </header>
 
-      <SyncPanel isOpen={syncOpen} onClose={() => setSyncOpen(false)} />
     </>
   );
 };
