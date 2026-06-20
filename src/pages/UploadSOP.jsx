@@ -98,19 +98,19 @@ export const UploadSOP = () => {
     triggerMin: String(Math.floor((q.triggerTime || 0) / 60)),
     triggerSec: String((q.triggerTime || 0) % 60),
   });
-  const emptyQuiz = { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' };
+  const makeEmptyQuiz = () => ({ question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' });
 
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
   const [activeTab, setActiveTab] = useState('pre'); // 'pre' | 'post'
 
   // Dynamic state for Pre-Test Questions
   const [preQuestions, setPreQuestions] = useState(
-    editVideo?.preQuizzes?.length ? editVideo.preQuizzes.map(toEditQuiz) : [{ ...emptyQuiz }, { ...emptyQuiz }]
+    editVideo?.preQuizzes?.length ? editVideo.preQuizzes.map(toEditQuiz) : [makeEmptyQuiz(), makeEmptyQuiz()]
   );
 
   // Dynamic state for Post-Test Questions
   const [postQuestions, setPostQuestions] = useState(
-    editVideo?.postQuizzes?.length ? editVideo.postQuizzes.map(toEditQuiz) : [{ ...emptyQuiz }, { ...emptyQuiz }]
+    editVideo?.postQuizzes?.length ? editVideo.postQuizzes.map(toEditQuiz) : [makeEmptyQuiz(), makeEmptyQuiz()]
   );
 
   // State for confirm delete modal
@@ -197,23 +197,18 @@ export const UploadSOP = () => {
 
   // Handlers for Pre-Test Questions
   const handlePreQuestionChange = (index, field, value) => {
-    setPreQuestions(prev => {
-      const updated = [...prev];
-      updated[index][field] = value;
-      return updated;
-    });
+    setPreQuestions(prev => prev.map((q, i) => i === index ? { ...q, [field]: value } : q));
   };
 
   const handlePreOptionChange = (qIndex, oIndex, value) => {
-    setPreQuestions(prev => {
-      const updated = [...prev];
-      updated[qIndex].options[oIndex] = value;
-      return updated;
-    });
+    setPreQuestions(prev => prev.map((q, i) => i === qIndex
+      ? { ...q, options: q.options.map((o, j) => j === oIndex ? value : o) }
+      : q
+    ));
   };
 
   const addPreQuestion = () => {
-    setPreQuestions(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }]);
+    setPreQuestions(prev => [...prev, makeEmptyQuiz()]);
   };
 
   const removePreQuestion = (index) => {
@@ -222,23 +217,18 @@ export const UploadSOP = () => {
 
   // Handlers for Post-Test Questions
   const handlePostQuestionChange = (index, field, value) => {
-    setPostQuestions(prev => {
-      const updated = [...prev];
-      updated[index][field] = value;
-      return updated;
-    });
+    setPostQuestions(prev => prev.map((q, i) => i === index ? { ...q, [field]: value } : q));
   };
 
   const handlePostOptionChange = (qIndex, oIndex, value) => {
-    setPostQuestions(prev => {
-      const updated = [...prev];
-      updated[qIndex].options[oIndex] = value;
-      return updated;
-    });
+    setPostQuestions(prev => prev.map((q, i) => i === qIndex
+      ? { ...q, options: q.options.map((o, j) => j === oIndex ? value : o) }
+      : q
+    ));
   };
 
   const addPostQuestion = () => {
-    setPostQuestions(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }]);
+    setPostQuestions(prev => [...prev, makeEmptyQuiz()]);
   };
 
   const removePostQuestion = (index) => {
@@ -247,18 +237,13 @@ export const UploadSOP = () => {
 
   // Handlers untuk Kuis Pemicu Slide
   const handleTriggerQuizChange = (index, field, value) => {
-    setTriggerQuizzes(prev => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
+    setTriggerQuizzes(prev => prev.map((q, i) => i === index ? { ...q, [field]: value } : q));
   };
   const handleTriggerOptionChange = (qIndex, oIndex, value) => {
-    setTriggerQuizzes(prev => {
-      const updated = [...prev];
-      updated[qIndex].options[oIndex] = value;
-      return updated;
-    });
+    setTriggerQuizzes(prev => prev.map((q, i) => i === qIndex
+      ? { ...q, options: q.options.map((o, j) => j === oIndex ? value : o) }
+      : q
+    ));
   };
   const addTriggerQuiz = () => {
     setTriggerQuizzes(prev => [...prev, { question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerSlide: '2' }]);
