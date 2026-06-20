@@ -139,6 +139,7 @@ export const UploadSOP = () => {
   const [previewSlideImages, setPreviewSlideImages] = useState(null); // Preview gambar slide sebelum publish
   const [previewLoading, setPreviewLoading] = useState(false); // Loading state saat konversi preview background
   const [saving, setSaving] = useState(false); // Loading simpan perubahan (tanpa upload file)
+  const [noChangesToast, setNoChangesToast] = useState(false);
   const [recordingSlide, setRecordingSlide] = useState(null); // index slide yang sedang direkam
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const mediaRecorderRef = useRef(null);
@@ -475,8 +476,31 @@ export const UploadSOP = () => {
 
     if (isEditMode) {
       if (!uploading) {
+        // Deteksi perubahan — hanya tampilkan loading kalau ada yang berubah
+        const titleChanged = title.trim() !== (editVideo.title || '').trim();
+        const deptChanged = dept !== (editVideo.dept || 'Sales');
+        const narasiModeChanged = contentType === 'ppt' && narasiMode !== (editVideo.narasiMode || 'none');
+        const hasPptFile = !!pptFile;
+        const hasVideoFile = !!videoFile;
+        const narasiTeksChanged = contentType === 'ppt' && narasiMode !== 'none' && slideNarasi.some((s, i) => {
+          const orig = (editVideo.slideNarasi || [])[i];
+          return (s.teks || '') !== (orig?.teks || '') || s.audioFile !== null;
+        });
+
+        const hasChanges = titleChanged || deptChanged || narasiModeChanged || hasPptFile || hasVideoFile || narasiTeksChanged;
+
+        if (!hasChanges) {
+          setNoChangesToast(true);
+          setTimeout(() => {
+            setNoChangesToast(false);
+            setEditingVideoId(null);
+            setActivePage('sop');
+          }, 2000);
+          return;
+        }
+
         setSaving(true);
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 1200));
       }
       // Edit mode: update existing SOP
       const updatedFields = {
@@ -1901,22 +1925,31 @@ export const UploadSOP = () => {
           display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99998
         }}>
           <div style={{
-            background: '#ffffff', borderRadius: '20px', padding: '36px 44px',
+            background: '#ffffff', borderRadius: '20px', padding: '48px 44px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px',
-            width: '320px', maxWidth: '90vw', textAlign: 'center'
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px',
+            width: '260px', maxWidth: '90vw', textAlign: 'center'
           }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-              </svg>
-              <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '18px', height: '18px', borderRadius: '50%', border: '2.5px solid #2563eb', borderTopColor: 'transparent', animation: 'ppt-spin 0.75s linear infinite' }} />
-            </div>
-            <div>
-              <div style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '6px' }}>Menyimpan Perubahan</div>
-              <div style={{ fontSize: '13px', color: '#64748b' }}>Mohon tunggu sebentar...</div>
-            </div>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '5px solid #e2e8f0', borderTopColor: '#7c3aed', animation: 'spin 0.85s linear infinite' }} />
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#1e293b' }}>Menyimpan Perubahan...</div>
           </div>
+        </div>
+      )}
+
+      {/* NO CHANGES TOAST */}
+      {noChangesToast && (
+        <div style={{
+          position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+          background: '#0f172a', color: '#fff', padding: '14px 24px', borderRadius: '12px',
+          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center',
+          gap: '12px', zIndex: 99999, fontSize: '14px', fontWeight: '500'
+        }}>
+          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <span>Tidak ada perubahan yang disimpan</span>
         </div>
       )}
 
