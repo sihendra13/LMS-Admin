@@ -4,6 +4,8 @@ import { useTenant } from '../context/TenantContext';
 import { canUploadSOP, canUploadPPT, getPPTLimit } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
 
+const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
+
 export const UploadSOP = () => {
   const { tenant, addSOP, updateSOP, setActivePage, videos, editingVideoId, setEditingVideoId } = useTenant();
   const editVideo = editingVideoId ? videos.find(v => v.id === editingVideoId) : null;
@@ -51,6 +53,7 @@ export const UploadSOP = () => {
     const ext = file.name.split('.').pop().toLowerCase();
     if (ext !== 'pptx') return alert('Hanya file .pptx yang didukung.');
     setPptFile(file);
+    setPreviewSlideImages(null);
     try {
       const zip = await JSZip.loadAsync(file);
       const slides = Object.keys(zip.files).filter(name =>
@@ -61,6 +64,27 @@ export const UploadSOP = () => {
     } catch {
       setSlideCount(0);
       setDuration('? slide');
+    }
+
+    // Konversi PPT ke gambar di background agar admin bisa lihat preview slide saat mengisi narasi
+    setPreviewLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const resp = await fetch(`${BACKEND_URL}/api/v1/ppt/convert`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (resp.ok) {
+        const result = await resp.json();
+        setPreviewSlideImages(result.slideUrls);
+        setSlideCount(result.slideCount);
+        setDuration(`${result.slideCount} slide`);
+      }
+    } catch {
+      // Preview tidak tersedia, tampilkan placeholder seperti biasa
+    } finally {
+      setPreviewLoading(false);
     }
   };
 
@@ -112,6 +136,8 @@ export const UploadSOP = () => {
       : []
   );
   const [activeSlideIndex, setActiveSlideIndex] = useState(0); // Carousel active slide index
+  const [previewSlideImages, setPreviewSlideImages] = useState(null); // Preview gambar slide sebelum publish
+  const [previewLoading, setPreviewLoading] = useState(false); // Loading state saat konversi preview background
   const [recordingSlide, setRecordingSlide] = useState(null); // index slide yang sedang direkam
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const mediaRecorderRef = useRef(null);
@@ -262,8 +288,6 @@ export const UploadSOP = () => {
     setShowPublishConfirm(true);
   };
 
-  const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
-
   const handleConfirmPublish = async () => {
     setShowPublishConfirm(false);
     let videoUrl = null;
@@ -272,38 +296,43 @@ export const UploadSOP = () => {
     let latestSlideNarasi = slideNarasi.map(s => ({ ...s })); // local copy untuk track audio URLs baru
 
     if (contentType === 'ppt' && pptFile) {
-      // Kirim PPTX ke backend → konversi jadi PNG per slide
-      setUploading(true);
-      setUploadProgress(10);
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => prev < 85 ? prev + 3 : prev);
-      }, 800);
+      if (previewSlideImages) {
+        // Sudah dikonversi saat preview background — gunakan langsung, skip konversi ulang
+        slideImages = previewSlideImages;
+      } else {
+        // Belum ada preview (user belum tunggu atau konversi gagal) — konversi sekarang
+        setUploading(true);
+        setUploadProgress(10);
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => prev < 85 ? prev + 3 : prev);
+        }, 800);
 
-      try {
-        const formData = new FormData();
-        formData.append('file', pptFile);
-        const resp = await fetch(`${BACKEND_URL}/api/v1/ppt/convert`, {
-          method: 'POST',
-          body: formData,
-        });
-        clearInterval(progressInterval);
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
+        try {
+          const formData = new FormData();
+          formData.append('file', pptFile);
+          const resp = await fetch(`${BACKEND_URL}/api/v1/ppt/convert`, {
+            method: 'POST',
+            body: formData,
+          });
+          clearInterval(progressInterval);
+          if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            setUploading(false);
+            setUploadProgress(0);
+            return alert(`Gagal konversi PPT: ${errData.error || resp.statusText}`);
+          }
+          const result = await resp.json();
+          slideImages = result.slideUrls;
+          setSlideCount(result.slideCount);
+          setDuration(`${result.slideCount} slide`);
+          setUploadProgress(100);
+          await new Promise(r => setTimeout(r, 300));
+        } catch (err) {
+          clearInterval(progressInterval);
           setUploading(false);
           setUploadProgress(0);
-          return alert(`Gagal konversi PPT: ${errData.error || resp.statusText}`);
+          return alert(`Koneksi ke server gagal: ${err.message}`);
         }
-        const result = await resp.json();
-        slideImages = result.slideUrls;
-        setSlideCount(result.slideCount);
-        setDuration(`${result.slideCount} slide`);
-        setUploadProgress(100);
-        await new Promise(r => setTimeout(r, 300));
-      } catch (err) {
-        clearInterval(progressInterval);
-        setUploading(false);
-        setUploadProgress(0);
-        return alert(`Koneksi ke server gagal: ${err.message}`);
       }
 
       // Upload audio narasi per slide ke Supabase (jika ada)
@@ -1449,18 +1478,24 @@ export const UploadSOP = () => {
 
                 {/* SLIDE IMAGE PREVIEW */}
                 {(() => {
-                  const imgUrl = (editVideo?.slideImages || [])[activeSlideIndex];
+                  const imgUrl = previewSlideImages?.[activeSlideIndex] || (editVideo?.slideImages || [])[activeSlideIndex];
                   const hasNarasi = slideNarasi[activeSlideIndex]?.teks?.trim();
                   const hasAudio = slideNarasi[activeSlideIndex]?.audioFile || slideNarasi[activeSlideIndex]?.audioUrl;
                   return (
                     <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', background: '#1e293b', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '180px' }}>
                       {imgUrl ? (
                         <img src={imgUrl} alt={`Slide ${activeSlideIndex + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                      ) : previewLoading ? (
+                        <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>
+                          <div style={{ width: '36px', height: '36px', border: '3px solid #334155', borderTop: '3px solid #7c3aed', borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 1s linear infinite' }} />
+                          <div style={{ fontSize: '12px' }}>Memuat preview slide...</div>
+                          <div style={{ fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Konversi PPT sedang berjalan</div>
+                        </div>
                       ) : (
                         <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>
                           <div style={{ fontSize: '48px', fontWeight: '900', color: '#334155', lineHeight: 1 }}>{activeSlideIndex + 1}</div>
                           <div style={{ fontSize: '12px', marginTop: '8px' }}>Slide {activeSlideIndex + 1} dari {slideCount}</div>
-                          <div style={{ fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Preview gambar tersedia setelah dipublikasi</div>
+                          <div style={{ fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Preview tidak tersedia</div>
                         </div>
                       )}
                       {/* Slide number badge */}
