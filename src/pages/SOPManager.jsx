@@ -89,7 +89,8 @@ export const SOPManager = () => {
                     const today = new Date(); today.setHours(0,0,0,0);
                     const dl = new Date(video.deadline);
                     const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
-                    const label = diff < 0 ? 'Deadline terlewat' : diff === 0 ? 'Deadline hari ini' : `Deadline ${diff} hari lagi`;
+                    const dateStr = dl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const label = diff < 0 ? `Deadline terlewat · ${dateStr}` : diff === 0 ? `Deadline hari ini · ${dateStr}` : `Deadline ${diff} hari lagi · ${dateStr}`;
                     const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
                     const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
                     return (
