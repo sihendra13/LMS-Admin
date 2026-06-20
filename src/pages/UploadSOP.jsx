@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import JSZip from 'jszip';
 import { useTenant } from '../context/TenantContext';
-import { canUploadSOP, canUploadPPT, getPPTLimit } from '../utils/featureGates';
+import { canUploadSOP, canUploadPPT, getPPTLimit, hasDeadlineReminder } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
 
 const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
@@ -14,6 +14,7 @@ export const UploadSOP = () => {
   const [contentType, setContentType] = useState(editVideo?.type || 'video');
   const [title, setTitle] = useState(editVideo?.title || '');
   const [dept, setDept] = useState(editVideo?.dept || 'Sales');
+  const [deadline, setDeadline] = useState(editVideo?.deadline || '');
   const [duration, setDuration] = useState(editVideo?.duration || '5:00');
   const [videoFile, setVideoFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -509,6 +510,7 @@ export const UploadSOP = () => {
         duration,
         color: deptColors[dept] || '#1e3a5f',
         tagClass: deptClasses[dept] || 'dt-sales',
+        deadline: deadline || null,
         triggerQuizzes: triggerList,
         preQuizzes: preList,
         postQuizzes: postList,
@@ -539,6 +541,7 @@ export const UploadSOP = () => {
       title,
       dept,
       duration,
+      deadline: deadline || null,
       progress: 0,
       views: 0,
       color: deptColors[dept] || '#1e3a5f',
@@ -910,6 +913,22 @@ export const UploadSOP = () => {
                     required
                   />
                 </div>
+
+                {hasDeadlineReminder(tenant.plan) && (
+                  <div className="form-group" style={{ margin: '0' }}>
+                    <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>
+                      Deadline Penyelesaian <span style={{ color: '#94a3b8', fontWeight: '400', textTransform: 'none' }}>(opsional)</span>
+                    </label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      style={{ fontSize: '14px', padding: '10px 12px' }}
+                      value={deadline}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) => setDeadline(e.target.value)}
+                    />
+                  </div>
+                )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group" style={{ margin: '0' }}>

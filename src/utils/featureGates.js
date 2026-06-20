@@ -49,3 +49,13 @@ export const getPPTLimit = (plan) => {
   if (plan === PLANS.ENTERPRISE) return Infinity;
   return 0;
 };
+
+// Check if deadline & automatic reminder is enabled
+export const hasDeadlineReminder = (plan) => {
+  return plan === PLANS.BUSINESS || plan === PLANS.ENTERPRISE;
+};
+
+// Check if audit-ready export is enabled
+export const hasAuditReport = (plan) => {
+  return plan === PLANS.BUSINESS || plan === PLANS.ENTERPRISE;
+};

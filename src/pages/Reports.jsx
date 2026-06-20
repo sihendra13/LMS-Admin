@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
-import { hasFullComplianceReports } from '../utils/featureGates';
+import { hasFullComplianceReports, hasAuditReport } from '../utils/featureGates';
 
 export const Reports = () => {
   const { tenant, quizSubmissions, videos, employees, currentUser, passingScore } = useTenant();
@@ -15,6 +15,11 @@ export const Reports = () => {
     : quizSubmissions;
 
   const isFullReportEnabled = hasFullComplianceReports(tenant.plan);
+  const isAuditEnabled = hasAuditReport(tenant.plan);
+
+  // Date range filter for audit
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   // --- Computed compliance stats ---
   const parseDuration = (str) => {
@@ -62,9 +67,16 @@ export const Reports = () => {
 
   // Filter Pre/Post-Test table for HRD
   const [histDeptFilter, setHistDeptFilter] = useState('');
-  const filteredDisplaySubmissions = (!isSupervisor && histDeptFilter)
-    ? displaySubmissions.filter(s => (s.dept || '').toLowerCase() === histDeptFilter.toLowerCase())
-    : displaySubmissions;
+  const filteredDisplaySubmissions = displaySubmissions.filter(s => {
+    if (!isSupervisor && histDeptFilter && (s.dept || '').toLowerCase() !== histDeptFilter.toLowerCase()) return false;
+    if (dateFrom && s.date && s.date.length > 10) {
+      if (new Date(s.date) < new Date(dateFrom)) return false;
+    }
+    if (dateTo && s.date && s.date.length > 10) {
+      if (new Date(s.date) > new Date(dateTo + 'T23:59:59')) return false;
+    }
+    return true;
+  });
 
   // Export XLSX
   const handleExport = () => {
@@ -83,17 +95,30 @@ export const Reports = () => {
     const ws1 = XLSX.utils.json_to_sheet(complianceRows);
     XLSX.utils.book_append_sheet(wb, ws1, 'Compliance Departemen');
 
-    // Sheet 2: Pre/Post-Test
-    const prePostRows = displaySubmissions.map(sub => ({
-      'Nama Karyawan': sub.employeeName,
-      'Departemen': sub.dept || '-',
-      'SOP / Materi': sub.videoTitle,
-      'Tanggal': sub.date || '-',
-      'Skor Pre-Test (%)': sub.preScore,
-      'Skor Post-Test (%)': sub.postScore,
-      'Peningkatan (%)': sub.postScore - sub.preScore,
-      'Status': sub.status,
-    }));
+    // Sheet 2: Pre/Post-Test (Audit-Ready)
+    const prePostRows = filteredDisplaySubmissions.map(sub => {
+      const video = videos.find(v => v.title === sub.videoTitle);
+      const deadlineStatus = (() => {
+        if (!video?.deadline) return '-';
+        const dl = new Date(video.deadline);
+        const subDate = sub.date && sub.date.length > 10 ? new Date(sub.date) : null;
+        if (!subDate) return 'Tidak diketahui';
+        return subDate <= dl ? 'Tepat Waktu' : 'Terlambat';
+      })();
+      return {
+        'Nama Karyawan': sub.employeeName,
+        'Departemen': sub.dept || '-',
+        'SOP / Materi': sub.videoTitle,
+        'Tanggal & Waktu Penyelesaian': sub.date || '-',
+        'Deadline': video?.deadline || '-',
+        'Status Deadline': deadlineStatus,
+        'Dikonfirmasi Karyawan': sub.acknowledged ? 'Ya' : 'Tidak',
+        'Skor Pre-Test (%)': sub.preScore,
+        'Skor Post-Test (%)': sub.postScore,
+        'Peningkatan (%)': sub.postScore - sub.preScore,
+        'Status Kelulusan': sub.status,
+      };
+    });
     const ws2 = XLSX.utils.json_to_sheet(prePostRows);
     XLSX.utils.book_append_sheet(wb, ws2, 'Evaluasi Pre-Post Test');
 
