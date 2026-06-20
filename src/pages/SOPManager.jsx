@@ -85,6 +85,19 @@ export const SOPManager = () => {
                     </span>
                   )}
                   <span style={{ fontSize: '11px', color: 'var(--text3)', marginLeft: '15px' }}>Dilihat oleh: {video.views} karyawan</span>
+                  {video.deadline && (() => {
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    const dl = new Date(video.deadline);
+                    const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
+                    const label = diff < 0 ? 'Deadline terlewat' : diff === 0 ? 'Deadline hari ini' : `Deadline ${diff} hari lagi`;
+                    const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
+                    const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
+                    return (
+                      <span style={{ fontSize: '11px', fontWeight: '700', color, background: bg, border: `1px solid ${bg}`, padding: '1px 8px', borderRadius: '4px', marginLeft: '10px' }}>
+                        📅 {label}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div className="prog-wrap" style={{ marginTop: '8px', width: '60%' }}>
                   <div className="prog-bar">
