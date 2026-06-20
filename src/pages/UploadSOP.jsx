@@ -2166,14 +2166,14 @@ export const UploadSOP = () => {
                     </span>
                   </div>
                 ) : (
-                  <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '14px 18px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}>
+                  <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '14px 18px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}>
                       <circle cx="12" cy="12" r="10"></circle>
                       <line x1="12" y1="8" x2="12" y2="12"></line>
                       <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
-                    <span style={{ fontSize: '13px', color: '#dc2626', fontWeight: '500', lineHeight: '1.5' }}>
-                      Setelah diterbitkan, pertanyaan kuis <strong>tidak dapat diedit atau diubah</strong>. Pastikan semua soal sudah benar sebelum melanjutkan.
+                    <span style={{ fontSize: '13px', color: '#1d4ed8', fontWeight: '500', lineHeight: '1.5' }}>
+                      Setelah diterbitkan, SOP masih bisa diedit kembali <strong>selama belum ada karyawan yang menontonnya</strong>.
                     </span>
                   </div>
                 )}
