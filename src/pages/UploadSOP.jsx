@@ -296,9 +296,12 @@ export const UploadSOP = () => {
     let latestSlideNarasi = slideNarasi.map(s => ({ ...s })); // local copy untuk track audio URLs baru
 
     if (contentType === 'ppt' && pptFile) {
+      setUploading(true);
+      setUploadProgress(10);
       if (previewSlideImages) {
         // Sudah dikonversi saat preview background — gunakan langsung, skip konversi ulang
         slideImages = previewSlideImages;
+        setUploadProgress(60);
       } else {
         // Belum ada preview (user belum tunggu atau konversi gagal) — konversi sekarang
         setUploading(true);
