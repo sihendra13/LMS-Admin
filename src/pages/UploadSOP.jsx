@@ -2018,6 +2018,66 @@ export const UploadSOP = () => {
         </>
       )}
 
+      {/* VIDEO UPLOAD LOADING OVERLAY */}
+      {uploading && contentType === 'video' && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99998
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '20px', padding: '40px 44px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '22px',
+            width: '380px', maxWidth: '90vw', textAlign: 'center'
+          }}>
+            <div style={{ position: 'relative', width: '72px', height: '72px' }}>
+              <div style={{
+                width: '72px', height: '72px', borderRadius: '18px', background: '#eff6ff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+              </div>
+              <div style={{
+                position: 'absolute', bottom: '-2px', right: '-2px',
+                width: '22px', height: '22px', borderRadius: '50%',
+                border: '3px solid #2563eb', borderTopColor: 'transparent',
+                animation: 'ppt-spin 0.75s linear infinite'
+              }} />
+            </div>
+
+            <div>
+              <div style={{ fontSize: '17px', fontWeight: '700', color: '#1e1b4b', marginBottom: '8px' }}>
+                Mengupload Video
+              </div>
+              <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6' }}>
+                {uploadProgress < 20 ? 'Mengirim file ke server...' :
+                 uploadProgress < 80 ? 'Mengupload video ke cloud...' :
+                 'Menyimpan data video...'}
+              </div>
+            </div>
+
+            <div style={{ width: '100%' }}>
+              <div style={{ height: '8px', background: '#dbeafe', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px' }}>
+                <div style={{
+                  height: '100%', width: `${uploadProgress}%`,
+                  background: 'linear-gradient(90deg, #2563eb, #60a5fa)',
+                  borderRadius: '8px', transition: 'width 0.4s ease'
+                }} />
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#2563eb' }}>{uploadProgress}%</div>
+            </div>
+
+            <div style={{ fontSize: '11.5px', color: '#94a3b8', background: '#f8fafc', borderRadius: '8px', padding: '10px 16px', lineHeight: '1.6', border: '1px solid #e2e8f0' }}>
+              Jangan tutup halaman ini. Video berukuran besar bisa membutuhkan <strong>beberapa menit</strong>.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* PUBLISH CONFIRMATION MODAL */}
       {showPublishConfirm && (() => {
         const preToShow = preQuestions.filter(q => q.question.trim() !== '');
