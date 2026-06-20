@@ -107,6 +107,20 @@ export const Dashboard = () => {
                   <div className="video-meta">
                     <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
                     <span className="video-dur">{video.duration}</span>
+                    {video.deadline && (() => {
+                      const today = new Date(); today.setHours(0,0,0,0);
+                      const dl = new Date(video.deadline);
+                      const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
+                      const dateStr = dl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                      const label = diff < 0 ? `Deadline terlewat · ${dateStr}` : diff === 0 ? `Deadline hari ini · ${dateStr}` : `Deadline ${diff} hari lagi · ${dateStr}`;
+                      const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
+                      const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
+                      return (
+                        <span style={{ fontSize: '10px', fontWeight: '700', color, background: bg, border: `1px solid ${bg}`, padding: '1px 7px', borderRadius: '4px' }}>
+                          📅 {label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="prog-wrap">
                     <div className="prog-bar">
