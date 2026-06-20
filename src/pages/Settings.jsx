@@ -454,6 +454,7 @@ export const Settings = () => {
                 )}
               </div>
             </>
+          ) : (
             /* SUPERVISOR VIEW ACCESS NOTE & POLICY */
             <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--accent)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
