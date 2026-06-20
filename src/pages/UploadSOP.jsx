@@ -138,6 +138,7 @@ export const UploadSOP = () => {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0); // Carousel active slide index
   const [previewSlideImages, setPreviewSlideImages] = useState(null); // Preview gambar slide sebelum publish
   const [previewLoading, setPreviewLoading] = useState(false); // Loading state saat konversi preview background
+  const [saving, setSaving] = useState(false); // Loading simpan perubahan (tanpa upload file)
   const [recordingSlide, setRecordingSlide] = useState(null); // index slide yang sedang direkam
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const mediaRecorderRef = useRef(null);
@@ -473,6 +474,10 @@ export const UploadSOP = () => {
       : null;
 
     if (isEditMode) {
+      if (!uploading) {
+        setSaving(true);
+        await new Promise(r => setTimeout(r, 500));
+      }
       // Edit mode: update existing SOP
       const updatedFields = {
         title,
@@ -496,6 +501,7 @@ export const UploadSOP = () => {
         updatedFields.slideCount = slideCount;
       }
       updateSOP(editVideo.id, updatedFields);
+      setSaving(false);
       setUploadSuccess(true);
       setTimeout(() => {
         setEditingVideoId(null);
@@ -1884,6 +1890,33 @@ export const UploadSOP = () => {
             </svg>
           </div>
           <span>{isEditMode ? 'Perubahan berhasil disimpan!' : 'SOP berhasil diterbitkan! Mengalihkan ke halaman video...'}</span>
+        </div>
+      )}
+
+      {/* SAVING OVERLAY — untuk edit mode tanpa upload file */}
+      {saving && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99998
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '20px', padding: '36px 44px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px',
+            width: '320px', maxWidth: '90vw', textAlign: 'center'
+          }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '18px', height: '18px', borderRadius: '50%', border: '2.5px solid #2563eb', borderTopColor: 'transparent', animation: 'ppt-spin 0.75s linear infinite' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '6px' }}>Menyimpan Perubahan</div>
+              <div style={{ fontSize: '13px', color: '#64748b' }}>Mohon tunggu sebentar...</div>
+            </div>
+          </div>
         </div>
       )}
 
