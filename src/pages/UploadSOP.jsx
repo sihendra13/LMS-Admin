@@ -480,6 +480,7 @@ export const UploadSOP = () => {
         // Deteksi perubahan — hanya tampilkan loading kalau ada yang berubah
         const titleChanged = title.trim() !== (editVideo.title || '').trim();
         const deptChanged = dept !== (editVideo.dept || 'Sales');
+        const deadlineChanged = deadline !== (editVideo.deadline || '');
         const narasiModeChanged = contentType === 'ppt' && narasiMode !== (editVideo.narasiMode || 'none');
         const hasPptFile = !!pptFile;
         const hasVideoFile = !!videoFile;
@@ -488,7 +489,7 @@ export const UploadSOP = () => {
           return (s.teks || '') !== (orig?.teks || '') || s.audioFile !== null;
         });
 
-        const hasChanges = titleChanged || deptChanged || narasiModeChanged || hasPptFile || hasVideoFile || narasiTeksChanged;
+        const hasChanges = titleChanged || deptChanged || deadlineChanged || narasiModeChanged || hasPptFile || hasVideoFile || narasiTeksChanged;
 
         if (!hasChanges) {
           setNoChangesToast(true);
