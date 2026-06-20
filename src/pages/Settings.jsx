@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
+import { supabase } from '../utils/supabase';
 
 export const Settings = () => {
   const { tenant, currentUser, changePlan, updateTenantLogo } = useTenant();
@@ -11,6 +12,22 @@ export const Settings = () => {
   const [syncStatus, setSyncStatus] = useState('Terakhir disinkronisasi: Hari ini, 09:30');
   const [isSyncing, setIsSyncing] = useState(false);
   const [logoStatus, setLogoStatus] = useState('idle'); // 'idle' | 'processing' | 'saved' | 'error'
+
+  // Demo reset state
+  const [resetStatus, setResetStatus] = useState('idle'); // 'idle' | 'confirm' | 'loading' | 'done' | 'error'
+
+  const handleResetDemo = async () => {
+    setResetStatus('loading');
+    try {
+      await supabase.from('quiz_submissions').delete().neq('id', 0);
+      await supabase.from('sop_videos').update({ progress: 0 }).neq('id', 0);
+      setResetStatus('done');
+      setTimeout(() => setResetStatus('idle'), 3000);
+    } catch {
+      setResetStatus('error');
+      setTimeout(() => setResetStatus('idle'), 3000);
+    }
+  };
 
   const handleSyncHRIS = () => {
     setIsSyncing(true);
@@ -364,8 +381,79 @@ export const Settings = () => {
                   </div>
                 </div>
               </div>
+              {/* RESET DATA DEMO */}
+              <div className="card" style={{ padding: '24px', border: '1px solid #fee2e2', background: '#fffafa' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#b91c1c', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="1 4 1 10 7 10"/>
+                    <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
+                  </svg>
+                  Reset Data Demo
+                </h3>
+                <p style={{ color: 'var(--text3)', fontSize: '13px', margin: '0 0 16px 0', lineHeight: '1.6' }}>
+                  Reset semua <strong>progress learner</strong> ke 0% dan hapus semua <strong>hasil kuis & sertifikat</strong>. File PPT, video, dan pertanyaan kuis <strong>tidak akan terhapus</strong> — hanya aktivitas learner yang dikosongkan sehingga flow demo bisa dijalankan ulang dari awal.
+                </p>
+
+                {resetStatus === 'idle' && (
+                  <button
+                    type="button"
+                    onClick={() => setResetStatus('confirm')}
+                    style={{ padding: '9px 20px', background: '#fff', border: '1.5px solid #fca5a5', borderRadius: '8px', color: '#b91c1c', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="1 4 1 10 7 10"/>
+                      <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
+                    </svg>
+                    Reset Data Demo
+                  </button>
+                )}
+
+                {resetStatus === 'confirm' && (
+                  <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '16px' }}>
+                    <p style={{ margin: '0 0 14px 0', fontSize: '13px', color: '#991b1b', fontWeight: '600' }}>
+                      ⚠️ Yakin ingin reset? Semua progress dan hasil kuis learner akan dihapus permanen. File SOP tetap aman.
+                    </p>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={handleResetDemo}
+                        style={{ padding: '8px 18px', background: '#dc2626', border: 'none', borderRadius: '7px', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Ya, Reset Sekarang
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setResetStatus('idle')}
+                        style={{ padding: '8px 18px', background: '#fff', border: '1px solid var(--border)', borderRadius: '7px', color: 'var(--text2)', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {resetStatus === 'loading' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#b91c1c', fontWeight: '600' }}>
+                    <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid #b91c1c', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                    Mereset data demo...
+                  </div>
+                )}
+
+                {resetStatus === 'done' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#15803d', fontWeight: '700' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Berhasil direset! LMS siap untuk demo baru.
+                  </div>
+                )}
+
+                {resetStatus === 'error' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#dc2626', fontWeight: '700' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    Gagal reset. Coba lagi.
+                  </div>
+                )}
+              </div>
             </>
-          ) : (
             /* SUPERVISOR VIEW ACCESS NOTE & POLICY */
             <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--accent)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
