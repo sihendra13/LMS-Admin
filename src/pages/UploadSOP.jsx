@@ -2033,10 +2033,10 @@ export const UploadSOP = () => {
           }}>
             <div style={{ position: 'relative', width: '72px', height: '72px' }}>
               <div style={{
-                width: '72px', height: '72px', borderRadius: '18px', background: '#eff6ff',
+                width: '72px', height: '72px', borderRadius: '18px', background: '#f3f0ff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="23 7 16 12 23 17 23 7"/>
                   <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
                 </svg>
@@ -2044,7 +2044,7 @@ export const UploadSOP = () => {
               <div style={{
                 position: 'absolute', bottom: '-2px', right: '-2px',
                 width: '22px', height: '22px', borderRadius: '50%',
-                border: '3px solid #2563eb', borderTopColor: 'transparent',
+                border: '3px solid #7c3aed', borderTopColor: 'transparent',
                 animation: 'ppt-spin 0.75s linear infinite'
               }} />
             </div>
@@ -2061,14 +2061,14 @@ export const UploadSOP = () => {
             </div>
 
             <div style={{ width: '100%' }}>
-              <div style={{ height: '8px', background: '#dbeafe', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px' }}>
+              <div style={{ height: '8px', background: '#ede9fe', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px' }}>
                 <div style={{
                   height: '100%', width: `${uploadProgress}%`,
-                  background: 'linear-gradient(90deg, #2563eb, #60a5fa)',
+                  background: 'linear-gradient(90deg, #7c3aed, #a78bfa)',
                   borderRadius: '8px', transition: 'width 0.4s ease'
                 }} />
               </div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#2563eb' }}>{uploadProgress}%</div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#7c3aed' }}>{uploadProgress}%</div>
             </div>
 
             <div style={{ fontSize: '11.5px', color: '#94a3b8', background: '#f8fafc', borderRadius: '8px', padding: '10px 16px', lineHeight: '1.6', border: '1px solid #e2e8f0' }}>
