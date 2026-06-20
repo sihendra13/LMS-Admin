@@ -302,6 +302,7 @@ export const UploadSOP = () => {
         // Sudah dikonversi saat preview background — gunakan langsung, skip konversi ulang
         slideImages = previewSlideImages;
         setUploadProgress(60);
+        await new Promise(r => setTimeout(r, 400)); // beri React waktu render overlay sebelum lanjut
       } else {
         // Belum ada preview (user belum tunggu atau konversi gagal) — konversi sekarang
         setUploading(true);
