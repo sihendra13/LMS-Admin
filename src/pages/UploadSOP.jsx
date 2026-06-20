@@ -474,7 +474,19 @@ export const UploadSOP = () => {
           return (s.teks || '') !== (orig?.teks || '') || s.audioFile !== null;
         });
 
-        const hasChanges = titleChanged || deptChanged || deadlineChanged || narasiModeChanged || hasPptFile || hasVideoFile || narasiTeksChanged;
+        const quizToCompare = (q) => JSON.stringify({ question: q.question, options: q.options, answer: q.answer });
+        const origPre = (editVideo.preQuizzes || []).map(toEditQuiz);
+        const origPost = (editVideo.postQuizzes || []).map(toEditQuiz);
+        const origTrigger = (editVideo.triggerQuizzes || []).map(q => ({
+          question: q.question || '', type: 'multiple',
+          options: q.options?.length ? [...q.options] : ['', '', '', ''],
+          answer: q.answer || 'A', triggerSlide: String(q.triggerSlide || 2),
+        }));
+        const preQuizChanged = preQuestions.length !== origPre.length || preQuestions.some((q, i) => quizToCompare(q) !== quizToCompare(origPre[i] || {}));
+        const postQuizChanged = postQuestions.length !== origPost.length || postQuestions.some((q, i) => quizToCompare(q) !== quizToCompare(origPost[i] || {}));
+        const triggerQuizChanged = triggerQuizzes.length !== origTrigger.length || triggerQuizzes.some((q, i) => quizToCompare(q) !== quizToCompare(origTrigger[i] || {}));
+
+        const hasChanges = titleChanged || deptChanged || deadlineChanged || narasiModeChanged || hasPptFile || hasVideoFile || narasiTeksChanged || preQuizChanged || postQuizChanged || triggerQuizChanged;
 
         if (!hasChanges) {
           setNoChangesToast(true);
