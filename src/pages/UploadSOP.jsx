@@ -2191,6 +2191,14 @@ export const UploadSOP = () => {
                           : (videoFile ? videoFile.name : isEditMode ? 'Menggunakan file yang ada (tidak diganti)' : 'Tidak ada video')}
                       </span>
                     </div>
+                    {hasDeadlineReminder(tenant.plan) && (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Deadline</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: deadline ? 'var(--text1)' : 'var(--text3)' }}>
+                          {deadline ? new Date(deadline).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'}
+                        </span>
+                      </div>
+                    )}
                     {contentType === 'ppt' && (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
                         <span style={{ fontSize: '12px', color: 'var(--text3)', minWidth: '90px' }}>Narasi</span>
