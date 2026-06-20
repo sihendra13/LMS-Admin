@@ -527,7 +527,7 @@ export const UploadSOP = () => {
         updatedFields.slideImages = slideImages;
         updatedFields.slideCount = slideCount;
       }
-      updateSOP(editVideo.id, updatedFields);
+      await updateSOP(editVideo.id, updatedFields);
       setSaving(false);
       setUploadSuccess(true);
       setTimeout(() => {
@@ -565,7 +565,7 @@ export const UploadSOP = () => {
         : null,
     };
 
-    addSOP(newVideo);
+    await addSOP(newVideo);
     setUploadSuccess(true);
     setTimeout(() => setActivePage('sop'), 2200);
   };

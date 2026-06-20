@@ -4,6 +4,54 @@ import { supabase } from '../utils/supabase';
 
 const TenantContext = createContext();
 
+// Convert camelCase video object → Supabase snake_case row
+const toDbRow = (v) => ({
+  id: v.id,
+  title: v.title,
+  dept: v.dept,
+  duration: v.duration,
+  deadline: v.deadline || null,
+  progress: v.progress || 0,
+  views: v.views || 0,
+  color: v.color || '#1e3a5f',
+  tag_class: v.tagClass || 'dt-sales',
+  type: v.type || 'video',
+  video_url: v.videoUrl || null,
+  file_path: v.filePath || null,
+  slide_images: v.slideImages || null,
+  slide_count: v.slideCount || null,
+  pre_quizzes: v.preQuizzes || [],
+  post_quizzes: v.postQuizzes || [],
+  trigger_quizzes: v.triggerQuizzes || null,
+  narasi_mode: v.narasiMode || null,
+  slide_narasi: v.slideNarasi || null,
+  archived: v.archived || false,
+});
+
+// Convert Supabase snake_case row → camelCase video object
+const fromDbRow = (row) => ({
+  id: row.id,
+  title: row.title,
+  dept: row.dept,
+  duration: row.duration,
+  deadline: row.deadline || null,
+  progress: row.progress || 0,
+  views: row.views || 0,
+  color: row.color || '#1e3a5f',
+  tagClass: row.tag_class || 'dt-sales',
+  type: row.type || 'video',
+  videoUrl: row.video_url || null,
+  filePath: row.file_path || null,
+  slideImages: row.slide_images || null,
+  slideCount: row.slide_count || null,
+  preQuizzes: row.pre_quizzes || [],
+  postQuizzes: row.post_quizzes || [],
+  triggerQuizzes: row.trigger_quizzes || null,
+  narasiMode: row.narasi_mode || null,
+  slideNarasi: row.slide_narasi || null,
+  archived: row.archived || false,
+});
+
 export const useTenant = () => {
   const context = useContext(TenantContext);
   if (!context) {
@@ -99,76 +147,7 @@ export const TenantProvider = ({ children, authUser }) => {
     { id: 5, name: 'Nina Putri', dept: 'CS', city: 'Medan', score: 11 },
   ]);
 
-  const [videos, setVideos] = useState(storedDB.videos || [
-    { 
-      id: 1, 
-      title: 'SOP Sales: Proses Onboarding Klien Baru', 
-      dept: 'Sales', 
-      duration: '8:24', 
-      progress: 82, 
-      views: 156, 
-      color: '#1e3a5f', 
-      tagClass: 'dt-sales',
-      preQuizzes: [
-        { id: 1, question: "Apa tahapan awal sebelum klien baru melakukan pembayaran?", options: ["Kirim NDA", "Kirim Invoice", "Kirim Proposal Kerja", "Telepon Perkenalan"], answer: "D" },
-        { id: 2, question: "Apakah tim CS perlu dilibatkan saat serah terima berkas?", options: ["Ya, wajib", "Tidak perlu", "Hanya jika klien meminta", "Tergantung ukuran proyek"], answer: "A" }
-      ],
-      postQuizzes: [
-        { id: 1, question: "Berapa lama batas maksimal respon pertama ke leads klien baru?", options: ["5 menit", "30 menit", "1 jam", "24 jam"], answer: "A" },
-        { id: 2, question: "Dokumen apa yang wajib dikirimkan di tahap awal onboarding?", options: ["Formulir KYC", "Invoice Pembayaran", "Company Profile & NDA", "Sertifikat Kelulusan"], answer: "C" }
-      ]
-    },
-    { 
-      id: 2, 
-      title: 'SOP HRD: Rekrutmen & Seleksi Karyawan', 
-      dept: 'HRD', 
-      duration: '12:10', 
-      progress: 65, 
-      views: 48, 
-      color: '#1a3d2b', 
-      tagClass: 'dt-hrd',
-      preQuizzes: [
-        { id: 1, question: "Siapa yang membuat kriteria lowongan kerja?", options: ["User / Departemen terkait", "HRD saja", "Direktur Utama", "Karyawan magang"], answer: "A" }
-      ],
-      postQuizzes: [
-        { id: 1, question: "Di mana formulir evaluasi wawancara disimpan?", options: ["Google Drive Pribadi", "Sistem HRIS Terpusat", "Grup WhatsApp", "Fisik Kertas saja"], answer: "B" }
-      ]
-    },
-    { 
-      id: 3, 
-      title: 'SOP Operasional: K3 Gudang & Logistik', 
-      dept: 'Operasional', 
-      duration: '15:30', 
-      progress: 45, 
-      views: 72, 
-      color: '#3d2200', 
-      tagClass: 'dt-ops',
-      preQuizzes: [
-        { id: 1, question: "Alat pelindung diri apa yang wajib dipakai di gudang?", options: ["Helm & Sepatu Safety", "Masker saja", "Sarung tangan biasa", "Tidak ada yang wajib"], answer: "A" }
-      ],
-      postQuizzes: [
-        { id: 1, question: "Berapa tinggi tumpukan kardus maksimal di area loading dock?", options: ["2 meter", "3.5 meter", "5 meter", "Tidak terbatas"], answer: "A" }
-      ]
-    },
-    { 
-      id: 4, 
-      title: 'SOP Finance: Proses Reimbursement Karyawan', 
-      dept: 'Finance', 
-      duration: '6:45', 
-      progress: 91, 
-      views: 93, 
-      color: '#2d1a4a', 
-      tagClass: 'dt-fin',
-      preQuizzes: [
-        { id: 1, question: "Apakah reimbursement bisa diklaim menggunakan kwitansi fotokopi?", options: ["Bisa", "Tidak bisa, wajib asli", "Bisa jika disetujui direktur", "Hanya jika kwitansi hilang"], answer: "B" }
-      ],
-      postQuizzes: [
-        { id: 1, question: "Batas tanggal penyerahan kwitansi reimbursement setiap bulannya adalah...", options: ["Tanggal 5", "Tanggal 15", "Tanggal 25", "Akhir bulan"], answer: "C" }
-      ]
-    },
-    { id: 5, title: 'SOP Customer Service: Handling Komplain', dept: 'CS', duration: '10:15', progress: 58, views: 38, color: '#072a30', tagClass: 'dt-cs', preQuizzes: [], postQuizzes: [] },
-    { id: 6, title: 'SOP IT: Keamanan Password & Akun', dept: 'IT', duration: '7:50', progress: 33, views: 112, color: '#2a1024', tagClass: 'dt-it', preQuizzes: [], postQuizzes: [] },
-  ]);
+  const [videos, setVideos] = useState([]);
 
   const [quizSubmissions, setQuizSubmissions] = useState([]);
 
@@ -181,7 +160,7 @@ export const TenantProvider = ({ children, authUser }) => {
   ]);
 
 
-  // Sync state with localstorage (quizSubmissions lives in Supabase, not here)
+  // Sync state with localstorage (videos & quizSubmissions live in Supabase, not here)
   useEffect(() => {
     const db = {
       tenant,
@@ -189,7 +168,6 @@ export const TenantProvider = ({ children, authUser }) => {
       supervisors,
       invitations,
       employees,
-      videos,
       pendingEssays,
       activities,
     };
@@ -200,7 +178,7 @@ export const TenantProvider = ({ children, authUser }) => {
     } catch {
       // storage penuh, lewati
     }
-  }, [tenant, currentUser, supervisors, invitations, employees, videos, pendingEssays, activities]);
+  }, [tenant, currentUser, supervisors, invitations, employees, pendingEssays, activities]);
 
   // Supabase: fetch all quiz submissions + realtime sync
   const mapRow = (row) => ({
@@ -244,6 +222,26 @@ export const TenantProvider = ({ children, authUser }) => {
     return () => supabase.removeChannel(channel);
   }, []);
 
+  // Supabase: fetch all SOP videos (video & PPT) + realtime sync
+  useEffect(() => {
+    const fetchVideos = async () => {
+      const { data } = await supabase
+        .from('sop_videos')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (data) setVideos(data.map(fromDbRow));
+    };
+
+    fetchVideos();
+
+    const channel = supabase
+      .channel('admin_sop_videos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sop_videos' }, fetchVideos)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, []);
+
   // Actions
   const changePlan = (newPlan) => {
     setTenant(prev => ({ ...prev, plan: newPlan }));
@@ -258,45 +256,50 @@ export const TenantProvider = ({ children, authUser }) => {
     setTenant(prev => ({ ...prev, logo: logoBase64 }));
   };
 
-  const addSOP = (newVideo) => {
-    setVideos(prev => [newVideo, ...prev]);
-    
-    // Add activity
+  const addSOP = async (newVideo) => {
+    setVideos(prev => [newVideo, ...prev]); // optimistic update
+    await supabase.from('sop_videos').insert(toDbRow(newVideo));
     const newAct = {
       id: Date.now(),
-      text: `Video baru <strong>${newVideo.title}</strong> diunggah dengan ${newVideo.preQuizzes?.length || 0} soal Pre-Test & ${newVideo.postQuizzes?.length || 0} soal Post-Test`,
+      text: `SOP baru <strong>${newVideo.title}</strong> diunggah dengan ${newVideo.preQuizzes?.length || 0} soal Pre-Test & ${newVideo.postQuizzes?.length || 0} soal Post-Test`,
       time: 'Baru saja',
       type: 'blue'
     };
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const deleteSOP = (id) => {
+  const deleteSOP = async (id) => {
     const video = videos.find(v => v.id === id);
-    setVideos(prev => prev.filter(v => v.id !== id));
+    setVideos(prev => prev.filter(v => v.id !== id)); // optimistic update
+    await supabase.from('sop_videos').delete().eq('id', id);
     if (video?.filePath) {
       supabase.storage.from('videos').remove([video.filePath]);
     }
-    const newAct = { id: Date.now(), text: `Video <strong>${video?.title}</strong> dihapus permanen`, time: 'Baru saja', type: 'amber' };
+    const newAct = { id: Date.now(), text: `SOP <strong>${video?.title}</strong> dihapus permanen`, time: 'Baru saja', type: 'amber' };
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const archiveSOP = (id) => {
+  const archiveSOP = async (id) => {
     const video = videos.find(v => v.id === id);
-    setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: true } : v));
-    const newAct = { id: Date.now(), text: `Video <strong>${video?.title}</strong> diarsipkan`, time: 'Baru saja', type: 'amber' };
+    setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: true } : v)); // optimistic update
+    await supabase.from('sop_videos').update({ archived: true }).eq('id', id);
+    const newAct = { id: Date.now(), text: `SOP <strong>${video?.title}</strong> diarsipkan`, time: 'Baru saja', type: 'amber' };
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const unarchiveSOP = (id) => {
+  const unarchiveSOP = async (id) => {
     const video = videos.find(v => v.id === id);
-    setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: false } : v));
-    const newAct = { id: Date.now(), text: `Video <strong>${video?.title}</strong> dipulihkan dari arsip`, time: 'Baru saja', type: 'blue' };
+    setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: false } : v)); // optimistic update
+    await supabase.from('sop_videos').update({ archived: false }).eq('id', id);
+    const newAct = { id: Date.now(), text: `SOP <strong>${video?.title}</strong> dipulihkan dari arsip`, time: 'Baru saja', type: 'blue' };
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const updateSOP = (id, fields) => {
-    setVideos(prev => prev.map(v => v.id === id ? { ...v, ...fields } : v));
+  const updateSOP = async (id, fields) => {
+    const current = videos.find(v => v.id === id) || {};
+    const merged = { ...current, ...fields };
+    setVideos(prev => prev.map(v => v.id === id ? merged : v)); // optimistic update
+    await supabase.from('sop_videos').update(toDbRow(merged)).eq('id', id);
   };
 
   const [editingVideoId, setEditingVideoId] = useState(null);
