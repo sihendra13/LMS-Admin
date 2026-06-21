@@ -3,7 +3,7 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Dashboard = () => {
-  const { tenant, employees, videos, activities, setActivePage, currentUser } = useTenant();
+  const { tenant, employees, videos, activities, setActivePage, currentUser, quizSubmissions, passingScore } = useTenant();
 
   const isSupervisor = currentUser.role !== 'admin';
 
@@ -225,15 +225,27 @@ export const Dashboard = () => {
                         );
                       })()}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text3)', whiteSpace: 'nowrap', fontWeight: '500' }}>
-                      Dilihat oleh: {video.views} karyawan
-                    </div>
-                  </div>
-                  <div className="prog-wrap" style={{ marginTop: '8px', width: '100%' }}>
-                    <div className="prog-bar">
-                      <div className="prog-fill" style={{ width: `${video.progress}%`, background: 'var(--accent)' }}></div>
-                    </div>
-                    <div className="prog-pct">{video.progress}% Selesai</div>
+                    {(() => {
+                      const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
+                      const diikuti = deptEmps.length;
+                      const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
+                      const pct = diikuti > 0 ? Math.round((lulus / diikuti) * 100) : 0;
+                      return (
+                        <div style={{ width: '100%' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', marginBottom: '5px' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>Diikuti oleh {diikuti} karyawan</span>
+                              <span style={{ color: 'var(--border)' }}>|</span>
+                              <span style={{ color: '#16a34a', fontWeight: '700' }}>{lulus} Lulus</span>
+                            </div>
+                            <div className="prog-pct">{pct}% Lulus</div>
+                          </div>
+                          <div className="prog-bar">
+                            <div className="prog-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }}></div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

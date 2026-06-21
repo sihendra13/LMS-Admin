@@ -3,7 +3,7 @@ import { useTenant } from '../context/TenantContext';
 import { canUploadSOP } from '../utils/featureGates';
 
 export const SOPManager = () => {
-  const { tenant, videos, setActivePage, currentUser, deleteSOP, archiveSOP, unarchiveSOP, setEditingVideoId } = useTenant();
+  const { tenant, videos, setActivePage, currentUser, deleteSOP, archiveSOP, unarchiveSOP, setEditingVideoId, employees, quizSubmissions, passingScore } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, video: null });
@@ -199,16 +199,28 @@ export const SOPManager = () => {
                       );
                     })()}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text3)', whiteSpace: 'nowrap', fontWeight: '500' }}>
-                    Dilihat oleh: {video.views} karyawan
-                  </div>
                 </div>
-                <div className="prog-wrap" style={{ marginTop: '8px', width: '100%' }}>
-                  <div className="prog-bar">
-                    <div className="prog-fill" style={{ width: `${video.progress}%`, background: 'var(--accent)' }}></div>
-                  </div>
-                  <div className="prog-pct">{video.progress}% Selesai</div>
-                </div>
+                {(() => {
+                  const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
+                  const diikuti = deptEmps.length;
+                  const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
+                  const pct = diikuti > 0 ? Math.round((lulus / diikuti) * 100) : 0;
+                  return (
+                    <div style={{ marginTop: '8px', width: '100%' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>Diikuti oleh {diikuti} karyawan</span>
+                          <span style={{ color: 'var(--border)' }}>|</span>
+                          <span style={{ color: '#16a34a', fontWeight: '700' }}>{lulus} Lulus</span>
+                        </div>
+                        <div className="prog-pct">{pct}% Lulus</div>
+                      </div>
+                      <div className="prog-bar">
+                        <div className="prog-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }}></div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* ACTION BUTTONS */}
@@ -308,7 +320,13 @@ export const SOPManager = () => {
                       <div className="video-meta">
                         <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
                         <span className="video-dur" style={{ marginLeft: '10px' }}>Durasi: {video.duration}</span>
-                        <span style={{ fontSize: '11px', color: 'var(--text3)', marginLeft: '15px' }}>Dilihat oleh: {video.views} karyawan</span>
+                        <span style={{ fontSize: '11px', color: 'var(--text3)', marginLeft: '15px' }}>
+                          {(() => {
+                            const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
+                            const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
+                            return `${lulus} dari ${deptEmps.length} karyawan lulus`;
+                          })()}
+                        </span>
                       </div>
                     </div>
                     {!isSupervisor && (
