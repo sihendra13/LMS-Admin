@@ -78,7 +78,7 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const [tenant, setTenant] = useState({
     name: storedDB.tenant?.name || 'PT Maju Bersama',
-    plan: storedDB.tenant?.plan || PLANS.BUSINESS, // Default plan in mockup
+    plan: (storedDB.tenant?.plan && storedDB.tenant?.plan !== PLANS.STARTER) ? storedDB.tenant?.plan : PLANS.BUSINESS,
     status: storedDB.tenant?.status || 'Aktif',
     avatar: storedDB.tenant?.avatar || 'MB',
     logo: localStorage.getItem(LOGO_KEY) || storedDB.tenant?.logo || null,
