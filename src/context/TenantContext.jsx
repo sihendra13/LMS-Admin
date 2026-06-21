@@ -305,9 +305,8 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const [editingVideoId, setEditingVideoId] = useState(null);
 
-  const addEmployee = (newEmp) => {
+  const addEmployee = async (newEmp) => {
     setEmployees(prev => [newEmp, ...prev]);
-    // Add activity
     const newAct = {
       id: Date.now(),
       text: `Karyawan baru <strong>${newEmp.name}</strong> ditambahkan ke departemen ${newEmp.dept}`,
@@ -315,6 +314,16 @@ export const TenantProvider = ({ children, authUser }) => {
       type: 'green'
     };
     setActivities(prev => [newAct, ...prev]);
+    // Sync to Supabase for email reminders
+    if (newEmp.email) {
+      await supabase.from('employees').upsert({
+        name: newEmp.name,
+        email: newEmp.email,
+        dept: newEmp.dept,
+        city: newEmp.city || '',
+        status: 'Aktif',
+      }, { onConflict: 'email' });
+    }
   };
 
   const inviteSupervisor = (email, deptName) => {

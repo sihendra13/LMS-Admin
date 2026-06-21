@@ -8,6 +8,7 @@ export const Employees = () => {
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [dept, setDept] = useState(isSupervisor ? currentUser.dept : 'Sales');
   const [city, setCity] = useState('Jakarta');
 
@@ -97,13 +98,15 @@ export const Employees = () => {
     const newEmp = {
       id: Date.now(),
       name,
+      email: email.trim(),
       dept: isSupervisor ? currentUser.dept : dept,
       city,
-      score: 0 // New employee has 0 completed SOPs initially
+      score: 0
     };
 
     addEmployee(newEmp);
     setName('');
+    setEmail('');
     alert('Karyawan baru berhasil ditambahkan!');
   };
 
@@ -287,6 +290,18 @@ export const Employees = () => {
                   placeholder="Contoh: Budi Santoso"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  disabled={isFull || isSupervisor}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Email Karyawan</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  placeholder="Contoh: budi.s@perusahaan.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={isFull || isSupervisor}
                 />
               </div>
