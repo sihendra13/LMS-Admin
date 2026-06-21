@@ -109,7 +109,16 @@ export const Reports = () => {
         'Nama Karyawan': sub.employeeName,
         'Departemen': sub.dept || '-',
         'SOP / Materi': sub.videoTitle,
-        'Tanggal & Waktu Penyelesaian': sub.date || '-',
+        'Tanggal & Waktu Penyelesaian': (() => {
+          if (!sub.date) return '-';
+          if (sub.date.includes('T') || sub.date.length > 12) {
+            const dt = new Date(sub.date);
+            if (isNaN(dt)) return sub.date;
+            return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+              + ' ' + String(dt.getHours()).padStart(2, '0') + ':' + String(dt.getMinutes()).padStart(2, '0');
+          }
+          return sub.date;
+        })(),
         'Deadline': video?.deadline || '-',
         'Status Deadline': deadlineStatus,
         'Dikonfirmasi Karyawan': sub.acknowledged ? 'Ya' : 'Tidak',

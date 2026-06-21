@@ -20,7 +20,16 @@ export const QuizGrading = () => {
   const uniqueDepts = Array.from(new Set(quizSubmissions.map(s => s.dept).filter(Boolean))).sort();
 
   const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-  const formatDate = (d) => (!d || d === 'Hari ini' || d === 'Baru saja') ? todayStr : d;
+  const formatDate = (d) => {
+    if (!d || d === 'Hari ini' || d === 'Baru saja') return todayStr;
+    if (d.includes('T') || d.length > 12) {
+      const dt = new Date(d);
+      if (isNaN(dt)) return d;
+      return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+        + ' ' + String(dt.getHours()).padStart(2, '0') + ':' + String(dt.getMinutes()).padStart(2, '0');
+    }
+    return d;
+  };
 
   const passed = history.filter(s => s.postScore >= passingScore).length;
   const failed = history.filter(s => s.postScore < passingScore).length;
