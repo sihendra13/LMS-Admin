@@ -107,6 +107,28 @@ export const Dashboard = () => {
                   <div className="video-meta">
                     <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
                     <span className="video-dur">{video.duration}</span>
+                    {video.type === 'ppt' && video.narasiMode && video.narasiMode !== 'none' && (
+                       <span style={{
+                         display: 'inline-flex',
+                         alignItems: 'center',
+                         gap: '4px',
+                         fontSize: '10px',
+                         fontWeight: '700',
+                         color: '#7c3aed',
+                         background: '#f5f3ff',
+                         border: '1px solid #ddd6fe',
+                         padding: '1px 7px',
+                         borderRadius: '4px'
+                       }}>
+                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                           <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                           <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                           <line x1="12" y1="19" x2="12" y2="23"/>
+                           <line x1="8" y1="23" x2="16" y2="23"/>
+                         </svg>
+                         Narasi: {video.narasiMode}
+                       </span>
+                     )}
                     {video.deadline && (() => {
                       const today = new Date(); today.setHours(0,0,0,0);
                       const dl = new Date(video.deadline);
