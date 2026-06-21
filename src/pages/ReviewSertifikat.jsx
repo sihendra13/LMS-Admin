@@ -42,7 +42,7 @@ export const ReviewSertifikat = () => {
   const handleConfirm = () => {
     const { type, sub } = actionModal;
     if (!sub) return;
-    if (type === 'approve')   approveCertificate(sub.id, currentUser.name);
+    if (type === 'approve')   approveCertificate(sub.id, currentUser.name, modalNote);
     if (type === 'reject')    rejectCertificate(sub.id, modalNote);
     if (type === 'sup_ok')    supervisorRecommend(sub.id, 'ok', modalNote);
     if (type === 'sup_rem')   supervisorRecommend(sub.id, 'remedial', modalNote);
@@ -341,7 +341,7 @@ export const ReviewSertifikat = () => {
 
   // ── modal config ─────────────────────────────────────────────────────
   const MODAL_CONFIG = {
-    approve:  { title: 'Terbitkan Sertifikat?', color: '#15803d', btnLabel: 'Ya, Terbitkan',   btnBg: '#16a34a', needNote: false },
+    approve:  { title: 'Terbitkan Sertifikat?', color: '#15803d', btnLabel: 'Ya, Terbitkan',   btnBg: '#16a34a', needNote: false, placeholder: 'Pesan untuk karyawan (opsional) — contoh: Selamat! Sertifikat Anda telah diterbitkan.' },
     reject:   { title: 'Tolak Final?',           color: '#b91c1c', btnLabel: 'Ya, Tolak Final', btnBg: '#ef4444', needNote: true, placeholder: 'Contoh: Skor tidak memenuhi standar, atau karyawan masih dalam masa percobaan.' },
     sup_ok:   { title: 'Rekomendasikan Sertifikat?', color: '#1d4ed8', btnLabel: 'Ya, Rekomendasikan', btnBg: '#2563eb', needNote: false, placeholder: 'Catatan tambahan untuk HRD (opsional)' },
     sup_rem:  { title: 'Minta Karyawan Mengulang?',  color: '#b45309', btnLabel: 'Ya, Minta Ulang',    btnBg: '#f59e0b', needNote: true, placeholder: 'Tuliskan alasan & bagian mana yang perlu dipelajari ulang. Catatan ini akan dilihat karyawan.' },

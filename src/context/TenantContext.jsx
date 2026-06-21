@@ -197,6 +197,7 @@ export const TenantProvider = ({ children, authUser }) => {
     supervisorDate: row.supervisor_date,
     approvedBy: row.approved_by,
     approvedDate: row.approved_date,
+    approvalNote: row.approval_note || '',
     rejectionNote: row.rejection_note || '',
     essayScore: row.essay_score ?? null,
     essayGradedBy: row.essay_graded_by || '',
@@ -344,16 +345,17 @@ export const TenantProvider = ({ children, authUser }) => {
     }
   };
 
-  const approveCertificate = async (submissionId, approverName) => {
+  const approveCertificate = async (submissionId, approverName, note) => {
     const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
     await supabase.from('quiz_submissions').update({
       cert_status: 'approved',
       approved_by: approverName,
       approved_date: today,
+      approval_note: note || '',
     }).eq('id', submissionId);
     // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
-      s.id === submissionId ? { ...s, certStatus: 'approved', approvedBy: approverName, approvedDate: today } : s
+      s.id === submissionId ? { ...s, certStatus: 'approved', approvedBy: approverName, approvedDate: today, approvalNote: note || '' } : s
     ));
     const sub = quizSubmissions.find(s => s.id === submissionId);
     const newAct = { id: Date.now(), text: `Sertifikat <strong>${sub?.employeeName}</strong> untuk <strong>${sub?.videoTitle}</strong> diterbitkan oleh ${approverName}`, time: 'Baru saja', type: 'green' };
