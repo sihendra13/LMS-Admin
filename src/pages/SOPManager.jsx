@@ -76,9 +76,48 @@ export const SOPManager = () => {
                 <div className="video-title" style={{ fontSize: '15px', fontWeight: '600' }}>{video.title}</div>
                 <div className="video-meta" style={{ marginTop: '4px' }}>
                   <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
-                  <span className="video-dur" style={{ marginLeft: '10px' }}>
-                    {video.type === 'ppt' ? `${video.slideCount || video.slideImages?.length || '?'} slide` : `Durasi: ${video.duration}`}
-                  </span>
+                   {video.type === 'ppt' ? (
+                     <span style={{
+                       fontSize: '11px',
+                       fontWeight: '700',
+                       background: '#f3f4f6',
+                       color: '#4b5563',
+                       border: '1px solid #e5e7eb',
+                       padding: '1px 8px',
+                       borderRadius: '4px',
+                       display: 'inline-flex',
+                       alignItems: 'center',
+                       gap: '4px',
+                       marginLeft: '2px'
+                     }}>
+                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
+                         <line x1="18" y1="20" x2="18" y2="10" />
+                         <line x1="12" y1="20" x2="12" y2="4" />
+                         <line x1="6" y1="20" x2="6" y2="14" />
+                       </svg>
+                       {video.slideCount || video.slideImages?.length ? `${video.slideCount || video.slideImages?.length} slide` : (video.duration || '? slide')}
+                     </span>
+                   ) : (
+                     <span style={{
+                       fontSize: '11px',
+                       fontWeight: '700',
+                       background: '#f3f4f6',
+                       color: '#4b5563',
+                       border: '1px solid #e5e7eb',
+                       padding: '1px 8px',
+                       borderRadius: '4px',
+                       display: 'inline-flex',
+                       alignItems: 'center',
+                       gap: '4px',
+                       marginLeft: '2px'
+                     }}>
+                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
+                         <circle cx="12" cy="12" r="10" />
+                         <polyline points="12 6 12 12 16 14" />
+                       </svg>
+                       {video.duration}
+                     </span>
+                   )}
                   {video.type === 'ppt' && video.narasiMode && video.narasiMode !== 'none' && (
                     <span style={{
                       display: 'inline-flex',
