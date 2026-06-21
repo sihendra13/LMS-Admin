@@ -74,130 +74,134 @@ export const SOPManager = () => {
               </div>
               <div className="video-info">
                 <div className="video-title" style={{ fontSize: '15px', fontWeight: '600' }}>{video.title}</div>
-                <div className="video-meta" style={{ marginTop: '4px' }}>
-                  <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
-                   {video.type === 'ppt' ? (
-                     <span style={{
-                       fontSize: '11px',
-                       fontWeight: '700',
-                       background: '#f3f4f6',
-                       color: '#4b5563',
-                       border: '1px solid #e5e7eb',
-                       padding: '1px 8px',
-                       borderRadius: '4px',
-                       display: 'inline-flex',
-                       alignItems: 'center',
-                       gap: '4px',
-                       marginLeft: '2px'
-                     }}>
-                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
-                         <line x1="18" y1="20" x2="18" y2="10" />
-                         <line x1="12" y1="20" x2="12" y2="4" />
-                         <line x1="6" y1="20" x2="6" y2="14" />
-                       </svg>
-                       {video.slideCount || video.slideImages?.length ? `${video.slideCount || video.slideImages?.length} slide` : (video.duration || '? slide')}
-                     </span>
-                   ) : (
-                     <span style={{
-                       fontSize: '11px',
-                       fontWeight: '700',
-                       background: '#f3f4f6',
-                       color: '#4b5563',
-                       border: '1px solid #e5e7eb',
-                       padding: '1px 8px',
-                       borderRadius: '4px',
-                       display: 'inline-flex',
-                       alignItems: 'center',
-                       gap: '4px',
-                       marginLeft: '2px'
-                     }}>
-                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
-                         <circle cx="12" cy="12" r="10" />
-                         <polyline points="12 6 12 12 16 14" />
-                       </svg>
-                       {video.duration}
-                     </span>
-                   )}
-                  {video.type === 'ppt' && video.narasiMode && video.narasiMode !== 'none' && (
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      color: '#7c3aed',
-                      background: '#f5f3ff',
-                      border: '1px solid #ddd6fe',
-                      padding: '1px 8px',
-                      borderRadius: '4px',
-                      marginLeft: '2px'
-                    }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" y1="19" x2="12" y2="23"/>
-                        <line x1="8" y1="23" x2="16" y2="23"/>
-                      </svg>
-                      Narasi: {video.narasiMode}
-                    </span>
-                  )}
-                  <span style={{ fontSize: '11px', color: 'var(--text3)', marginLeft: '15px' }}>Dilihat oleh: {video.views} karyawan</span>
-                   {video.deadline && (() => {
-                    const today = new Date(); today.setHours(0,0,0,0);
-                    const dl = new Date(video.deadline);
-                    const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
-                    const dateStr = dl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                    const label = diff < 0 ? `Deadline terlewat · ${dateStr}` : diff === 0 ? `Deadline hari ini · ${dateStr}` : `Deadline ${diff} hari lagi · ${dateStr}`;
-                    const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
-                    const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
-                    const borderCol = diff < 0 ? '#fecaca' : diff <= 3 ? '#fde68a' : '#fed7aa';
-                    
-                    let icon;
-                    if (diff < 0) {
-                      icon = (
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                          <line x1="12" y1="9" x2="12" y2="13"/>
-                          <line x1="12" y1="17" x2="12.01" y2="17"/>
+                <div className="video-meta" style={{ marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
+                    {video.type === 'ppt' ? (
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        background: '#f3f4f6',
+                        color: '#4b5563',
+                        border: '1px solid #e5e7eb',
+                        padding: '1px 8px',
+                        borderRadius: '4px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginLeft: '2px'
+                      }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
+                          <line x1="18" y1="20" x2="18" y2="10" />
+                          <line x1="12" y1="20" x2="12" y2="4" />
+                          <line x1="6" y1="20" x2="6" y2="14" />
                         </svg>
-                      );
-                    } else if (diff <= 3) {
-                      icon = (
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        {video.slideCount || video.slideImages?.length ? `${video.slideCount || video.slideImages?.length} slide` : (video.duration || '? slide')}
+                      </span>
+                    ) : (
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        background: '#f3f4f6',
+                        color: '#4b5563',
+                        border: '1px solid #e5e7eb',
+                        padding: '1px 8px',
+                        borderRadius: '4px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginLeft: '2px'
+                      }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
                         </svg>
-                      );
-                    } else {
-                      icon = (
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                          <line x1="16" y1="2" x2="16" y2="6"/>
-                          <line x1="8" y1="2" x2="8" y2="6"/>
-                          <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                      );
-                    }
-
-                    return (
+                        {video.duration}
+                      </span>
+                    )}
+                    {video.type === 'ppt' && video.narasiMode && video.narasiMode !== 'none' && (
                       <span style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
                         fontSize: '11px',
                         fontWeight: '700',
-                        color,
-                        background: bg,
-                        border: `1px solid ${borderCol}`,
+                        color: '#7c3aed',
+                        background: '#f5f3ff',
+                        border: '1px solid #ddd6fe',
                         padding: '1px 8px',
                         borderRadius: '4px',
-                        marginLeft: '10px'
+                        marginLeft: '2px'
                       }}>
-                        {icon}
-                        {label}
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                          <line x1="12" y1="19" x2="12" y2="23"/>
+                          <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                        Narasi: {video.narasiMode}
                       </span>
-                    );
-                  })()}
+                    )}
+                    {video.deadline && (() => {
+                      const today = new Date(); today.setHours(0,0,0,0);
+                      const dl = new Date(video.deadline);
+                      const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
+                      const dateStr = dl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                      const label = diff < 0 ? `Deadline terlewat · ${dateStr}` : diff === 0 ? `Deadline hari ini · ${dateStr}` : `Deadline ${diff} hari lagi · ${dateStr}`;
+                      const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
+                      const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
+                      const borderCol = diff < 0 ? '#fecaca' : diff <= 3 ? '#fde68a' : '#fed7aa';
+                      
+                      let icon;
+                      if (diff < 0) {
+                        icon = (
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                          </svg>
+                        );
+                      } else if (diff <= 3) {
+                        icon = (
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                          </svg>
+                        );
+                      } else {
+                        icon = (
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                          </svg>
+                        );
+                      }
+
+                      return (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          color,
+                          background: bg,
+                          border: `1px solid ${borderCol}`,
+                          padding: '1px 8px',
+                          borderRadius: '4px',
+                          marginLeft: '2px'
+                        }}>
+                          {icon}
+                          {label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text3)', whiteSpace: 'nowrap', fontWeight: '500' }}>
+                    Dilihat oleh: {video.views} karyawan
+                  </div>
                 </div>
                 <div className="prog-wrap" style={{ marginTop: '8px', width: '100%' }}>
                   <div className="prog-bar">
