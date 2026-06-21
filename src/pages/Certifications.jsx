@@ -264,7 +264,7 @@ export const Certifications = () => {
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 9999
-        }} onClick={() => setPreviewCert(null)}>
+        }}>
           
           <div style={{
             background: '#ffffff',
