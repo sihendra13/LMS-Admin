@@ -199,7 +199,7 @@ export const SOPManager = () => {
                     );
                   })()}
                 </div>
-                <div className="prog-wrap" style={{ marginTop: '8px', width: '60%' }}>
+                <div className="prog-wrap" style={{ marginTop: '8px', width: '100%' }}>
                   <div className="prog-bar">
                     <div className="prog-fill" style={{ width: `${video.progress}%`, background: 'var(--accent)' }}></div>
                   </div>
