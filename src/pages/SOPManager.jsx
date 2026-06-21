@@ -111,8 +111,9 @@ export const SOPManager = () => {
                     const label = diff < 0 ? `Deadline terlewat · ${dateStr}` : diff === 0 ? `Deadline hari ini · ${dateStr}` : `Deadline ${diff} hari lagi · ${dateStr}`;
                     const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
                     const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
+                    const borderCol = diff < 0 ? '#fecaca' : diff <= 3 ? '#fde68a' : '#fed7aa';
                     return (
-                      <span style={{ fontSize: '11px', fontWeight: '700', color, background: bg, border: `1px solid ${bg}`, padding: '1px 8px', borderRadius: '4px', marginLeft: '10px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color, background: bg, border: `1px solid ${borderCol}`, padding: '1px 8px', borderRadius: '4px', marginLeft: '10px' }}>
                         📅 {label}
                       </span>
                     );
