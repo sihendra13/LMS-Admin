@@ -67,11 +67,32 @@ export const ReviewSertifikat = () => {
   const StatusBadge = ({ certStatus, escalated = false }) => {
     const m = STATUS_META[certStatus] || STATUS_META.pending;
     const escalatedMeta = { label: '⚠️ Eskalasi ke HRD', color: '#92400e', bg: '#fffbeb', border: '#fde68a' };
-    // Supervisor melihat pending → label "Belum Direview" bukan "Menunggu Supervisor"
     const label = escalated ? escalatedMeta.label : (!isHRD && (certStatus === 'pending' || !certStatus)) ? 'Belum Direview' : m.label;
     const meta  = escalated ? escalatedMeta : m;
+    
+    const icon = certStatus === 'approved' && (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginRight: '4px' }}>
+        <circle cx="12" cy="8" r="7" />
+        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+      </svg>
+    );
+
     return (
-      <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px', background: meta.bg, color: meta.color, border: `1px solid ${meta.border}`, flexShrink: 0 }}>
+      <span style={{
+        fontSize: '11px',
+        fontWeight: '700',
+        padding: '6px 14px',
+        borderRadius: '99px',
+        background: meta.bg,
+        color: meta.color,
+        border: `1px solid ${meta.border}`,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        whiteSpace: 'nowrap',
+        flexShrink: 0
+      }}>
+        {icon}
         {label}
       </span>
     );
@@ -255,14 +276,31 @@ export const ReviewSertifikat = () => {
           )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: sub.certStatus === 'approved' ? 'row' : 'column', alignItems: sub.certStatus === 'approved' ? 'center' : 'flex-end', gap: '10px', flexShrink: 0 }}>
           <StatusBadge certStatus={sub.certStatus || 'pending'} escalated={escalated} />
           {sub.certStatus === 'approved' && onViewCert && (
             <button
               onClick={() => onViewCert(sub)}
-              style={{ fontSize: '11px', fontWeight: '700', padding: '5px 12px', borderRadius: '6px', background: '#f0fdf4', border: '1px solid #86efac', color: '#15803d', cursor: 'pointer' }}
+              style={{
+                padding: '5px 12px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: '600',
+                background: '#ffffff',
+                border: '1px solid var(--border)',
+                color: 'var(--text1)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.15s'
+              }}
             >
-              🎓 Lihat Sertifikat
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              Lihat
             </button>
           )}
           {actions && (() => {
