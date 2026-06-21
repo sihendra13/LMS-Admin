@@ -12,13 +12,14 @@ const STATUS_META = {
 };
 
 export const ReviewSertifikat = () => {
-  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore } = useTenant();
+  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, tenant, validityMonths } = useTenant();
   const isHRD = currentUser.role === 'admin';
 
   const [activeTab, setActiveTab] = useState(isHRD ? 'ready' : 'need_review');
   const [actionModal, setActionModal] = useState({ open: false, type: null, sub: null });
   const [modalNote, setModalNote] = useState('');
   const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('rev-banner-dismissed') === '1');
+  const [previewCert, setPreviewCert] = useState(null);
 
   // ── filter helpers ───────────────────────────────────────────────────
   const myDept = currentUser.dept;
@@ -76,7 +77,7 @@ export const ReviewSertifikat = () => {
     );
   };
 
-  const Card = ({ sub, actions, escalated = false }) => {
+  const Card = ({ sub, actions, escalated = false, onViewCert }) => {
     const passed = sub.postScore != null && sub.postScore >= passingScore;
     const improvement = (sub.preScore != null && sub.postScore != null) ? sub.postScore - sub.preScore : null;
     const isSupervisorDecision = !isHRD && actions?.some(a => a.type === 'sup_ok');
@@ -256,6 +257,14 @@ export const ReviewSertifikat = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
           <StatusBadge certStatus={sub.certStatus || 'pending'} escalated={escalated} />
+          {sub.certStatus === 'approved' && onViewCert && (
+            <button
+              onClick={() => onViewCert(sub)}
+              style={{ fontSize: '11px', fontWeight: '700', padding: '5px 12px', borderRadius: '6px', background: '#f0fdf4', border: '1px solid #86efac', color: '#15803d', cursor: 'pointer' }}
+            >
+              🎓 Lihat Sertifikat
+            </button>
+          )}
           {actions && (() => {
             const isPending = !escalated && (!sub.certStatus || sub.certStatus === 'pending' || sub.certStatus === 'remedial');
             return (
@@ -543,7 +552,7 @@ export const ReviewSertifikat = () => {
         {isHRD && activeTab === 'approved' && (
           approvedSubs.length === 0
             ? <EmptyState icon="🏆" msg="Belum ada sertifikat yang diterbitkan." />
-            : approvedSubs.map(sub => <Card key={sub.id} sub={sub} actions={null} />)
+            : approvedSubs.map((sub, idx) => <Card key={sub.id} sub={sub} actions={null} onViewCert={() => setPreviewCert({ sub, idx })} />)
         )}
 
         {/* ── HRD: Ditolak ── */}
@@ -641,6 +650,71 @@ export const ReviewSertifikat = () => {
           </div>
         </div>
       )}
+
+      {/* CERTIFICATE PREVIEW MODAL */}
+      {previewCert && (() => {
+        const { sub, idx } = previewCert;
+        const certId = `CERT-2026${100 + idx}`;
+        const issueDate = sub.approvedDate || sub.date || '—';
+        const expiryDate = validityMonths === 999 ? 'Selamanya' : (() => {
+          const d = new Date(issueDate); d.setMonth(d.getMonth() + (validityMonths || 12));
+          return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+        })();
+        return (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '20px' }}>
+            <div style={{ background: '#fff', borderRadius: '16px', maxWidth: '640px', width: '100%', boxShadow: '0 25px 60px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+              {/* modal header */}
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Preview Sertifikat</span>
+                <button onClick={() => setPreviewCert(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--text3)', lineHeight: 1 }}>✕</button>
+              </div>
+
+              {/* certificate body */}
+              <div style={{ padding: '24px' }}>
+                <div style={{ border: '2px solid #1e3a5f', borderRadius: '12px', padding: '32px 36px', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
+                  <div style={{ position: 'absolute', top: '-20px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
+                  <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
+
+                  {tenant?.logo ? (
+                    <div style={{ marginBottom: '14px' }}>
+                      <img src={tenant.logo} alt={tenant?.name} style={{ maxHeight: '48px', maxWidth: '160px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '16px' }}>
+                      🏢 {tenant?.name || 'PT Maju Bersama'} · Corporate LMS
+                    </div>
+                  )}
+
+                  <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px', letterSpacing: '1px' }}>SERTIFIKAT KELULUSAN</h1>
+                  <div style={{ width: '40px', height: '2px', background: '#1e3a5f', margin: '0 auto 16px' }} />
+                  <p style={{ fontStyle: 'italic', color: '#64748b', fontSize: '12px', margin: '0 0 12px' }}>Dengan ini secara resmi menyatakan dan menganugerahkan penghargaan kepada:</p>
+                  <div style={{ fontSize: '22px', fontWeight: '700', color: '#0f172a', textDecoration: 'underline', marginBottom: '10px' }}>{sub.employeeName}</div>
+                  <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 6px' }}>Atas kelulusan luar biasa dan kompetensi penuh yang ditunjukkan dalam menyelesaikan pelatihan materi video standar perusahaan:</p>
+                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#2563eb', marginBottom: '20px' }}>{sub.videoTitle}</div>
+
+                  <div style={{ display: 'flex', gap: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '16px', textAlign: 'left' }}>
+                    <div style={{ flex: 1, fontSize: '12px', color: '#64748b', borderRight: '1px solid #e5e7eb', paddingRight: '20px' }}>
+                      <div><strong>ID Sertifikat:</strong> {certId}</div>
+                      <div><strong>Tanggal Terbit:</strong> {issueDate}</div>
+                      <div><strong>Masa Berlaku:</strong> {expiryDate}</div>
+                      <div><strong>Skor Kuis:</strong> <span style={{ color: '#16a34a', fontWeight: '700' }}>{sub.postScore}%</span></div>
+                    </div>
+                    <div style={{ textAlign: 'center', minWidth: '140px' }}>
+                      <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '16px', color: '#1e3a5f', marginBottom: '4px' }}>{sub.approvedBy || currentUser.name}</div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>HR Manager, {tenant?.name || 'PT Maju Bersama'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ padding: '12px 24px 20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button onClick={() => setPreviewCert(null)} className="btn-sec">Tutup</button>
+                <button onClick={() => window.print()} className="btn-primary">🖨️ Cetak / Simpan PDF</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
