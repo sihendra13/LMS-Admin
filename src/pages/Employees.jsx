@@ -20,12 +20,12 @@ export const Employees = () => {
 
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
-      ['Nama Lengkap', 'Departemen', 'Cabang/Kota'],
-      ['Budi Santoso', 'Sales', 'Jakarta'],
-      ['Siti Rahayu', 'HRD', 'Bandung'],
-      ['Agus Wijaya', 'Operasional', 'Surabaya'],
+      ['Nama Lengkap', 'Email', 'Departemen', 'Cabang/Kota'],
+      ['Budi Santoso', 'budi.s@perusahaan.com', 'Sales', 'Jakarta'],
+      ['Siti Rahayu', 'siti.r@perusahaan.com', 'HRD', 'Bandung'],
+      ['Agus Wijaya', 'agus.w@perusahaan.com', 'Operasional', 'Surabaya'],
     ]);
-    ws['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }];
+    ws['!cols'] = [{ wch: 30 }, { wch: 32 }, { wch: 20 }, { wch: 20 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Karyawan');
     XLSX.writeFile(wb, 'Template_Import_Karyawan.xlsx');
@@ -45,12 +45,13 @@ export const Employees = () => {
           .filter(r => r[0] && String(r[0]).trim())
           .map((r, idx) => {
             const empName = String(r[0] || '').trim();
-            const empDept = String(r[1] || 'Sales').trim();
-            const empCity = String(r[2] || 'Jakarta').trim();
+            const empEmail = String(r[1] || '').trim();
+            const empDept = String(r[2] || 'Sales').trim();
+            const empCity = String(r[3] || 'Jakarta').trim();
             const validDept = DEPT_OPTIONS.find(d => d.toLowerCase() === empDept.toLowerCase()) || 'Sales';
             const errors = [];
             if (!empName) errors.push('Nama kosong');
-            return { _idx: idx + 2, name: empName, dept: validDept, city: empCity, errors };
+            return { _idx: idx + 2, name: empName, email: empEmail, dept: validDept, city: empCity, errors };
           });
         if (!rows.length) { setImportError('File kosong atau format tidak sesuai template.'); return; }
         setImportRows(rows);
@@ -67,7 +68,7 @@ export const Employees = () => {
     const validRows = importRows.filter(r => !r.errors.length);
     const remaining = limit - totalCount;
     const toAdd = limit === Infinity ? validRows : validRows.slice(0, remaining);
-    toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, dept: r.dept, city: r.city, score: 0 }));
+    toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
     setImportRows([]);
     alert(`${toAdd.length} karyawan berhasil ditambahkan!${toAdd.length < validRows.length ? `\n${validRows.length - toAdd.length} baris dilewati karena kuota penuh.` : ''}`);
@@ -368,6 +369,7 @@ export const Employees = () => {
                   <tr style={{ background: 'var(--surface2)', position: 'sticky', top: 0 }}>
                     <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Baris</th>
                     <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Nama Lengkap</th>
+                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Email</th>
                     <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
                     <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang/Kota</th>
                     <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Status</th>
@@ -378,6 +380,7 @@ export const Employees = () => {
                     <tr key={r._idx} style={{ borderBottom: '1px solid var(--border)', background: r.errors.length ? '#fff5f5' : 'transparent' }}>
                       <td style={{ padding: '10px 16px', color: 'var(--text3)' }}>{r._idx}</td>
                       <td style={{ padding: '10px 16px', fontWeight: '500' }}>{r.name}</td>
+                      <td style={{ padding: '10px 16px', color: 'var(--text2)', fontSize: '12px' }}>{r.email || '-'}</td>
                       <td style={{ padding: '10px 16px' }}>{r.dept}</td>
                       <td style={{ padding: '10px 16px', color: 'var(--text2)' }}>{r.city}</td>
                       <td style={{ padding: '10px 16px' }}>
