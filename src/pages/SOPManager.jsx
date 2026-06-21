@@ -199,28 +199,31 @@ export const SOPManager = () => {
                       );
                     })()}
                   </div>
-                </div>
-                {(() => {
-                  const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
-                  const diikuti = deptEmps.length;
-                  const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
-                  const pct = diikuti > 0 ? Math.round((lulus / diikuti) * 100) : 0;
-                  return (
-                    <div style={{ marginTop: '8px', width: '100%' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                        <div style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>Diikuti oleh {diikuti} karyawan</span>
-                          <span style={{ color: 'var(--border)' }}>|</span>
+                    {(() => {
+                      const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
+                      const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
+                      return (
+                        <div style={{ fontSize: '11px', color: 'var(--text3)', whiteSpace: 'nowrap', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <span>Diikuti oleh {deptEmps.length} karyawan</span>
+                          <span style={{ color: '#d1d5db' }}>|</span>
                           <span style={{ color: '#16a34a', fontWeight: '700' }}>{lulus} Lulus</span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  {(() => {
+                    const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
+                    const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
+                    const pct = deptEmps.length > 0 ? Math.round((lulus / deptEmps.length) * 100) : 0;
+                    return (
+                      <div className="prog-wrap" style={{ marginTop: '8px', width: '100%' }}>
+                        <div className="prog-bar">
+                          <div className="prog-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }}></div>
                         </div>
                         <div className="prog-pct">{pct}% Lulus</div>
                       </div>
-                      <div className="prog-bar">
-                        <div className="prog-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }}></div>
-                      </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
               </div>
 
               {/* ACTION BUTTONS */}
