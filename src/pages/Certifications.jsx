@@ -305,11 +305,11 @@ export const Certifications = () => {
 
               {/* Logo Area */}
               {tenant.logo ? (
-                <div style={{ marginBottom: '16px' }}>
-                  <img src={tenant.logo} alt={tenant.name} style={{ maxHeight: '52px', maxWidth: '180px', objectFit: 'contain' }} />
+                <div style={{ marginBottom: '16px', textAlign: 'center' }}>
+                  <img src={tenant.logo} alt={tenant.name} style={{ maxHeight: '52px', maxWidth: '180px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
                 </div>
               ) : (
-                <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '20px' }}>
+                <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '20px', textAlign: 'center' }}>
                   🏢 {tenant.name} · Corporate LMS
                 </div>
               )}
