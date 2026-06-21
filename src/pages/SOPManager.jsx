@@ -212,7 +212,7 @@ export const SOPManager = () => {
               </div>
 
               {/* ACTION BUTTONS */}
-              {!isSupervisor && (
+              {!isSupervisor && (video.views === 0 || video.progress === 100) && (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '16px', flexShrink: 0 }}>
                   {/* Edit — hanya kalau belum ditonton */}
                   {video.views === 0 && (
