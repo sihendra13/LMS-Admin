@@ -267,6 +267,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
   grid-template-columns: 1fr 360px;
   gap: 16px;
   margin-bottom: 16px;
+  align-items: start;
 }
 .card {
   background: var(--surface);
@@ -342,7 +343,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
 .video-views { font-size: 11px; color: var(--text3); white-space: nowrap; }
 
 /* SIDE PANELS */
-.side-col { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 84px; align-self: start; }
+.side-col { display: flex; flex-direction: column; gap: 14px; }
 
 /* DEPT COMPLETION */
 .dept-item {

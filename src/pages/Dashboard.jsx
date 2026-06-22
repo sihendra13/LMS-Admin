@@ -481,9 +481,9 @@ export const Dashboard = () => {
         </div>
 
         {/* SIDE COLUMN */}
-        <div className="side-col">
+        <div className="side-col" style={{ position: 'sticky', top: '84px', alignSelf: 'start' }}>
           {/* AXA ASSISTANT CARD */}
-          <div className="card axa-card-glow" style={{ overflow: 'hidden' }}>
+          <div className="card axa-card-glow" style={{ overflow: 'visible' }}>
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
