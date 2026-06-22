@@ -517,7 +517,7 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
         </div>
 
         {/* SIDE COLUMN */}
-        <div className="side-col" style={{ position: 'sticky', top: '80px', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div className="side-col" style={{ position: 'sticky', top: '0px', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* AXA ASSISTANT CARD */}
           <div className="card axa-card-glow" style={{ overflow: 'visible' }}>
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -152,7 +152,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 /* TOPBAR */
@@ -206,7 +206,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
 
 
 /* CONTENT */
-.content { padding: 24px 28px; flex: 1; }
+.content { padding: 24px 28px; flex: 1; overflow-y: auto; min-height: 0; }
 
 /* STATS */
 .stats-grid {
