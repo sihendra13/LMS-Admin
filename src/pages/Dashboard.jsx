@@ -325,7 +325,7 @@ export const Dashboard = () => {
                 <div className="card-title">Aktivitas Terkini</div>
               </div>
               <div className="card-body">
-                {displayActivities.slice(0, 5).map((act) => {
+                {displayActivities.slice(0, 3).map((act) => {
                   const dots = { green: '#10b981', blue: '#2F7BFF', purple: '#8b5cf6', amber: '#f59e0b', cyan: '#06b6d4' };
                   return (
                     <div key={act.id} className="activity-item">
