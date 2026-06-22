@@ -210,7 +210,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
 
 
 /* CONTENT */
-.content { padding: 24px 28px; flex: 1; overflow-y: auto; min-height: 0; }
+.content { padding: 24px calc(360px + 28px + 16px) 24px 28px; flex: 1; overflow-y: auto; min-height: 0; }
 
 /* STATS */
 .stats-grid {
@@ -268,7 +268,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
 /* MAIN GRID */
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: 1fr;
   gap: 16px;
   margin-bottom: 16px;
   align-items: start;
