@@ -129,7 +129,7 @@ KARYAWAN(${employees.length}): ${JSON.stringify(empData)}
 VIDEO SOP(${videos.length}): ${JSON.stringify(vidData)}
 KUIS(${quizSubmissions.length}): ${JSON.stringify(quizData)}
 
-Bisa buat laporan, analisis, rekomendasi, soal kuis. Jawaban lengkap & actionable. Jangan selalu balik tanya.`;
+Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa, balas singkat dan tanya apa yang bisa dibantu — jangan langsung dump semua data. Kalau ditanya sesuatu yang spesifik, jawab lengkap & actionable. Jangan selalu balik tanya.`;
 
       const history = chatMessages.slice(-10).map(m => ({
         role: m.sender === 'user' ? 'user' : 'assistant',
@@ -538,7 +538,6 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Jawaban lengkap & actionabl
                 </div>
               </div>
             </div>
-          </div>
         </div>
 
         {/* SIDE COLUMN */}
@@ -912,7 +911,6 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Jawaban lengkap & actionabl
           </div>
         </div>
       </div>
-    </div>
 
     {/* EXPANDED FULLSCREEN MODAL FOR AXA ASSISTANT */}
     {isExpanded && (
