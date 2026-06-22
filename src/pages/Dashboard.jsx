@@ -117,40 +117,21 @@ export const Dashboard = () => {
     setIsTyping(true);
 
     try {
-      const systemPrompt = `Kamu adalah AXA AI, asisten cerdas untuk platform LMS Axara.
-Kamu memiliki akses penuh ke data LMS perusahaan yang sedang aktif.
+      const empData = employees.map(e => ({ name: e.name, dept: e.dept, role: e.role, email: e.email }));
+      const vidData = videos.map(v => ({ title: v.title, dept: v.dept, duration: v.duration, category: v.category }));
+      const quizData = quizSubmissions.map(q => ({ employee: q.employeeName, video: q.videoTitle, score: q.postScore, passed: (q.postScore ?? 0) >= passingScore }));
 
-DATA PERUSAHAAN SAAT INI:
-- Nama tenant: ${tenant.name}
-- Paket: ${tenant.plan}
-- User login: ${currentUser.name} (${currentUser.role}, Divisi ${currentUser.dept})
+      const systemPrompt = `Kamu adalah AXA AI, asisten LMS Axara. Jawab dalam Bahasa Indonesia, gunakan data nyata berikut.
 
-DATA KARYAWAN (${employees.length} orang):
-${JSON.stringify(employees, null, 2)}
+Tenant: ${tenant.name} | Paket: ${tenant.plan} | Login: ${currentUser.name} (${currentUser.role}, ${currentUser.dept}) | Passing: ${passingScore}%
 
-DATA VIDEO SOP (${videos.length} materi):
-${JSON.stringify(videos, null, 2)}
+KARYAWAN(${employees.length}): ${JSON.stringify(empData)}
+VIDEO SOP(${videos.length}): ${JSON.stringify(vidData)}
+KUIS(${quizSubmissions.length}): ${JSON.stringify(quizData)}
 
-HASIL KUIS (${quizSubmissions.length} submission):
-${JSON.stringify(quizSubmissions, null, 2)}
+Bisa buat laporan, analisis, rekomendasi, soal kuis. Jawaban lengkap & actionable. Jangan selalu balik tanya.`;
 
-PASSING SCORE: ${passingScore}%
-
-Berdasarkan data di atas, jawab semua pertanyaan HRD dalam Bahasa Indonesia.
-Kamu bisa membuat laporan, analisis, rekomendasi, draft dokumen, soal kuis,
-dan menjawab pertanyaan apapun yang berkaitan dengan LMS ini.
-Selalu gunakan data nyata dari sistem, bukan data contoh.
-
-Saat merekomendasikan materi training untuk departemen tertentu,
-prioritaskan SOP yang relevan dengan pekerjaan departemen tersebut.
-Ingat selalu konteks percakapan sebelumnya dan jangan rekomendasikan
-ulang materi yang sudah disebutkan di percakapan yang sama.
-
-Jangan selalu mengakhiri jawaban dengan pertanyaan balik.
-Cukup berikan jawaban yang lengkap dan actionable.
-Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
-
-      const history = chatMessages.map(m => ({
+      const history = chatMessages.slice(-10).map(m => ({
         role: m.sender === 'user' ? 'user' : 'assistant',
         content: m.text
       }));
@@ -556,7 +537,6 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
                   <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>↑ baik</div>
                 </div>
               </div>
-            </div>
             </div>
           </div>
         </div>
