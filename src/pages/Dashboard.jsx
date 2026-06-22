@@ -45,6 +45,31 @@ export const Dashboard = () => {
     }
   }, [chatMessages, isTyping]);
 
+  const parseBold = (text) => {
+    const parts = text.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part);
+  };
+
+  const renderMarkdown = (text) => {
+    return text.split('\n').map((line, i) => {
+      if (/^#{1,3}\s/.test(line)) {
+        const level = line.match(/^#+/)[0].length;
+        const content = line.replace(/^#+\s/, '');
+        const size = level === 1 ? '14px' : level === 2 ? '13px' : '12px';
+        return <div key={i} style={{ fontWeight: '700', fontSize: size, marginTop: '8px', marginBottom: '3px' }}>{parseBold(content)}</div>;
+      }
+      if (/^[\*\-]\s/.test(line)) {
+        return <div key={i} style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}><span style={{ flexShrink: 0, marginTop: '1px' }}>•</span><span>{parseBold(line.slice(2))}</span></div>;
+      }
+      if (/^\d+\.\s/.test(line)) {
+        const [, num, rest] = line.match(/^(\d+)\.\s(.*)/);
+        return <div key={i} style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}><span style={{ flexShrink: 0, fontWeight: '600', minWidth: '16px' }}>{num}.</span><span>{parseBold(rest)}</span></div>;
+      }
+      if (line.trim() === '') return <div key={i} style={{ height: '5px' }} />;
+      return <div key={i} style={{ marginBottom: '2px' }}>{parseBold(line)}</div>;
+    });
+  };
+
   const handleSendMessage = async (text) => {
     if (!text.trim()) return;
     const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -532,7 +557,7 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
               {chatMessages.map((msg) => (
                 <div key={msg.id} className={`chat-bubble-wrapper ${msg.sender}`} style={{ gap: '4px' }}>
                   <div className={`chat-bubble chat-bubble-${msg.sender}`}>
-                    {msg.text}
+                    {msg.sender === 'ai' ? renderMarkdown(msg.text) : msg.text}
                   </div>
                   <div style={{
                     fontSize: '9px',
