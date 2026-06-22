@@ -45,26 +45,6 @@ export const Dashboard = () => {
     }
   }, [chatMessages, isTyping]);
 
-  const buildGroqContext = () => {
-    const videoStats = videos.map(v => {
-      const deptEmps = v.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === v.dept.toLowerCase());
-      const lulus = quizSubmissions.filter(s => s.videoTitle === v.title && (s.postScore ?? 0) >= passingScore).length;
-      return `  - "${v.title}" [${v.dept}]: ${lulus}/${deptEmps.length} lulus${v.deadline ? `, deadline: ${v.deadline}` : ''}`;
-    }).join('\n');
-
-    const deptStats = [...new Set(employees.map(e => e.dept))].map(dept => {
-      const deptEmps = employees.filter(e => e.dept === dept);
-      const lulus = quizSubmissions.filter(s => deptEmps.some(e => e.name === s.employeeName) && (s.postScore ?? 0) >= passingScore).length;
-      return `  - ${dept}: ${deptEmps.length} karyawan, ${lulus} lulus`;
-    }).join('\n');
-
-    const recentSubs = quizSubmissions.slice(-15).map(s =>
-      `  - ${s.employeeName}: "${s.videoTitle}" skor ${s.postScore ?? 'N/A'} → ${(s.postScore ?? 0) >= passingScore ? 'LULUS' : 'BELUM LULUS'}`
-    ).join('\n');
-
-    return `Perusahaan: ${tenant.name} | Passing score: ${passingScore} | Karyawan: ${employees.length} | Materi: ${videos.length}\n\nProgress per materi:\n${videoStats}\n\nStats departemen:\n${deptStats}\n\nSubmisi terbaru:\n${recentSubs}`;
-  };
-
   const handleSendMessage = async (text) => {
     if (!text.trim()) return;
     const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -76,7 +56,34 @@ export const Dashboard = () => {
     setIsTyping(true);
 
     try {
-      const systemPrompt = `Kamu adalah AXA, AI Assistant untuk platform LMS Axara milik ${tenant.name}. Kamu membantu HR Manager menganalisis data training karyawan.\n\nGunakan data nyata berikut sebagai referensi utama:\n${buildGroqContext()}\n\nInstruksi:\n- Jawab dalam Bahasa Indonesia yang profesional tapi ramah\n- Gunakan angka dari data di atas, bukan asumsi\n- Jawaban ringkas dan to-the-point (3-4 kalimat)\n- Jika data tidak tersedia, katakan dengan jujur`;
+      const systemPrompt = `Kamu adalah AXA AI, asisten cerdas untuk platform LMS Axara.
+Kamu memiliki akses penuh ke data LMS perusahaan yang sedang aktif.
+
+DATA PERUSAHAAN SAAT INI:
+- Nama tenant: ${tenant.name}
+- Paket: ${tenant.plan}
+- User login: ${currentUser.name} (${currentUser.role}, Divisi ${currentUser.dept})
+
+DATA KARYAWAN (${employees.length} orang):
+${JSON.stringify(employees, null, 2)}
+
+DATA VIDEO SOP (${videos.length} materi):
+${JSON.stringify(videos, null, 2)}
+
+HASIL KUIS (${quizSubmissions.length} submission):
+${JSON.stringify(quizSubmissions, null, 2)}
+
+PASSING SCORE: ${passingScore}%
+
+Berdasarkan data di atas, jawab semua pertanyaan HRD dalam Bahasa Indonesia.
+Kamu bisa membuat laporan, analisis, rekomendasi, draft dokumen, soal kuis,
+dan menjawab pertanyaan apapun yang berkaitan dengan LMS ini.
+Selalu gunakan data nyata dari sistem, bukan data contoh.
+
+Saat merekomendasikan materi training untuk departemen tertentu,
+prioritaskan SOP yang relevan dengan pekerjaan departemen tersebut.
+Ingat selalu konteks percakapan sebelumnya dan jangan rekomendasikan
+ulang materi yang sudah disebutkan di percakapan yang sama.`;
 
       const history = chatMessages.map(m => ({
         role: m.sender === 'user' ? 'user' : 'assistant',
@@ -90,9 +97,9 @@ export const Dashboard = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
+          model: 'llama-3.3-70b-versatile',
           messages: [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: text }],
-          max_tokens: 400,
+          max_tokens: 600,
           temperature: 0.5
         })
       });
@@ -481,9 +488,9 @@ export const Dashboard = () => {
         </div>
 
         {/* SIDE COLUMN */}
-        <div className="side-col" style={{ position: 'sticky', top: '84px', alignSelf: 'start' }}>
-          {/* AXA ASSISTANT CARD */}
-          <div className="card axa-card-glow" style={{ overflow: 'visible' }}>
+        <div className="side-col">
+          {/* AXA ASSISTANT CARD (Sticky) */}
+          <div className="card axa-card-glow" style={{ overflow: 'visible', position: 'sticky', top: '78px', zIndex: 10 }}>
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
