@@ -904,7 +904,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #000000;
   border: none;
   color: white;
   display: flex;
