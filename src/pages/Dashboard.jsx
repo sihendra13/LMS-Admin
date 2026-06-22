@@ -16,6 +16,10 @@ export const Dashboard = () => {
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
+  const userInitial = currentUser && currentUser.name
+    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+    : 'U';
+
   // Scroll to bottom when chat messages update
   useEffect(() => {
     if (chatEndRef.current) {
@@ -328,7 +332,9 @@ export const Dashboard = () => {
                   color: 'white'
                 }}>
                   <svg className="axa-sparkle-pulse" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707-.707" />
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                    <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5 5 3Z"/>
+                    <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1 1-2.5Z"/>
                   </svg>
                 </div>
                 <div>
@@ -352,15 +358,25 @@ export const Dashboard = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', alignSelf: msg.sender === 'ai' ? 'flex-start' : 'flex-end' }}>
                     {msg.sender === 'ai' ? (
                       <div style={{ width: '18px', height: '18px', borderRadius: '4px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #dbeafe' }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="3">
-                          <path d="M12 3v1m0 16v1m9-9h-1M4 12H3" />
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5">
+                          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
                         </svg>
                       </div>
                     ) : (
-                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" strokeWidth="2.5">
-                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-                        </svg>
+                      <div style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        background: '#e2e8f0',
+                        color: '#475569',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '9px',
+                        fontWeight: '750',
+                        border: '1px solid #cbd5e1'
+                      }}>
+                        {userInitial}
                       </div>
                     )}
                     <span className="chat-avatar-label">{msg.name}</span>
