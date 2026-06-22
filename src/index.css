@@ -342,7 +342,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
 .video-views { font-size: 11px; color: var(--text3); white-space: nowrap; }
 
 /* SIDE PANELS */
-.side-col { display: flex; flex-direction: column; gap: 14px; }
+.side-col { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; }
 
 /* DEPT COMPLETION */
 .dept-item {
