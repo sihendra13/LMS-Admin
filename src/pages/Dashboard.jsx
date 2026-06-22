@@ -54,7 +54,7 @@ export const Dashboard = () => {
     if (isExpanded) {
       setTimeout(() => adjustHeight(expTextareaRef.current), 100);
     }
-  }, [isExpanded]);
+  }, [isExpanded, chatInput]);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -773,7 +773,7 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
                     borderRadius: '18px',
                     padding: '8px 14px',
                     lineHeight: '1.4',
-                    overflowY: 'auto'
+                    overflowY: 'hidden'
                   }}
                 />
               </div>
@@ -1091,7 +1091,7 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
                         borderRadius: '20px',
                         padding: '10px 16px',
                         lineHeight: '1.45',
-                        overflowY: 'auto',
+                        overflowY: 'hidden',
                         fontSize: '13.5px'
                       }}
                     />
