@@ -144,174 +144,289 @@ export const Dashboard = () => {
 
       {/* MAIN GRID */}
       <div className="main-grid">
-        {/* VIDEO LIST */}
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Training & SOP Terbaru & Progress</div>
-            <div className="card-action" onClick={() => setActivePage('sop')}>Lihat semua →</div>
-          </div>
-          <div className="card-body">
-            {displayVideos.slice(0, 6).map((video) => (
-              <div key={video.id} className="video-item">
-                <div className="thumb" style={{ background: video.color }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" width="20" height="20">
-                    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
-                  </svg>
-                  <div className="play-over">
-                    <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        {/* LEFT COLUMN: Contains Video List and Bottom Grid */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* VIDEO LIST */}
+          <div className="card">
+            <div className="card-head">
+              <div className="card-title">Training & SOP Terbaru & Progress</div>
+              <div className="card-action" onClick={() => setActivePage('sop')}>Lihat semua →</div>
+            </div>
+            <div className="card-body">
+              {displayVideos.slice(0, 6).map((video) => (
+                <div key={video.id} className="video-item">
+                  <div className="thumb" style={{ background: video.color }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" width="20" height="20">
+                      <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                    </svg>
+                    <div className="play-over">
+                      <svg viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    </div>
                   </div>
-                </div>
-                <div className="video-info">
-                  <div className="video-title">{video.title}</div>
-                  <div className="video-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginTop: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                      <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
-                       {video.type === 'ppt' ? (
-                         <span style={{
-                           fontSize: '10px',
-                           fontWeight: '700',
-                           background: '#f3f4f6',
-                           color: '#4b5563',
-                           border: '1px solid #e5e7eb',
-                           padding: '1px 7px',
-                           borderRadius: '4px',
-                           display: 'inline-flex',
-                           alignItems: 'center',
-                           gap: '4px'
-                         }}>
-                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
-                             <line x1="18" y1="20" x2="18" y2="10" />
-                             <line x1="12" y1="20" x2="12" y2="4" />
-                             <line x1="6" y1="20" x2="6" y2="14" />
-                           </svg>
-                           {video.slideCount ? `${video.slideCount} slide` : (video.duration || '? slide')}
-                         </span>
-                       ) : (
-                         <span style={{
-                           fontSize: '10px',
-                           fontWeight: '700',
-                           background: '#f3f4f6',
-                           color: '#4b5563',
-                           border: '1px solid #e5e7eb',
-                           padding: '1px 7px',
-                           borderRadius: '4px',
-                           display: 'inline-flex',
-                           alignItems: 'center',
-                           gap: '4px'
-                         }}>
-                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
-                             <circle cx="12" cy="12" r="10" />
-                             <polyline points="12 6 12 12 16 14" />
-                           </svg>
-                           {video.duration}
-                         </span>
-                       )}
-                      {video.type === 'ppt' && video.narasiMode && video.narasiMode !== 'none' && (
-                         <span style={{
-                           display: 'inline-flex',
-                           alignItems: 'center',
-                           gap: '4px',
-                           fontSize: '10px',
-                           fontWeight: '700',
-                           color: '#7c3aed',
-                           background: '#f5f3ff',
-                           border: '1px solid #ddd6fe',
-                           padding: '1px 7px',
-                           borderRadius: '4px'
-                         }}>
-                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                             <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                             <line x1="12" y1="19" x2="12" y2="23"/>
-                             <line x1="8" y1="23" x2="16" y2="23"/>
-                           </svg>
-                           Narasi: {video.narasiMode}
-                         </span>
-                       )}
-                      {video.deadline && (() => {
-                        const today = new Date(); today.setHours(0,0,0,0);
-                        const dl = new Date(video.deadline);
-                        const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
-                        const dateStr = dl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                        const label = diff < 0 ? `Deadline terlewat · ${dateStr}` : diff === 0 ? `Deadline hari ini · ${dateStr}` : `Deadline ${diff} hari lagi · ${dateStr}`;
-                        const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
-                        const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
-                        const borderCol = diff < 0 ? '#fecaca' : diff <= 3 ? '#fde68a' : '#fed7aa';
-                        
-                        let icon;
-                        if (diff < 0) {
-                          icon = (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                              <line x1="12" y1="9" x2="12" y2="13"/>
-                              <line x1="12" y1="17" x2="12.01" y2="17"/>
-                            </svg>
+                  <div className="video-info">
+                    <div className="video-title">{video.title}</div>
+                    <div className="video-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginTop: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
+                         {video.type === 'ppt' ? (
+                           <span style={{
+                             fontSize: '10px',
+                             fontWeight: '700',
+                             background: '#f3f4f6',
+                             color: '#4b5563',
+                             border: '1px solid #e5e7eb',
+                             padding: '1px 7px',
+                             borderRadius: '4px',
+                             display: 'inline-flex',
+                             alignItems: 'center',
+                             gap: '4px'
+                           }}>
+                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
+                               <line x1="18" y1="20" x2="18" y2="10" />
+                               <line x1="12" y1="20" x2="12" y2="4" />
+                               <line x1="6" y1="20" x2="6" y2="14" />
+                             </svg>
+                             {video.slideCount ? `${video.slideCount} slide` : (video.duration || '? slide')}
+                           </span>
+                         ) : (
+                           <span style={{
+                             fontSize: '10px',
+                             fontWeight: '700',
+                             background: '#f3f4f6',
+                             color: '#4b5563',
+                             border: '1px solid #e5e7eb',
+                             padding: '1px 7px',
+                             borderRadius: '4px',
+                             display: 'inline-flex',
+                             alignItems: 'center',
+                             gap: '4px'
+                           }}>
+                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#6b7280', flexShrink: 0 }}>
+                               <circle cx="12" cy="12" r="10" />
+                               <polyline points="12 6 12 12 16 14" />
+                             </svg>
+                             {video.duration}
+                           </span>
+                         )}
+                        {video.type === 'ppt' && video.narasiMode && video.narasiMode !== 'none' && (
+                           <span style={{
+                             display: 'inline-flex',
+                             alignItems: 'center',
+                             gap: '4px',
+                             fontSize: '10px',
+                             fontWeight: '700',
+                             color: '#7c3aed',
+                             background: '#f5f3ff',
+                             border: '1px solid #ddd6fe',
+                             padding: '1px 7px',
+                             borderRadius: '4px'
+                           }}>
+                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                               <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                               <line x1="12" y1="19" x2="12" y2="23"/>
+                               <line x1="8" y1="23" x2="16" y2="23"/>
+                             </svg>
+                             Narasi: {video.narasiMode}
+                           </span>
+                         )}
+                        {video.deadline && (() => {
+                          const today = new Date(); today.setHours(0,0,0,0);
+                          const dl = new Date(video.deadline);
+                          const diff = Math.ceil((dl - today) / (1000 * 60 * 60 * 24));
+                          const dateStr = dl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                          const label = diff < 0 ? `Deadline terlewat · ${dateStr}` : diff === 0 ? `Deadline hari ini · ${dateStr}` : `Deadline ${diff} hari lagi · ${dateStr}`;
+                          const color = diff < 0 ? '#ef4444' : diff <= 3 ? '#d97706' : '#ea580c';
+                          const bg = diff < 0 ? '#fef2f2' : diff <= 3 ? '#fffbeb' : '#fff7ed';
+                          const borderCol = diff < 0 ? '#fecaca' : diff <= 3 ? '#fde68a' : '#fed7aa';
+                          
+                          let icon;
+                          if (diff < 0) {
+                            icon = (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                              </svg>
+                            );
+                          } else if (diff <= 3) {
+                            icon = (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                              </svg>
+                            );
+                          } else {
+                            icon = (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                              </svg>
+                            );
+                          }
+  
+                          return (
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '10px',
+                              fontWeight: '700',
+                              color,
+                              background: bg,
+                              border: `1px solid ${borderCol}`,
+                              padding: '1px 7px',
+                              borderRadius: '4px'
+                            }}>
+                              {icon}
+                              {label}
+                            </span>
                           );
-                        } else if (diff <= 3) {
-                          icon = (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                            </svg>
-                          );
-                        } else {
-                          icon = (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                              <line x1="16" y1="2" x2="16" y2="6"/>
-                              <line x1="8" y1="2" x2="8" y2="6"/>
-                              <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                          );
-                        }
-
+                        })()}
+                      </div>
+                      {(() => {
+                        const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
+                        const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
                         return (
-                          <span style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '10px',
-                            fontWeight: '700',
-                            color,
-                            background: bg,
-                            border: `1px solid ${borderCol}`,
-                            padding: '1px 7px',
-                            borderRadius: '4px'
-                          }}>
-                            {icon}
-                            {label}
-                          </span>
+                          <div style={{ fontSize: '11px', color: 'var(--text3)', whiteSpace: 'nowrap', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span>Diikuti oleh {deptEmps.length} karyawan</span>
+                            <span style={{ color: '#d1d5db' }}>|</span>
+                            <span style={{ color: '#16a34a', fontWeight: '700' }}>{lulus} Lulus</span>
+                          </div>
                         );
                       })()}
                     </div>
                     {(() => {
                       const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
                       const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
+                      const pct = deptEmps.length > 0 ? Math.round((lulus / deptEmps.length) * 100) : 0;
                       return (
-                        <div style={{ fontSize: '11px', color: 'var(--text3)', whiteSpace: 'nowrap', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          <span>Diikuti oleh {deptEmps.length} karyawan</span>
-                          <span style={{ color: '#d1d5db' }}>|</span>
-                          <span style={{ color: '#16a34a', fontWeight: '700' }}>{lulus} Lulus</span>
+                        <div className="prog-wrap" style={{ marginTop: '8px', width: '100%' }}>
+                          <div className="prog-bar">
+                            <div className="prog-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }}></div>
+                          </div>
+                          <div className="prog-pct">{pct}% Lulus</div>
                         </div>
                       );
                     })()}
                   </div>
-                  {(() => {
-                    const deptEmps = video.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === video.dept.toLowerCase());
-                    const lulus = quizSubmissions.filter(s => s.videoTitle === video.title && (s.postScore ?? 0) >= passingScore).length;
-                    const pct = deptEmps.length > 0 ? Math.round((lulus / deptEmps.length) * 100) : 0;
-                    return (
-                      <div className="prog-wrap" style={{ marginTop: '8px', width: '100%' }}>
-                        <div className="prog-bar">
-                          <div className="prog-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }}></div>
-                        </div>
-                        <div className="prog-pct">{pct}% Lulus</div>
+                </div>
+              ))}
+            </div>
+          </div>
+  
+          {/* BOTTOM GRID (Restructured inside Left Column) */}
+          <div className="bottom-grid">
+            {/* AKTIVITAS */}
+            <div className="card">
+              <div className="card-head">
+                <div className="card-title">Aktivitas Terkini</div>
+              </div>
+              <div className="card-body">
+                {displayActivities.slice(0, 5).map((act) => {
+                  const dots = { green: '#10b981', blue: '#2F7BFF', purple: '#8b5cf6', amber: '#f59e0b', cyan: '#06b6d4' };
+                  return (
+                    <div key={act.id} className="activity-item">
+                      <div className="act-dot" style={{ background: dots[act.type] || '#ccc' }}></div>
+                      <div>
+                        <div className="act-text" dangerouslySetInnerHTML={{ __html: act.text }}></div>
+                        <div className="act-time">{act.time}</div>
                       </div>
-                    );
-                  })()}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+  
+            {/* WEEKLY PROGRESS CHART */}
+            <div className="card">
+              <div className="card-head">
+                <div className="card-title">Materi SOP Dipelajari Minggu Ini</div>
+              </div>
+              <div className="chart-area">
+                <div className="chart-bars">
+                  <div className="bar-group">
+                    <div className="bar" style={{ height: '38px', background: '#dbeafe' }}></div>
+                    <div className="bar-label">Sen</div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar" style={{ height: '55px', background: '#93c5fd' }}></div>
+                    <div className="bar-label">Sel</div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar" style={{ height: '42px', background: '#93c5fd' }}></div>
+                    <div className="bar-label">Rab</div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar" style={{ height: '70px', background: '#3b82f6' }}></div>
+                    <div className="bar-label">Kam</div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar" style={{ height: '60px', background: '#2F7BFF' }}></div>
+                    <div className="bar-label">Jum</div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar" style={{ height: '28px', background: '#dbeafe' }}></div>
+                    <div className="bar-label">Sab</div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar" style={{ height: '18px', background: '#dbeafe' }}></div>
+                    <div className="bar-label">Min</div>
+                  </div>
+                </div>
+                 <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Total minggu ini</div>
+                    <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
+                      {isSupervisor ? 84 : 312} <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 400 }}>↑ 18%</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Avg/hari</div>
+                    <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
+                      {isSupervisor ? 12 : 44}
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
+  
+            {/* QUICK STATS */}
+            <div className="card">
+              <div className="card-head">
+                <div className="card-title">Ringkasan Pelatihan</div>
+              </div>
+              <div className="mini-stats">
+                <div className="mini-stat">
+                  <div className="mini-label">Wajib ditonton</div>
+                  <div className="mini-val">{isSupervisor ? displayVideos.length : 18}</div>
+                  <div className="mini-sub" style={{ color: 'var(--accent)', fontSize: '11px' }}>SOP aktif</div>
+                </div>
+                <div className="mini-stat">
+                  <div className="mini-label">Belum selesai</div>
+                  <div className="mini-val" style={{ color: 'var(--red)' }}>
+                    {isSupervisor ? displayEmployees.filter(e => e.score === 0).length : 54}
+                  </div>
+                  <div className="mini-sub" style={{ color: 'var(--red)', fontSize: '11px' }}>karyawan</div>
+                </div>
+                <div className="mini-stat">
+                  <div className="mini-label">Quiz lulus</div>
+                  <div className="mini-val">
+                    {isSupervisor ? displayEmployees.filter(e => e.score > 0).length : 186}
+                  </div>
+                  <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>
+                    {isSupervisor ? `dari ${displayEmployees.length}` : 'dari 248'}
+                  </div>
+                </div>
+                <div className="mini-stat">
+                  <div className="mini-label">Avg. skor quiz</div>
+                  <div className="mini-val">{isSupervisor ? 88 : 82}<span style={{ fontSize: '14px', fontWeight: 400 }}>%</span></div>
+                  <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>↑ baik</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -569,118 +684,6 @@ export const Dashboard = () => {
                   </div>
                 );
               })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* BOTTOM ROW */}
-      <div className="bottom-grid">
-        {/* AKTIVITAS */}
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Aktivitas Terkini</div>
-          </div>
-          <div className="card-body">
-            {displayActivities.slice(0, 5).map((act) => {
-              const dots = { green: '#10b981', blue: '#2F7BFF', purple: '#8b5cf6', amber: '#f59e0b', cyan: '#06b6d4' };
-              return (
-                <div key={act.id} className="activity-item">
-                  <div className="act-dot" style={{ background: dots[act.type] || '#ccc' }}></div>
-                  <div>
-                    <div className="act-text" dangerouslySetInnerHTML={{ __html: act.text }}></div>
-                    <div className="act-time">{act.time}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* WEEKLY PROGRESS CHART */}
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Materi SOP Dipelajari Minggu Ini</div>
-          </div>
-          <div className="chart-area">
-            <div className="chart-bars">
-              <div className="bar-group">
-                <div className="bar" style={{ height: '38px', background: '#dbeafe' }}></div>
-                <div className="bar-label">Sen</div>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '55px', background: '#93c5fd' }}></div>
-                <div className="bar-label">Sel</div>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '42px', background: '#93c5fd' }}></div>
-                <div className="bar-label">Rab</div>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '70px', background: '#3b82f6' }}></div>
-                <div className="bar-label">Kam</div>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '60px', background: '#2F7BFF' }}></div>
-                <div className="bar-label">Jum</div>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '28px', background: '#dbeafe' }}></div>
-                <div className="bar-label">Sab</div>
-              </div>
-              <div className="bar-group">
-                <div className="bar" style={{ height: '18px', background: '#dbeafe' }}></div>
-                <div className="bar-label">Min</div>
-              </div>
-            </div>
-             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Total minggu ini</div>
-                <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
-                  {isSupervisor ? 84 : 312} <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 400 }}>↑ 18%</span>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Avg/hari</div>
-                <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
-                  {isSupervisor ? 12 : 44}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* QUICK STATS */}
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Ringkasan Pelatihan</div>
-          </div>
-          <div className="mini-stats">
-            <div className="mini-stat">
-              <div className="mini-label">Wajib ditonton</div>
-              <div className="mini-val">{isSupervisor ? displayVideos.length : 18}</div>
-              <div className="mini-sub" style={{ color: 'var(--accent)', fontSize: '11px' }}>SOP aktif</div>
-            </div>
-            <div className="mini-stat">
-              <div className="mini-label">Belum selesai</div>
-              <div className="mini-val" style={{ color: 'var(--red)' }}>
-                {isSupervisor ? displayEmployees.filter(e => e.score === 0).length : 54}
-              </div>
-              <div className="mini-sub" style={{ color: 'var(--red)', fontSize: '11px' }}>karyawan</div>
-            </div>
-            <div className="mini-stat">
-              <div className="mini-label">Quiz lulus</div>
-              <div className="mini-val">
-                {isSupervisor ? displayEmployees.filter(e => e.score > 0).length : 186}
-              </div>
-              <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>
-                {isSupervisor ? `dari ${displayEmployees.length}` : 'dari 248'}
-              </div>
-            </div>
-            <div className="mini-stat">
-              <div className="mini-label">Avg. skor quiz</div>
-              <div className="mini-val">{isSupervisor ? 88 : 82}<span style={{ fontSize: '14px', fontWeight: 400 }}>%</span></div>
-              <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>↑ baik</div>
             </div>
           </div>
         </div>
