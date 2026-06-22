@@ -822,7 +822,6 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
             </div>
           </div>
         </div>
-      </div>
 
         {/* SIDE COLUMN */}
         <div className="side-col" style={{ position: 'sticky', top: '80px', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -1195,6 +1194,7 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
           </div>
         </div>
       </div>
+    </div>
 
     {/* EXPANDED FULLSCREEN MODAL FOR AXA ASSISTANT */}
     {isExpanded && (
