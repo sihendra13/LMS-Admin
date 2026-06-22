@@ -8,10 +8,29 @@ export const Dashboard = () => {
   const isSupervisor = currentUser.role !== 'admin';
 
   // Chat AXA Assistant state & logic
-  const [chatMessages, setChatMessages] = useState([
-    { id: 1, sender: 'ai', name: 'AXA', text: 'Halo Mohamad, saya telah menganalisis data minggu ini. Ada penurunan 12% pada departemen Marketing untuk penyelesaian SOP K3.', time: '09:41 AM' },
-    { id: 2, sender: 'user', name: currentUser ? currentUser.name.split(' ')[0] + '.' : 'Moh.', text: 'Bisa tunjukkan detail karyawan yang belum selesai?', time: '09:42 AM' }
-  ]);
+  const buildInitialMessage = () => {
+    const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const firstName = currentUser?.name?.split(' ')[0] || 'HR';
+    const totalLulus = quizSubmissions.filter(s => (s.postScore ?? 0) >= passingScore).length;
+    const depts = [...new Set(employees.map(e => e.dept))];
+    let lowestDept = null, lowestPct = 101;
+    depts.forEach(dept => {
+      const deptEmps = employees.filter(e => e.dept === dept);
+      if (deptEmps.length === 0) return;
+      const lulus = quizSubmissions.filter(s => deptEmps.some(e => e.name === s.employeeName) && (s.postScore ?? 0) >= passingScore).length;
+      const pct = Math.round((lulus / deptEmps.length) * 100);
+      if (pct < lowestPct) { lowestPct = pct; lowestDept = dept; }
+    });
+    let text = `Halo ${firstName}! `;
+    if (lowestDept && lowestPct < 80) {
+      text += `Saya menganalisis data training — departemen ${lowestDept} memiliki completion rate terendah saat ini (${lowestPct}%). Butuh analisis lebih lanjut?`;
+    } else {
+      text += `${totalLulus} dari ${quizSubmissions.length} quiz telah diselesaikan. Tanyakan apa saja tentang progress training tim Anda.`;
+    }
+    return [{ id: 1, sender: 'ai', name: 'AXA', text, time: now }];
+  };
+
+  const [chatMessages, setChatMessages] = useState(() => buildInitialMessage());
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
@@ -20,50 +39,81 @@ export const Dashboard = () => {
     ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
     : 'U';
 
-  // Scroll to bottom when chat messages update
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages, isTyping]);
 
-  const handleSendMessage = (text) => {
+  const buildGroqContext = () => {
+    const videoStats = videos.map(v => {
+      const deptEmps = v.dept === 'Semua' ? employees : employees.filter(e => e.dept.toLowerCase() === v.dept.toLowerCase());
+      const lulus = quizSubmissions.filter(s => s.videoTitle === v.title && (s.postScore ?? 0) >= passingScore).length;
+      return `  - "${v.title}" [${v.dept}]: ${lulus}/${deptEmps.length} lulus${v.deadline ? `, deadline: ${v.deadline}` : ''}`;
+    }).join('\n');
+
+    const deptStats = [...new Set(employees.map(e => e.dept))].map(dept => {
+      const deptEmps = employees.filter(e => e.dept === dept);
+      const lulus = quizSubmissions.filter(s => deptEmps.some(e => e.name === s.employeeName) && (s.postScore ?? 0) >= passingScore).length;
+      return `  - ${dept}: ${deptEmps.length} karyawan, ${lulus} lulus`;
+    }).join('\n');
+
+    const recentSubs = quizSubmissions.slice(-15).map(s =>
+      `  - ${s.employeeName}: "${s.videoTitle}" skor ${s.postScore ?? 'N/A'} → ${(s.postScore ?? 0) >= passingScore ? 'LULUS' : 'BELUM LULUS'}`
+    ).join('\n');
+
+    return `Perusahaan: ${tenant.name} | Passing score: ${passingScore} | Karyawan: ${employees.length} | Materi: ${videos.length}\n\nProgress per materi:\n${videoStats}\n\nStats departemen:\n${deptStats}\n\nSubmisi terbaru:\n${recentSubs}`;
+  };
+
+  const handleSendMessage = async (text) => {
     if (!text.trim()) return;
     const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     const userShortName = currentUser ? currentUser.name.split(' ')[0] + '.' : 'User';
-    
-    const userMsg = {
-      id: Date.now(),
-      sender: 'user',
-      name: userShortName,
-      text: text,
-      time: now
-    };
+
+    const userMsg = { id: Date.now(), sender: 'user', name: userShortName, text, time: now };
     setChatMessages(prev => [...prev, userMsg]);
     setChatInput('');
     setIsTyping(true);
 
-    // Simulate AI reply
-    setTimeout(() => {
-      let replyText = 'Tentu! Berikut beberapa analisis terkait data training karyawan Anda.';
-      if (text.toLowerCase().includes('progres') || text.toLowerCase().includes('progress')) {
-        replyText = 'Rata-rata progres training minggu ini mencapai 78%. Departemen CS memimpin dengan tingkat penyelesaian 94%.';
-      } else if (text.toLowerCase().includes('laporan') || text.toLowerCase().includes('mingguan')) {
-        replyText = 'Laporan mingguan menunjukkan peningkatan penyelesaian kuis sebesar 8%. Namun, departemen Marketing masih memerlukan perhatian khusus.';
-      } else if (text.toLowerCase().includes('karyawan') || text.toLowerCase().includes('belum selesai')) {
-        replyText = 'Berikut daftar karyawan departemen Marketing yang belum menyelesaikan SOP K3: Budi Santoso (progres 20%) dan Siti Aminah (progres 35%).';
-      }
-      
-      const aiMsg = {
-        id: Date.now() + 1,
-        sender: 'ai',
-        name: 'AXA',
-        text: replyText,
+    try {
+      const systemPrompt = `Kamu adalah AXA, AI Assistant untuk platform LMS Axara milik ${tenant.name}. Kamu membantu HR Manager menganalisis data training karyawan.\n\nGunakan data nyata berikut sebagai referensi utama:\n${buildGroqContext()}\n\nInstruksi:\n- Jawab dalam Bahasa Indonesia yang profesional tapi ramah\n- Gunakan angka dari data di atas, bukan asumsi\n- Jawaban ringkas dan to-the-point (3-4 kalimat)\n- Jika data tidak tersedia, katakan dengan jujur`;
+
+      const history = chatMessages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
+      }));
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant',
+          messages: [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: text }],
+          max_tokens: 400,
+          temperature: 0.5
+        })
+      });
+
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      const replyText = data.choices[0].message.content;
+
+      setChatMessages(prev => [...prev, {
+        id: Date.now() + 1, sender: 'ai', name: 'AXA', text: replyText,
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-      };
-      setChatMessages(prev => [...prev, aiMsg]);
+      }]);
+    } catch {
+      setChatMessages(prev => [...prev, {
+        id: Date.now() + 1, sender: 'ai', name: 'AXA',
+        text: 'Maaf, saya sedang tidak bisa terhubung. Silakan coba lagi.',
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      }]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   // Filter employees and videos by department for supervisor
