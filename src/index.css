@@ -347,7 +347,16 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
 .video-views { font-size: 11px; color: var(--text3); white-space: nowrap; }
 
 /* SIDE PANELS */
-.side-col { display: flex; flex-direction: column; gap: 14px; }
+.side-col {
+  display: flex; flex-direction: column; gap: 14px;
+  position: fixed;
+  top: 84px;
+  right: 28px;
+  width: 360px;
+  max-height: calc(100vh - 112px);
+  overflow-y: auto;
+  z-index: 10;
+}
 
 /* DEPT COMPLETION */
 .dept-item {
