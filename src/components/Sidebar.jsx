@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTenant } from '../context/TenantContext';
 import { PLANS, canUploadSOP } from '../utils/featureGates';
-import { AIInsightsPanel } from './AIInsightsPanel';
 
 export const Sidebar = ({ onLogout }) => {
   const { tenant, activePage, setActivePage, videos, currentUser, quizSubmissions } = useTenant();
@@ -104,11 +103,6 @@ export const Sidebar = ({ onLogout }) => {
           Pengaturan
         </a>
       </nav>
-
-      {/* ✨ AI INSIGHTS PANEL — ditambahkan di sini, tidak mengubah apapun di atas */}
-      <div style={{ flexShrink: 0 }}>
-        <AIInsightsPanel />
-      </div>
 
       {/* LOGOUT + BRANDING */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '12px 16px', flexShrink: 0, marginTop: 'auto' }}>

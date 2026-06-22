@@ -1,11 +1,33 @@
 import React, { useState } from 'react';
+import { supabase } from '../utils/supabase';
 
 export const LoginPage = ({ onLogin }) => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!form.email) { setError('Masukkan email terlebih dahulu.'); return; }
+    setForgotLoading(true);
+    setError('');
+    try {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(form.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (err) throw err;
+      setForgotSuccess(true);
+    } catch (err) {
+      setError(err.message || 'Gagal mengirim email reset.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,69 +63,106 @@ export const LoginPage = ({ onLogin }) => {
         <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
         <p style={styles.subheading}>Silakan masukkan email corporate dan password Anda</p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.field}>
-            <label style={styles.label}>EMAIL CORPORATE</label>
-            <input
-              type="email"
-              placeholder="email@perusahaan.com"
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
-              style={styles.input}
-              required
-            />
+        {forgotSuccess ? (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '40px', marginBottom: '16px' }}>📧</div>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>Email Terkirim!</div>
+            <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>
+              Link reset password sudah dikirim ke <strong>{form.email}</strong>. Cek inbox atau folder spam Anda.
+            </div>
+            <button onClick={() => { setForgotSuccess(false); setForgotMode(false); }} style={styles.btn}>
+              Kembali ke Login
+            </button>
           </div>
-
-          <div style={styles.field}>
-            <label style={styles.label}>PASSWORD</label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        ) : forgotMode ? (
+          <form onSubmit={handleForgotPassword} style={styles.form}>
+            <div style={styles.field}>
+              <label style={styles.label}>EMAIL CORPORATE</label>
               <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={form.password}
-                onChange={e => setForm({ ...form, password: e.target.value })}
-                style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
+                type="email"
+                placeholder="email@perusahaan.com"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                style={styles.input}
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#64748b',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '4px'
-                }}
-              >
-                {showPassword ? (
-                  // Eye Slash Icon
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                    <line x1="1" y1="1" x2="23" y2="23"></line>
-                  </svg>
-                ) : (
-                  // Eye Icon
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                )}
-              </button>
             </div>
-          </div>
+            {error && <div style={styles.error}>{error}</div>}
+            <button type="submit" style={{ ...styles.btn, opacity: forgotLoading ? 0.7 : 1 }} disabled={forgotLoading}>
+              {forgotLoading ? 'Mengirim...' : 'Kirim Link Reset Password'}
+            </button>
+            <button type="button" onClick={() => { setForgotMode(false); setError(''); }} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer', textAlign: 'center', marginTop: '4px' }}>
+              Kembali ke Login
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.field}>
+              <label style={styles.label}>EMAIL CORPORATE</label>
+              <input
+                type="email"
+                placeholder="email@perusahaan.com"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                style={styles.input}
+                required
+              />
+            </div>
 
-          {error && <div style={styles.error}>{error}</div>}
+            <div style={styles.field}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={styles.label}>PASSWORD</label>
+                <button type="button" onClick={() => { setForgotMode(true); setError(''); }} style={{ background: 'none', border: 'none', color: '#002D72', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}>
+                  Lupa Password?
+                </button>
+              </div>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px'
+                  }}
+                >
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
 
-          <button type="submit" style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
-            {loading ? 'Memproses Masuk...' : 'Masuk Sekarang'}
-          </button>
-        </form>
+            {error && <div style={styles.error}>{error}</div>}
+
+            <button type="submit" style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
+              {loading ? 'Memproses Masuk...' : 'Masuk Sekarang'}
+            </button>
+          </form>
+        )}
 
         <div style={styles.footer}>
           Belum memiliki akses? Silakan hubungi Administrator HRD perusahaan Anda untuk pendaftaran akun baru.
