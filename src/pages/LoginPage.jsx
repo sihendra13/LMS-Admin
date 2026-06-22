@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase';
 export const LoginPage = ({ onLogin }) => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [slowWarning, setSlowWarning] = useState(false);
   const [error, setError] = useState('');
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState(false);
@@ -33,14 +34,22 @@ export const LoginPage = ({ onLogin }) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setSlowWarning(false);
+
+    const slowTimer = setTimeout(() => setSlowWarning(true), 4000);
 
     try {
       const BASE_URL = import.meta.env.VITE_API_URL || 'https://axara-lms-backend.onrender.com';
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+
       const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email, password: form.password }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login gagal');
@@ -51,9 +60,15 @@ export const LoginPage = ({ onLogin }) => {
 
       onLogin(data.user);
     } catch (err) {
-      setError(err.message);
+      if (err.name === 'AbortError') {
+        setError('Server tidak merespons. Silakan coba lagi.');
+      } else {
+        setError(err.message);
+      }
     } finally {
+      clearTimeout(slowTimer);
       setLoading(false);
+      setSlowWarning(false);
     }
   };
 
@@ -161,6 +176,11 @@ export const LoginPage = ({ onLogin }) => {
             <button type="submit" style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
               {loading ? 'Memproses Masuk...' : 'Masuk Sekarang'}
             </button>
+            {slowWarning && (
+              <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginTop: '-8px', lineHeight: '1.5' }}>
+                Server sedang menyala, mohon tunggu sebentar...
+              </div>
+            )}
           </form>
         )}
 
