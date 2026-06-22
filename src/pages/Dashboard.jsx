@@ -38,6 +38,7 @@ export const Dashboard = () => {
   const chatEndRef = useRef(null);
   const textareaRef = useRef(null);
   const expTextareaRef = useRef(null);
+  const menuRef = useRef(null);
 
   // Auto-resize textarea height
   const adjustHeight = (el) => {
@@ -55,6 +56,20 @@ export const Dashboard = () => {
       setTimeout(() => adjustHeight(expTextareaRef.current), 100);
     }
   }, [isExpanded, chatInput]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   useEffect(() => {
     if (chatEndRef.current) {
@@ -595,10 +610,12 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
                 </button>
 
                 {showMenu && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '28px',
-                    right: '0',
+                  <div
+                    ref={menuRef}
+                    style={{
+                      position: 'absolute',
+                      top: '28px',
+                      right: '0',
                     background: '#ffffff',
                     border: '1px solid var(--border)',
                     borderRadius: '8px',
