@@ -169,7 +169,10 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
         })
       });
 
-      if (!res.ok) throw new Error('API error');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(`${res.status}: ${errData.error?.message || 'API error'}`);
+      }
       const data = await res.json();
       const replyText = data.choices[0].message.content;
 
@@ -177,10 +180,14 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
         id: Date.now() + 1, sender: 'ai', name: 'AXA', text: replyText,
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
       }]);
-    } catch {
+    } catch (err) {
+      const msg = !import.meta.env.VITE_GROQ_API_KEY
+        ? 'API key tidak ditemukan. Hubungi administrator.'
+        : 'Maaf, saya sedang tidak bisa terhubung. Silakan coba lagi.';
+      console.error('[AXA]', err?.message);
       setChatMessages(prev => [...prev, {
         id: Date.now() + 1, sender: 'ai', name: 'AXA',
-        text: 'Maaf, saya sedang tidak bisa terhubung. Silakan coba lagi.',
+        text: msg,
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
       }]);
     } finally {
@@ -549,6 +556,7 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
                   <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>↑ baik</div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
