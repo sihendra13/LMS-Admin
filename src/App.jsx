@@ -21,6 +21,11 @@ import { ReviewSertifikat } from './pages/ReviewSertifikat';
 
 const AppContent = ({ onLogout }) => {
   const { activePage } = useTenant();
+  const mainRef = React.useRef(null);
+
+  useEffect(() => {
+    if (mainRef.current) mainRef.current.scrollTop = 0;
+  }, [activePage]);
 
   const renderActivePage = () => {
     switch (activePage) {
@@ -43,7 +48,7 @@ const AppContent = ({ onLogout }) => {
   return (
     <>
       <Sidebar onLogout={onLogout} />
-      <main className="main">
+      <main className="main" ref={mainRef}>
         <Topbar />
         {renderActivePage()}
       </main>
