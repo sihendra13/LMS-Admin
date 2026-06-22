@@ -83,7 +83,11 @@ Selalu gunakan data nyata dari sistem, bukan data contoh.
 Saat merekomendasikan materi training untuk departemen tertentu,
 prioritaskan SOP yang relevan dengan pekerjaan departemen tersebut.
 Ingat selalu konteks percakapan sebelumnya dan jangan rekomendasikan
-ulang materi yang sudah disebutkan di percakapan yang sama.`;
+ulang materi yang sudah disebutkan di percakapan yang sama.
+
+Jangan selalu mengakhiri jawaban dengan pertanyaan balik.
+Cukup berikan jawaban yang lengkap dan actionable.
+Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
 
       const history = chatMessages.map(m => ({
         role: m.sender === 'user' ? 'user' : 'assistant',
@@ -488,9 +492,9 @@ ulang materi yang sudah disebutkan di percakapan yang sama.`;
         </div>
 
         {/* SIDE COLUMN */}
-        <div className="side-col">
-          {/* AXA ASSISTANT CARD (Sticky) */}
-          <div className="card axa-card-glow" style={{ overflow: 'visible', position: 'sticky', top: '78px', zIndex: 10 }}>
+        <div className="side-col" style={{ position: 'sticky', top: '78px', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* AXA ASSISTANT CARD */}
+          <div className="card axa-card-glow" style={{ overflow: 'visible' }}>
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
