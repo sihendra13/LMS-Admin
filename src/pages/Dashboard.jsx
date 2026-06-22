@@ -33,17 +33,38 @@ export const Dashboard = () => {
   const [chatMessages, setChatMessages] = useState(() => buildInitialMessage());
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const chatEndRef = useRef(null);
+  const textareaRef = useRef(null);
+  const expTextareaRef = useRef(null);
 
-  const userInitial = currentUser && currentUser.name
-    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
-    : 'U';
+  // Auto-resize textarea height
+  const adjustHeight = (el) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  };
+
+  useEffect(() => {
+    adjustHeight(textareaRef.current);
+  }, [chatInput]);
+
+  useEffect(() => {
+    if (isExpanded) {
+      setTimeout(() => adjustHeight(expTextareaRef.current), 100);
+    }
+  }, [isExpanded]);
 
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [chatMessages, isTyping]);
+  }, [chatMessages, isTyping, isExpanded]);
+
+  const userInitial = currentUser && currentUser.name
+    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+    : 'U';
 
   const parseBold = (text) => {
     const parts = text.split(/\*\*(.*?)\*\*/g);
@@ -174,7 +195,8 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
   const employeeLimit = getEmployeeLimit(tenant.plan);
 
   return (
-    <div className="content">
+    <>
+      <div className="content">
       {/* STATS ROW */}
       <div className="stats-grid">
         <div className="stat-card blue">
@@ -546,11 +568,104 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
                   </div>
                 </div>
               </div>
-              <button style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />
-                </svg>
-              </button>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(true)}
+                  title="Perbesar Layar"
+                  style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--accent)'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--text3)'}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMenu(!showMenu)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--text1)'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--text3)'}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />
+                  </svg>
+                </button>
+
+                {showMenu && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '28px',
+                    right: '0',
+                    background: '#ffffff',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    zIndex: 999,
+                    width: '150px',
+                    padding: '4px 0'
+                  }}>
+                    <button
+                      onClick={() => {
+                        setChatMessages([{
+                          id: Date.now(),
+                          sender: 'ai',
+                          name: 'AXA',
+                          text: 'Obrolan telah dibersihkan. Ada yang bisa saya bantu analisis kembali?',
+                          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                        }]);
+                        setShowMenu(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        textAlign: 'left',
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '12px',
+                        color: 'var(--red)',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = '#fef2f2'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      Bersihkan Chat
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsExpanded(true);
+                        setShowMenu(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        textAlign: 'left',
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '12px',
+                        color: 'var(--text1)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--surface2)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                      Layar Penuh
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="chat-container">
@@ -635,20 +750,38 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
             <form
               onSubmit={(e) => { e.preventDefault(); handleSendMessage(chatInput); }}
               className="chat-input-container"
+              style={{ alignItems: 'flex-end' }}
             >
               <div className="chat-input-wrapper">
-                <input
-                  type="text"
+                <textarea
+                  ref={textareaRef}
                   placeholder="Tanya sesuatu..."
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(chatInput);
+                    }
+                  }}
+                  rows="1"
                   className="chat-input"
+                  style={{
+                    resize: 'none',
+                    height: '36px',
+                    maxHeight: '120px',
+                    borderRadius: '18px',
+                    padding: '8px 14px',
+                    lineHeight: '1.4',
+                    overflowY: 'auto'
+                  }}
                 />
               </div>
               <button
                 type="submit"
                 className="chat-send-btn"
                 title="Kirim pesan"
+                style={{ marginBottom: '2px' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(45deg)' }}>
                   <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
@@ -775,5 +908,210 @@ Pertanyaan balik hanya perlu kalau memang butuh klarifikasi.`;
         </div>
       </div>
     </div>
+
+    {/* EXPANDED FULLSCREEN MODAL FOR AXA ASSISTANT */}
+    {isExpanded && (
+      <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15, 23, 42, 0.45)',
+          backdropFilter: 'blur(4px)',
+          webkitBackdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}>
+          <div className="card axa-card-glow" style={{
+            width: '800px',
+            maxWidth: '90vw',
+            height: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+          }}>
+            {/* Modal Header */}
+            <div className="card-head" style={{ borderBottom: '1px solid var(--border)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ffffff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #a78bfa, var(--accent))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white'
+                }}>
+                  <svg className="axa-sparkle-pulse" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="none">
+                    <path fill="white" stroke="none" d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>AXA Assistant — Jendela Penuh</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
+                    <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: '600' }}>Aktif & Terhubung</span>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setIsExpanded(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#9ca3af',
+                  padding: '6px',
+                  borderRadius: '50%',
+                  transition: 'background 0.2s, color 0.2s'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--surface2)'; e.currentTarget.style.color = 'var(--text1)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#9ca3af'; }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body: Chat History Container */}
+            <div className="chat-container" style={{ flex: 1, height: 'auto', margin: '0', padding: '24px', background: '#f8fafc', overflowY: 'auto' }}>
+              <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {chatMessages.map((msg) => (
+                  <div key={msg.id} className={`chat-bubble-wrapper ${msg.sender}`} style={{ gap: '6px', maxWidth: '85%' }}>
+                    <div className={`chat-bubble chat-bubble-${msg.sender}`} style={{ padding: '12px 18px', fontSize: '13px', borderRadius: '16px' }}>
+                      {msg.sender === 'ai' ? renderMarkdown(msg.text) : msg.text}
+                    </div>
+                    <div style={{
+                      fontSize: '10px',
+                      color: 'var(--text3)',
+                      marginTop: '2px',
+                      textAlign: msg.sender === 'ai' ? 'left' : 'right',
+                      width: '100%',
+                      padding: '0 6px',
+                      fontWeight: '500'
+                    }}>
+                      {msg.time}
+                    </div>
+                  </div>
+                ))}
+                {isTyping && (
+                  <div className="typing-indicator" style={{ background: '#ffffff', border: '1px solid var(--border)' }}>
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+            </div>
+
+            {/* Modal Footer: Suggestion & Chat Input Area */}
+            <div style={{ borderTop: '1px solid var(--border)', background: '#ffffff', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ maxWidth: '720px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', marginRight: '4px' }}>SARAN ANALISIS:</span>
+                  <button
+                    onClick={() => handleSendMessage('Analisis Progres')}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      border: '1px solid var(--border)',
+                      background: '#ffffff',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: 'var(--text2)',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = 'var(--accent)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.color = 'var(--text2)'; }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    Analisis Progres
+                  </button>
+                  <button
+                    onClick={() => handleSendMessage('Laporan Mingguan')}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      border: '1px solid var(--border)',
+                      background: '#ffffff',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: 'var(--text2)',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = '#eff6ff'; e.currentTarget.style.color = 'var(--accent)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.color = 'var(--text2)'; }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Laporan Mingguan
+                  </button>
+                </div>
+
+                <form
+                  onSubmit={(e) => { e.preventDefault(); handleSendMessage(chatInput); }}
+                  className="chat-input-container"
+                  style={{ padding: '0', borderTop: 'none', alignItems: 'flex-end', gap: '12px' }}
+                >
+                  <div className="chat-input-wrapper">
+                    <textarea
+                      ref={expTextareaRef}
+                      placeholder="Tanya sesuatu..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage(chatInput);
+                        }
+                      }}
+                      rows="1"
+                      className="chat-input"
+                      style={{
+                        resize: 'none',
+                        height: '42px',
+                        maxHeight: '120px',
+                        borderRadius: '20px',
+                        padding: '10px 16px',
+                        lineHeight: '1.45',
+                        overflowY: 'auto',
+                        fontSize: '13.5px'
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="chat-send-btn"
+                    title="Kirim pesan"
+                    style={{ width: '38px', height: '38px', marginBottom: '2px' }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(45deg)' }}>
+                      <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
