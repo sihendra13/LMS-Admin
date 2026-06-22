@@ -354,36 +354,20 @@ export const Dashboard = () => {
 
             <div className="chat-container">
               {chatMessages.map((msg) => (
-                <div key={msg.id} className={`chat-bubble-wrapper ${msg.sender}`}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', alignSelf: msg.sender === 'ai' ? 'flex-start' : 'flex-end' }}>
-                    {msg.sender === 'ai' ? (
-                      <div style={{ width: '18px', height: '18px', borderRadius: '4px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #dbeafe' }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5">
-                          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                        </svg>
-                      </div>
-                    ) : (
-                      <div style={{
-                        width: '18px',
-                        height: '18px',
-                        borderRadius: '50%',
-                        background: '#e2e8f0',
-                        color: '#475569',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '9px',
-                        fontWeight: '750',
-                        border: '1px solid #cbd5e1'
-                      }}>
-                        {userInitial}
-                      </div>
-                    )}
-                    <span className="chat-avatar-label">{msg.name}</span>
-                  </div>
+                <div key={msg.id} className={`chat-bubble-wrapper ${msg.sender}`} style={{ gap: '4px' }}>
                   <div className={`chat-bubble chat-bubble-${msg.sender}`}>
                     {msg.text}
-                    <span className="chat-time">{msg.time}</span>
+                  </div>
+                  <div style={{
+                    fontSize: '9px',
+                    color: 'var(--text3)',
+                    marginTop: '2px',
+                    textAlign: msg.sender === 'ai' ? 'left' : 'right',
+                    width: '100%',
+                    padding: '0 4px',
+                    fontWeight: '500'
+                  }}>
+                    {msg.time}
                   </div>
                 </div>
               ))}
@@ -459,14 +443,6 @@ export const Dashboard = () => {
                   onChange={(e) => setChatInput(e.target.value)}
                   className="chat-input"
                 />
-                <div className="chat-input-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    <line x1="12" y1="19" x2="12" y2="23"/>
-                    <line x1="8" y1="23" x2="16" y2="23"/>
-                  </svg>
-                </div>
               </div>
               <button
                 type="submit"
