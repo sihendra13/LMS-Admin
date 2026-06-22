@@ -11,22 +11,57 @@ export const Dashboard = () => {
   const buildInitialMessage = () => {
     const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     const firstName = currentUser?.name?.split(' ')[0] || 'HR';
+    
+    // 1. Dapatkan waktu sapaan secara dinamis (pagi/siang/sore/malam)
+    const hour = new Date().getHours();
+    const waktu = hour < 11 ? 'pagi' : hour < 15 ? 'siang' : hour < 18 ? 'sore' : 'malam';
+
+    // 2. Hitung rata-rata progres training keseluruhan secara dinamis (lulus vs total kuis wajib)
     const totalLulus = quizSubmissions.filter(s => (s.postScore ?? 0) >= passingScore).length;
+    const totalWajib = employees.length * videos.length;
+    const avgProgress = totalWajib > 0 ? Math.round((totalLulus / totalWajib) * 100) : 0;
+
+    // 3. Cari divisi tertinggi & terendah secara real
     const depts = [...new Set(employees.map(e => e.dept))];
     let lowestDept = null, lowestPct = 101;
+    let highestDept = null, highestPct = -1;
+
     depts.forEach(dept => {
       const deptEmps = employees.filter(e => e.dept === dept);
       if (deptEmps.length === 0) return;
-      const lulus = quizSubmissions.filter(s => deptEmps.some(e => e.name === s.employeeName) && (s.postScore ?? 0) >= passingScore).length;
+      const lulus = quizSubmissions.filter(s => 
+        deptEmps.some(e => e.name === s.employeeName) && (s.postScore ?? 0) >= passingScore
+      ).length;
       const pct = Math.round((lulus / deptEmps.length) * 100);
+      
       if (pct < lowestPct) { lowestPct = pct; lowestDept = dept; }
+      if (pct > highestPct) { highestPct = pct; highestDept = dept; }
     });
-    let text = `Halo ${firstName}! `;
-    if (lowestDept && lowestPct < 80) {
-      text += `Saya menganalisis data training — departemen ${lowestDept} memiliki completion rate terendah saat ini (${lowestPct}%). Butuh analisis lebih lanjut?`;
-    } else {
-      text += `${totalLulus} dari ${quizSubmissions.length} quiz telah diselesaikan. Tanyakan apa saja tentang progress training tim Anda.`;
+
+    // 4. Susun pesan ramah & informatif sesuai pilihan
+    let text = `Halo ${firstName}! Selamat ${waktu}.\n\n`;
+    text += `Progres **Training** secara keseluruhan berada di angka **${avgProgress}%**. Sebagian besar divisi menunjukkan performa baik`;
+    
+    if (highestDept && highestPct >= 0) {
+      text += `, dipimpin oleh **${highestDept} (${highestPct}%)**`;
     }
+    
+    if (lowestDept && lowestPct < 101) {
+      if (lowestPct === 0) {
+        text += `, sedangkan divisi **${lowestDept}** masih berada di angka **0%**.\n\n`;
+      } else {
+        text += `, sedangkan divisi **${lowestDept}** berada di angka terendah yaitu **${lowestPct}%**.\n\n`;
+      }
+    } else {
+      text += `.\n\n`;
+    }
+
+    text += `Anda bisa menanyakan hal seperti:\n\n`;
+    text += `* *'Mengapa progres ${lowestDept || 'Sales'} masih ${lowestPct === 101 ? 0 : lowestPct}%?'*\n`;
+    text += `* *'Buatkan soal kuis baru untuk SOP Customer Service'*\n`;
+    text += `* *'Tampilkan daftar karyawan yang belum lulus kuis'*\n\n`;
+    text += `Apa yang bisa saya bantu analisis hari ini?`;
+
     return [{ id: 1, sender: 'ai', name: 'AXA', text, time: now }];
   };
 
@@ -115,6 +150,253 @@ export const Dashboard = () => {
     setChatMessages(prev => [...prev, userMsg]);
     setChatInput('');
     setIsTyping(true);
+
+    const greetingPattern = /^(halo|hai|hello|hi|selamat\s+(pagi|siang|sore|malam)|pagi|siang|sore|malam)[!.,\s]*$/i;
+    if (greetingPattern.test(text.trim())) {
+      const hour = new Date().getHours();
+      const waktu = hour < 11 ? 'pagi' : hour < 15 ? 'siang' : hour < 18 ? 'sore' : 'malam';
+      setChatMessages(prev => [...prev, {
+        id: Date.now() + 1, sender: 'ai', name: 'AXA',
+        text: `Selamat ${waktu}! Ada yang bisa saya bantu?`,
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      }]);
+      setIsTyping(false);
+      return;
+    }
+
+    const parseSecs = d => {
+      if (!d) return 0;
+      const m = String(d).match(/(\d+)m|(\d+)s|(\d+):(\d+)/);
+      if (!m) return parseInt(d) || 0;
+      if (m[4] !== undefined) return parseInt(m[3]) * 60 + parseInt(m[4]);
+      return m[1] ? parseInt(m[1]) * 60 : parseInt(m[2]);
+    };
+    const fmtDur = s => s >= 60 ? `${Math.floor(s/60)} menit ${s%60} detik` : `${s} detik`;
+
+    const clientAnswer = (() => {
+      const q = text.toLowerCase().trim();
+      const passedSet = new Set(quizSubmissions.filter(s => (s.postScore ?? 0) >= passingScore).map(s => s.employeeName));
+      const failedSet = new Set(quizSubmissions.filter(s => (s.postScore ?? 0) < passingScore).map(s => s.employeeName));
+      const depts = [...new Set(employees.map(e => e.dept))];
+      const mentionedDept = depts.find(d => q.includes(d.toLowerCase()));
+      const mentionedEmp = employees.find(e => e.name.split(' ').some(part => part.length > 2 && q.includes(part.toLowerCase())));
+
+      // 1. Jumlah karyawan
+      if (/berapa (banyak |jumlah )?(total |semua )?karyawan/.test(q) || /jumlah karyawan/.test(q)) {
+        if (mentionedDept) {
+          const n = employees.filter(e => e.dept === mentionedDept).length;
+          return `Divisi **${mentionedDept}** memiliki **${n} karyawan**.`;
+        }
+        return `Total karyawan terdaftar di LMS: **${employees.length} orang**.`;
+      }
+
+      // 2. Daftar karyawan per dept
+      if ((/daftar|siapa saja|list/i.test(q)) && (/karyawan|anggota|tim/i.test(q)) && mentionedDept) {
+        const list = employees.filter(e => e.dept === mentionedDept).map((e,i) => `${i+1}. ${e.name} (${e.role})`).join('\n');
+        return `Karyawan divisi **${mentionedDept}** (${employees.filter(e=>e.dept===mentionedDept).length} orang):\n${list}`;
+      }
+
+      // 3. Karyawan belum lulus quiz
+      if (/belum lulus|tidak lulus|gagal (quiz|kuis)/.test(q) || /(quiz|kuis) belum/.test(q)) {
+        const scope = mentionedDept
+          ? employees.filter(e => e.dept === mentionedDept && !passedSet.has(e.name))
+          : employees.filter(e => !passedSet.has(e.name));
+        if (scope.length === 0) return mentionedDept
+          ? `Semua karyawan divisi **${mentionedDept}** sudah lulus quiz.`
+          : 'Semua karyawan sudah lulus quiz.';
+        const label = mentionedDept ? `divisi **${mentionedDept}**` : 'semua divisi';
+        return `Karyawan yang belum lulus quiz (${label}): **${scope.length} orang**\n` +
+          scope.slice(0, 15).map((e,i) => `${i+1}. ${e.name} — ${e.dept}`).join('\n') +
+          (scope.length > 15 ? `\n...dan ${scope.length - 15} lainnya.` : '');
+      }
+
+      // 4. Karyawan sudah lulus quiz
+      if (/sudah lulus|telah lulus/.test(q) && /(quiz|kuis)/.test(q)) {
+        const scope = mentionedDept
+          ? employees.filter(e => e.dept === mentionedDept && passedSet.has(e.name))
+          : employees.filter(e => passedSet.has(e.name));
+        const label = mentionedDept ? `divisi **${mentionedDept}**` : 'semua divisi';
+        return `Karyawan yang sudah lulus quiz (${label}): **${scope.length} orang** dari ${mentionedDept ? employees.filter(e=>e.dept===mentionedDept).length : employees.length}.`;
+      }
+
+      // 5. Nilai/skor karyawan tertentu
+      if (mentionedEmp && /(nilai|skor|hasil|score|lulus|gagal)/.test(q)) {
+        const sub = quizSubmissions.filter(s => s.employeeName === mentionedEmp.name);
+        if (sub.length === 0) return `**${mentionedEmp.name}** belum mengikuti kuis apapun.`;
+        const lines = sub.map(s => {
+          const status = (s.postScore ?? 0) >= passingScore ? '✅ Lulus' : '❌ Belum lulus';
+          return `• ${s.videoTitle}: skor **${s.postScore ?? '-'}** — ${status}`;
+        }).join('\n');
+        return `Hasil kuis **${mentionedEmp.name}** (${mentionedEmp.dept}):\n${lines}`;
+      }
+
+      // 6. Info karyawan tertentu
+      if (mentionedEmp && /(siapa|info|profil|data|divisi|jabatan|email|departemen)/.test(q)) {
+        const e = mentionedEmp;
+        return `**${e.name}**\n• Divisi: ${e.dept}\n• Jabatan: ${e.role}\n• Email: ${e.email}`;
+      }
+
+      // 7. Jumlah video/SOP
+      if (/berapa (banyak |jumlah )?(total |semua )?(video|sop|materi)/.test(q) || /jumlah (video|sop|materi)/.test(q)) {
+        if (mentionedDept) {
+          const n = videos.filter(v => v.dept === mentionedDept || v.dept === 'Semua').length;
+          return `Video SOP untuk divisi **${mentionedDept}**: **${n} materi**.`;
+        }
+        return `Total video SOP tersedia: **${videos.length} materi**.`;
+      }
+
+      // 8. Daftar video/SOP
+      if ((/daftar|list|apa saja/).test(q) && (/video|sop|materi/).test(q)) {
+        const scope = mentionedDept ? videos.filter(v => v.dept === mentionedDept || v.dept === 'Semua') : videos;
+        const label = mentionedDept ? `divisi **${mentionedDept}**` : 'semua divisi';
+        return `Daftar materi SOP (${label}): **${scope.length} video**\n` +
+          scope.slice(0, 10).map((v,i) => `${i+1}. ${v.title} (${fmtDur(parseSecs(v.duration))})`).join('\n') +
+          (scope.length > 10 ? `\n...dan ${scope.length - 10} lainnya.` : '');
+      }
+
+      // 9. Passing score
+      if (/(passing score|nilai kelulusan|batas lulus|skor minimal|standar lulus)/.test(q)) {
+        return `Passing score yang ditetapkan adalah **${passingScore}%**. Karyawan harus mencapai nilai minimal ini untuk dinyatakan lulus kuis.`;
+      }
+
+      // 10. Completion rate
+      if (/(completion rate|persentase lulus|tingkat kelulusan|persentase kelulusan)/.test(q)) {
+        const scope = mentionedDept ? employees.filter(e => e.dept === mentionedDept) : employees;
+        const passed = scope.filter(e => passedSet.has(e.name)).length;
+        const pct = scope.length > 0 ? Math.round(passed / scope.length * 100) : 0;
+        const label = mentionedDept ? `divisi **${mentionedDept}**` : 'seluruh perusahaan';
+        return `Completion rate ${label}: **${pct}%** (${passed} dari ${scope.length} karyawan lulus quiz).`;
+      }
+
+      // 11. Divisi terbaik/terendah
+      if (/(divisi|departemen).*(terbaik|tertinggi|paling banyak lulus)/.test(q)) {
+        const stats = depts.map(d => {
+          const emp = employees.filter(e => e.dept === d);
+          const p = emp.filter(e => passedSet.has(e.name)).length;
+          return { dept: d, pct: emp.length > 0 ? Math.round(p/emp.length*100) : 0, passed: p, total: emp.length };
+        }).sort((a,b) => b.pct - a.pct);
+        const top = stats[0];
+        return `Divisi dengan completion rate tertinggi: **${top.dept}** (${top.pct}% — ${top.passed}/${top.total} karyawan lulus).`;
+      }
+
+      if (/(divisi|departemen).*(terburuk|terendah|paling sedikit lulus|perlu perhatian)/.test(q)) {
+        const stats = depts.map(d => {
+          const emp = employees.filter(e => e.dept === d);
+          const p = emp.filter(e => passedSet.has(e.name)).length;
+          return { dept: d, pct: emp.length > 0 ? Math.round(p/emp.length*100) : 0, passed: p, total: emp.length };
+        }).sort((a,b) => a.pct - b.pct);
+        const bot = stats[0];
+        return `Divisi dengan completion rate terendah: **${bot.dept}** (${bot.pct}% — ${bot.passed}/${bot.total} karyawan lulus). Perlu perhatian lebih.`;
+      }
+
+      // 12. Rekap per divisi
+      if (/(rekap|ringkasan|summary|laporan).*(divisi|departemen)/.test(q) || /(divisi|departemen).*(rekap|ringkasan|summary)/.test(q)) {
+        const rows = depts.map(d => {
+          const emp = employees.filter(e => e.dept === d);
+          const p = emp.filter(e => passedSet.has(e.name)).length;
+          const pct = emp.length > 0 ? Math.round(p/emp.length*100) : 0;
+          return `• **${d}**: ${p}/${emp.length} lulus (${pct}%)`;
+        }).join('\n');
+        return `Rekap completion per divisi:\n${rows}`;
+      }
+
+      // 13. Total submission quiz
+      if (/(berapa|jumlah).*(submission|pengerjaan|kuis|quiz)/.test(q) && !/(nilai|skor)/.test(q)) {
+        return `Total pengerjaan kuis yang tercatat: **${quizSubmissions.length} submission**.`;
+      }
+
+      // 14. Paket/plan tenant
+      if (/(paket|plan|langganan|tier)/.test(q)) {
+        return `${tenant.name} saat ini menggunakan paket **${tenant.plan}**.`;
+      }
+
+      // 15. Info perusahaan/tenant
+      if (/(nama perusahaan|nama tenant|perusahaan apa|klien ini)/.test(q)) {
+        return `Tenant yang aktif saat ini adalah **${tenant.name}** dengan paket **${tenant.plan}**.`;
+      }
+
+      // 16. Siapa yang login
+      if (/(siapa (yang )?login|user aktif|saya siapa|akun saya)/.test(q)) {
+        return `Yang sedang login adalah **${currentUser.name}** (${currentUser.role}, Divisi ${currentUser.dept}).`;
+      }
+
+      // 17. Video terpanjang/terpendek
+      if (/(video|sop|materi).*(paling panjang|terlama|terpanjang|durasi terlama)/.test(q)) {
+        const sorted = [...videos].sort((a,b) => parseSecs(b.duration) - parseSecs(a.duration));
+        const v = sorted[0];
+        return v ? `Video SOP terpanjang: **${v.title}** (${fmtDur(parseSecs(v.duration))}).` : 'Data video tidak tersedia.';
+      }
+
+      if (/(video|sop|materi).*(paling pendek|tercepat|terpendek|durasi tercepat)/.test(q)) {
+        const sorted = [...videos].filter(v => parseSecs(v.duration) > 0).sort((a,b) => parseSecs(a.duration) - parseSecs(b.duration));
+        const v = sorted[0];
+        return v ? `Video SOP terpendek: **${v.title}** (${fmtDur(parseSecs(v.duration))}).` : 'Data video tidak tersedia.';
+      }
+
+      // 18. Karyawan belum ikut kuis
+      if (/(karyawan|siapa).*(belum ikut|belum mengerjakan|belum submit).*(quiz|kuis)/.test(q) ||
+          /(quiz|kuis).*(belum dikerjakan|belum diikuti)/.test(q)) {
+        const taken = new Set(quizSubmissions.map(s => s.employeeName));
+        const notTaken = (mentionedDept ? employees.filter(e => e.dept === mentionedDept) : employees)
+          .filter(e => !taken.has(e.name));
+        if (notTaken.length === 0) return 'Semua karyawan sudah mengerjakan minimal satu kuis.';
+        return `Karyawan yang belum mengerjakan kuis: **${notTaken.length} orang**\n` +
+          notTaken.slice(0, 10).map((e,i) => `${i+1}. ${e.name} — ${e.dept}`).join('\n') +
+          (notTaken.length > 10 ? `\n...dan ${notTaken.length - 10} lainnya.` : '');
+      }
+
+      // 19. Rata-rata skor
+      if (/(rata-rata|average|avg).*(skor|nilai|score)/.test(q)) {
+        const subs = mentionedDept
+          ? quizSubmissions.filter(s => employees.find(e => e.name === s.employeeName && e.dept === mentionedDept))
+          : quizSubmissions;
+        if (subs.length === 0) return 'Belum ada data skor kuis.';
+        const avg = Math.round(subs.reduce((a,s) => a + (s.postScore ?? 0), 0) / subs.length);
+        const label = mentionedDept ? `divisi **${mentionedDept}**` : 'seluruh perusahaan';
+        return `Rata-rata skor kuis (${label}): **${avg}%** dari ${subs.length} pengerjaan.`;
+      }
+
+      // 20. Skor tertinggi/terendah
+      if (/(skor|nilai).*(tertinggi|terbaik|paling tinggi)/.test(q)) {
+        const top = [...quizSubmissions].sort((a,b) => (b.postScore??0) - (a.postScore??0))[0];
+        return top ? `Skor tertinggi: **${top.employeeName}** dengan nilai **${top.postScore}%** pada kuis "${top.videoTitle}".` : 'Belum ada data skor.';
+      }
+
+      if (/(skor|nilai).*(terendah|paling rendah)/.test(q)) {
+        const bot = [...quizSubmissions].sort((a,b) => (a.postScore??0) - (b.postScore??0))[0];
+        return bot ? `Skor terendah: **${bot.employeeName}** dengan nilai **${bot.postScore}%** pada kuis "${bot.videoTitle}".` : 'Belum ada data skor.';
+      }
+
+      // 21. Total jam training
+      if (/(total|berapa).*(jam|waktu|durasi).*(training|belajar|materi)/.test(q)) {
+        const totalSecs = videos.reduce((a,v) => a + parseSecs(v.duration), 0);
+        return `Total durasi semua materi SOP: **${fmtDur(totalSecs)}** (${videos.length} video).`;
+      }
+
+      // 22. Video per kategori
+      if (/(video|materi|sop).*(kategori|jenis|tipe)/.test(q) || /(kategori|jenis).*(video|materi|sop)/.test(q)) {
+        const cats = {};
+        videos.forEach(v => { const c = v.category || 'Umum'; cats[c] = (cats[c]||0)+1; });
+        return `Materi SOP berdasarkan kategori:\n` + Object.entries(cats).map(([c,n]) => `• **${c}**: ${n} video`).join('\n');
+      }
+
+      // 23. Karyawan sudah ikut berapa kuis
+      if (mentionedEmp && /(berapa|jumlah).*(kuis|quiz)/.test(q)) {
+        const subs = quizSubmissions.filter(s => s.employeeName === mentionedEmp.name);
+        return `**${mentionedEmp.name}** sudah mengerjakan **${subs.length} kuis**.`;
+      }
+
+      return null;
+    })();
+
+    if (clientAnswer) {
+      setChatMessages(prev => [...prev, {
+        id: Date.now() + 1, sender: 'ai', name: 'AXA', text: clientAnswer,
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      }]);
+      setIsTyping(false);
+      return;
+    }
 
     try {
       const empData = employees.map(e => ({ name: e.name, dept: e.dept, role: e.role, email: e.email }));
@@ -538,7 +820,9 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
                 </div>
               </div>
             </div>
+          </div>
         </div>
+      </div>
 
         {/* SIDE COLUMN */}
         <div className="side-col" style={{ position: 'sticky', top: '80px', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: '14px' }}>
