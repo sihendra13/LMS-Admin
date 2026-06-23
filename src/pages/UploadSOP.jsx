@@ -26,6 +26,7 @@ export const UploadSOP = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef(null);
   const pptInputRef = useRef(null);
+  const uploadIntervalRef = useRef(null);
 
   useEffect(() => {
     return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
@@ -415,7 +416,7 @@ export const UploadSOP = () => {
       const fileName = `${Date.now()}_${title.replace(/\s+/g, '_')}.${fileExt}`;
       filePath = fileName;
 
-      const progressInterval = setInterval(() => {
+      uploadIntervalRef.current = setInterval(() => {
         setUploadProgress(prev => prev < 80 ? prev + 5 : prev);
       }, 300);
 
@@ -423,7 +424,7 @@ export const UploadSOP = () => {
         .from('videos')
         .upload(fileName, videoFile, { cacheControl: '3600', upsert: false });
 
-      clearInterval(progressInterval);
+      clearInterval(uploadIntervalRef.current);
 
       if (error) {
         setUploading(false);
@@ -2252,6 +2253,24 @@ export const UploadSOP = () => {
             <div style={{ fontSize: '11.5px', color: '#94a3b8', background: '#f8fafc', borderRadius: '8px', padding: '10px 16px', lineHeight: '1.6', border: '1px solid #e2e8f0' }}>
               Jangan tutup halaman ini. Video berukuran besar bisa membutuhkan <strong>beberapa menit</strong>.
             </div>
+
+            {uploadProgress >= 80 && (
+              <button
+                onClick={() => {
+                  clearInterval(uploadIntervalRef.current);
+                  setUploading(false);
+                  setUploadProgress(0);
+                }}
+                style={{
+                  marginTop: '4px', padding: '8px 24px', borderRadius: '8px',
+                  border: '1.5px solid #e2e8f0', background: '#fff',
+                  color: '#64748b', fontSize: '13px', fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Batalkan Upload
+              </button>
+            )}
           </div>
         </div>
       )}
