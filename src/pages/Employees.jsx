@@ -174,7 +174,7 @@ export const Employees = () => {
                               type="button"
                               title="Edit karyawan"
                               onClick={() => { setEditEmp(emp); setEditForm({ name: emp.name, email: emp.email || '', dept: emp.dept, city: emp.city || '' }); }}
-                              style={{ background: 'none', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#1d4ed8', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                              style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -188,7 +188,7 @@ export const Employees = () => {
                                   deleteEmployee(emp.id);
                                 }
                               }}
-                              style={{ background: 'none', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#b91c1c', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                              style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
