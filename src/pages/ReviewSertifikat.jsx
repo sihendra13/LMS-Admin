@@ -207,19 +207,19 @@ export const ReviewSertifikat = () => {
                 ✓ Ya, Rekomendasikan
               </button>
               <button
-                onClick={() => !passed ? openModal('sup_rem', sub) : null}
-                disabled={passed}
-                title={passed ? 'Nilai sudah memenuhi standar — hanya Rekomendasikan yang tersedia' : ''}
+                onClick={() => (!passed && sub.retakeCount < MAX_RETAKES) ? openModal('sup_rem', sub) : null}
+                disabled={passed || sub.retakeCount >= MAX_RETAKES}
+                title={passed ? 'Nilai sudah memenuhi standar' : sub.retakeCount >= MAX_RETAKES ? `Batas maksimal ${MAX_RETAKES}x remedial telah tercapai` : ''}
                 style={{
                   flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '13px', fontWeight: '700',
-                  background: !passed ? '#fff7ed' : '#f1f5f9',
-                  border: `1px solid ${!passed ? '#fed7aa' : '#cbd5e1'}`,
-                  color: !passed ? '#b45309' : '#94a3b8',
-                  cursor: !passed ? 'pointer' : 'not-allowed',
-                  opacity: !passed ? 1 : 0.55,
+                  background: (!passed && sub.retakeCount < MAX_RETAKES) ? '#fff7ed' : '#f1f5f9',
+                  border: `1px solid ${(!passed && sub.retakeCount < MAX_RETAKES) ? '#fed7aa' : '#cbd5e1'}`,
+                  color: (!passed && sub.retakeCount < MAX_RETAKES) ? '#b45309' : '#94a3b8',
+                  cursor: (!passed && sub.retakeCount < MAX_RETAKES) ? 'pointer' : 'not-allowed',
+                  opacity: (!passed && sub.retakeCount < MAX_RETAKES) ? 1 : 0.55,
                 }}
               >
-                ↩ Belum, Minta Ulang
+                {sub.retakeCount >= MAX_RETAKES && !passed ? '🚫 Batas Remedial Tercapai' : '↩ Belum, Minta Ulang'}
               </button>
             </div>
           </div>
