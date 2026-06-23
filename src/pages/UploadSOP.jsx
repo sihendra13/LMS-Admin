@@ -33,6 +33,11 @@ export const UploadSOP = () => {
 
   const selectVideoFile = (file) => {
     if (!file || !file.type.startsWith('video/')) return;
+    const MAX_VIDEO_MB = 500;
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      alert(`Ukuran file terlalu besar (${(file.size / 1024 / 1024).toFixed(1)} MB).\nMaksimal ${MAX_VIDEO_MB} MB.`);
+      return;
+    }
     setVideoFile(file);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     const url = URL.createObjectURL(file);
@@ -103,9 +108,18 @@ export const UploadSOP = () => {
   // Toggle state to switch editing between 'pre' (Pre-Test) and 'post' (Post-Test)
   const [activeTab, setActiveTab] = useState('pre'); // 'pre' | 'post'
 
-  // Dynamic state for Pre-Test Questions
+  // Dynamic state for Pre-Test Questions (Pre-test murni tidak memicu waktu, triggerTime = 0)
   const [preQuestions, setPreQuestions] = useState(
-    editVideo?.preQuizzes?.length ? editVideo.preQuizzes.map(toEditQuiz) : [makeEmptyQuiz(), makeEmptyQuiz()]
+    editVideo?.preQuizzes?.length
+      ? editVideo.preQuizzes.filter(q => (q.triggerTime ?? 0) === 0).map(toEditQuiz)
+      : [makeEmptyQuiz(), makeEmptyQuiz()]
+  );
+
+  // Dynamic state for Video Trigger Quizzes (Kuis pemicu waktu di tengah video, triggerTime > 0)
+  const [videoTriggerQuizzes, setVideoTriggerQuizzes] = useState(
+    editVideo?.type === 'video' && editVideo?.preQuizzes?.length
+      ? editVideo.preQuizzes.filter(q => (q.triggerTime ?? 0) > 0).map(toEditQuiz)
+      : [{ question: '', type: 'multiple', options: ['', '', '', ''], answer: 'A', triggerMin: '0', triggerSec: '0' }]
   );
 
   // Dynamic state for Post-Test Questions
@@ -215,6 +229,26 @@ export const UploadSOP = () => {
     setPreQuestions(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Handlers for Video Trigger Quizzes
+  const handleVideoTriggerQuestionChange = (index, field, value) => {
+    setVideoTriggerQuizzes(prev => prev.map((q, i) => i === index ? { ...q, [field]: value } : q));
+  };
+
+  const handleVideoTriggerOptionChange = (qIndex, oIndex, value) => {
+    setVideoTriggerQuizzes(prev => prev.map((q, i) => i === qIndex
+      ? { ...q, options: q.options.map((o, j) => j === oIndex ? value : o) }
+      : q
+    ));
+  };
+
+  const addVideoTriggerQuestion = () => {
+    setVideoTriggerQuizzes(prev => [...prev, makeEmptyQuiz()]);
+  };
+
+  const removeVideoTriggerQuestion = (index) => {
+    setVideoTriggerQuizzes(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Handlers for Post-Test Questions
   const handlePostQuestionChange = (index, field, value) => {
     setPostQuestions(prev => prev.map((q, i) => i === index ? { ...q, [field]: value } : q));
@@ -258,10 +292,10 @@ export const UploadSOP = () => {
     e.preventDefault();
     if (!title.trim()) return alert('Judul SOP tidak boleh kosong!');
     if (contentType === 'video') {
-      for (let i = 1; i < preQuestions.length; i++) {
-        if (preQuestions[i].question.trim() === '') continue;
-        if (toSecs(preQuestions[i]) <= toSecs(preQuestions[i - 1])) {
-          return alert(`Pertanyaan Pre-Test #${i + 1}: waktu pemicu harus lebih besar dari pertanyaan sebelumnya. Kuis harus muncul secara kronologis.`);
+      const filledTriggers = videoTriggerQuizzes.filter(q => q.question.trim() !== '');
+      for (let i = 1; i < filledTriggers.length; i++) {
+        if (toSecs(filledTriggers[i]) <= toSecs(filledTriggers[i - 1])) {
+          return alert(`Kuis Pemicu Waktu #${i + 1}: waktu pemicu harus lebih besar dari kuis pemicu sebelumnya. Kuis harus muncul secara kronologis.`);
         }
       }
     }
@@ -406,16 +440,28 @@ export const UploadSOP = () => {
     }
 
     // Filter out blank Pre-Test Questions
-    const preList = preQuestions
-      .filter(q => q.question.trim() !== '')
-      .map((q, idx) => ({
-        id: idx + 1,
-        question: q.question,
-        type: q.type,
-        triggerTime: (Number(q.triggerMin || 0) * 60) + Number(q.triggerSec || 0),
-        options: q.type === 'multiple' ? q.options.map((o, oIdx) => o.trim() || `Opsi ${String.fromCharCode(65 + oIdx)}`) : [],
-        answer: q.type === 'multiple' ? q.answer : ''
-      }));
+    const preList = [
+      ...preQuestions
+        .filter(q => q.question.trim() !== '')
+        .map((q) => ({
+          question: q.question,
+          type: q.type,
+          triggerTime: 0, // Pre-test murni tidak memicu waktu di tengah
+          options: q.type === 'multiple' ? q.options.map((o, oIdx) => o.trim() || `Opsi ${String.fromCharCode(65 + oIdx)}`) : [],
+          answer: q.type === 'multiple' ? q.answer : ''
+        })),
+      ...(contentType === 'video'
+        ? videoTriggerQuizzes
+            .filter(q => q.question.trim() !== '')
+            .map((q) => ({
+              question: q.question,
+              type: q.type,
+              triggerTime: (Number(q.triggerMin || 0) * 60) + Number(q.triggerSec || 0),
+              options: q.type === 'multiple' ? q.options.map((o, oIdx) => o.trim() || `Opsi ${String.fromCharCode(65 + oIdx)}`) : [],
+              answer: q.type === 'multiple' ? q.answer : ''
+            }))
+        : [])
+    ].map((q, idx) => ({ id: idx + 1, ...q }));
 
     // Filter out blank Post-Test Questions
     const postList = postQuestions
@@ -424,7 +470,6 @@ export const UploadSOP = () => {
         id: idx + 1,
         question: q.question,
         type: q.type,
-        triggerTime: (Number(q.triggerMin || 0) * 60) + Number(q.triggerSec || 0),
         options: q.type === 'multiple' ? q.options.map((o, oIdx) => o.trim() || `Opsi ${String.fromCharCode(65 + oIdx)}`) : [],
         answer: q.type === 'multiple' ? q.answer : ''
       }));
@@ -474,19 +519,22 @@ export const UploadSOP = () => {
           return (s.teks || '') !== (orig?.teks || '') || s.audioFile !== null;
         });
 
-        const quizToCompare = (q) => JSON.stringify({ question: q.question, options: q.options, answer: q.answer });
-        const origPre = (editVideo.preQuizzes || []).map(toEditQuiz);
+        const quizToCompare = (q) => JSON.stringify({ question: q.question, options: q.options, answer: q.answer, triggerMin: q.triggerMin || '0', triggerSec: q.triggerSec || '0' });
+        const origPre = (editVideo.preQuizzes || []).filter(q => (q.triggerTime ?? 0) === 0).map(toEditQuiz);
+        const origVideoTrigger = (editVideo.preQuizzes || []).filter(q => (q.triggerTime ?? 0) > 0).map(toEditQuiz);
         const origPost = (editVideo.postQuizzes || []).map(toEditQuiz);
         const origTrigger = (editVideo.triggerQuizzes || []).map(q => ({
           question: q.question || '', type: 'multiple',
           options: q.options?.length ? [...q.options] : ['', '', '', ''],
           answer: q.answer || 'A', triggerSlide: String(q.triggerSlide || 2),
         }));
+        
         const preQuizChanged = preQuestions.length !== origPre.length || preQuestions.some((q, i) => quizToCompare(q) !== quizToCompare(origPre[i] || {}));
+        const videoTriggerChanged = contentType === 'video' && (videoTriggerQuizzes.length !== origVideoTrigger.length || videoTriggerQuizzes.some((q, i) => quizToCompare(q) !== quizToCompare(origVideoTrigger[i] || {})));
         const postQuizChanged = postQuestions.length !== origPost.length || postQuestions.some((q, i) => quizToCompare(q) !== quizToCompare(origPost[i] || {}));
         const triggerQuizChanged = triggerQuizzes.length !== origTrigger.length || triggerQuizzes.some((q, i) => quizToCompare(q) !== quizToCompare(origTrigger[i] || {}));
 
-        const hasChanges = titleChanged || deptChanged || deadlineChanged || narasiModeChanged || hasPptFile || hasVideoFile || narasiTeksChanged || preQuizChanged || postQuizChanged || triggerQuizChanged;
+        const hasChanges = titleChanged || deptChanged || deadlineChanged || narasiModeChanged || hasPptFile || hasVideoFile || narasiTeksChanged || preQuizChanged || videoTriggerChanged || postQuizChanged || triggerQuizChanged;
 
         if (!hasChanges) {
           setNoChangesToast(true);
@@ -1001,7 +1049,7 @@ export const UploadSOP = () => {
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
-                {contentType === 'ppt' ? 'Kuis Pre-Test (Sebelum Presentasi)' : 'Kuis Pre-Test (Tengah Video)'}
+                {contentType === 'ppt' ? 'Kuis Pre-Test (Sebelum Presentasi)' : 'Kuis Pre-Test (Sebelum Video Dimulai)'}
               </div>
               
               {preQuestions.map((q, idx) => (
@@ -1038,38 +1086,6 @@ export const UploadSOP = () => {
                         onChange={(e) => handlePreQuestionChange(idx, 'question', e.target.value)}
                       />
                     </div>
-
-                    {/* TIMESTAMP TRIGGER — hanya untuk Video */}
-                    {contentType === 'video' && (
-                      <div className="form-group" style={{ marginBottom: '16px', marginTop: '12px' }}>
-                        <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>
-                          Waktu Pemicu Kuis (Muncul Di Tengah Video)
-                        </label>
-                        <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end', marginTop: '8px', flexWrap: 'wrap' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Menit</span>
-                            <input type="number" min="0" className="form-input" style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }} placeholder="0" value={q.triggerMin} onChange={(e) => handlePreQuestionChange(idx, 'triggerMin', e.target.value)} />
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase' }}>Detik</span>
-                            <input type="number" min="0" max="59" className="form-input" style={{ width: '80px', fontSize: '14px', padding: '10px 14px', textAlign: 'center', fontWeight: '600' }} placeholder="0" value={q.triggerSec} onChange={(e) => handlePreQuestionChange(idx, 'triggerSec', e.target.value)} />
-                          </div>
-                          <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '240px', height: '46px', boxSizing: 'border-box' }}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <circle cx="12" cy="12" r="10"></circle>
-                              <line x1="12" y1="16" x2="12" y2="12"></line>
-                              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                            </svg>
-                            <span style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic', lineHeight: '1.4' }}>Video akan otomatis terhenti di waktu ini untuk menampilkan kuis.</span>
-                          </div>
-                        </div>
-                        {idx > 0 && toSecs(q) <= toSecs(preQuestions[idx - 1]) && (toSecs(q) > 0 || toSecs(preQuestions[idx - 1]) > 0) && (
-                          <div style={{ marginTop: '6px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 10px' }}>
-                            ⚠️ Waktu pemicu harus lebih besar dari pertanyaan #{idx} ({preQuestions[idx - 1].triggerMin}m {preQuestions[idx - 1].triggerSec}s)
-                          </div>
-                        )}
-                      </div>
-                    )}
 
                     <div style={{ marginTop: '16px' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -1216,6 +1232,143 @@ export const UploadSOP = () => {
             </div>
 
           </div>
+
+          {/* KUIS PEMICU WAKTU — Full width, hanya untuk VIDEO */}
+          {contentType === 'video' && (
+            <div style={{ marginTop: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text1)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                    Kuis Pemicu Waktu (Muncul Di Tengah Video)
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
+                    Tentukan waktu pemicu agar video otomatis terhenti dan menampilkan kuis untuk memastikan konsentrasi karyawan.
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {videoTriggerQuizzes.map((q, idx) => (
+                  <div key={idx} className="card" style={{ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                        Kuis Pemicu #{idx + 1}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text2)' }}>Muncul di</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <input
+                              type="number"
+                              min="0"
+                              value={q.triggerMin}
+                              onChange={(e) => handleVideoTriggerQuestionChange(idx, 'triggerMin', e.target.value)}
+                              placeholder="0"
+                              style={{ width: '48px', fontSize: '13px', padding: '4px 6px', textAlign: 'center', fontWeight: '700', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text1)', background: 'var(--background)' }}
+                            />
+                            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>m</span>
+                            <input
+                              type="number"
+                              min="0"
+                              max="59"
+                              value={q.triggerSec}
+                              onChange={(e) => handleVideoTriggerQuestionChange(idx, 'triggerSec', e.target.value)}
+                              placeholder="0"
+                              style={{ width: '48px', fontSize: '13px', padding: '4px 6px', textAlign: 'center', fontWeight: '700', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text1)', background: 'var(--background)' }}
+                            />
+                            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>s</span>
+                          </div>
+                        </div>
+                        {videoTriggerQuizzes.length > 1 && (
+                          <button
+                            type="button"
+                            className="delete-question-btn"
+                            title="Hapus Kuis Pemicu"
+                            onClick={() => removeVideoTriggerQuestion(idx)}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '16px', height: '16px' }}>
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              <line x1="10" y1="11" x2="10" y2="17" />
+                              <line x1="14" y1="11" x2="14" y2="17" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '20px', textAlign: 'left' }}>
+                      {idx > 0 && toSecs(q) <= toSecs(videoTriggerQuizzes[idx - 1]) && (
+                        <div style={{ marginBottom: '12px', fontSize: '11px', color: '#b91c1c', background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '6px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                          Waktu pemicu harus lebih besar dari Kuis Pemicu #{idx} ({videoTriggerQuizzes[idx - 1].triggerMin}m {videoTriggerQuizzes[idx - 1].triggerSec}s). Kuis harus muncul secara berurutan.
+                        </div>
+                      )}
+                      <div className="form-group" style={{ marginBottom: '16px' }}>
+                        <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: '700', color: 'var(--text1)' }}>Teks Pertanyaan</label>
+                        <textarea
+                          className="form-input"
+                          style={{ minHeight: '72px', fontFamily: 'inherit', resize: 'vertical', fontSize: '14px', padding: '10px 14px', marginTop: '6px' }}
+                          placeholder={`Contoh: Apa yang harus dilakukan ketika menerima keluhan pelanggan?`}
+                          value={q.question}
+                          onChange={(e) => handleVideoTriggerQuestionChange(idx, 'question', e.target.value)}
+                        />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        {q.options.map((opt, oIdx) => {
+                          const letter = String.fromCharCode(65 + oIdx);
+                          const isCorrect = q.answer === letter;
+                          return (
+                            <div
+                              key={oIdx}
+                              className={`option-pill ${isCorrect ? 'correct' : ''}`}
+                              onClick={() => handleVideoTriggerQuestionChange(idx, 'answer', letter)}
+                            >
+                              <div className="option-circle">
+                                {isCorrect && <span className="option-checkmark">✓</span>}
+                              </div>
+                              <input
+                                type="text"
+                                className="option-input"
+                                style={{ background: 'none', border: 'none', width: '100%', outline: 'none', fontSize: '14px', color: isCorrect ? '#1d4ed8' : 'var(--text1)' }}
+                                placeholder={`Opsi ${letter}`}
+                                value={opt}
+                                onChange={(e) => handleVideoTriggerOptionChange(idx, oIdx, e.target.value)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text2)', fontSize: '12px', padding: '12px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', borderRadius: '8px', cursor: 'pointer' }}
+                  onClick={addVideoTriggerQuestion}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Tambah Kuis Pemicu Waktu
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* KUIS PEMICU SLIDE — Full width, hanya untuk PPT */}
           {contentType === 'ppt' && (
@@ -2219,32 +2372,19 @@ export const UploadSOP = () => {
                       Pre-Test ({preToShow.length} soal)
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {preToShow.map((q, i) => {
-                        const trigger = formatTrigger(q);
-                        return (
-                          <div key={i} style={{ background: '#f8fafc', border: `1px solid ${trigger ? '#fde68a' : 'var(--border)'}`, borderRadius: '8px', padding: '10px 14px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                              <div style={{ fontSize: '13px', color: 'var(--text1)', lineHeight: '1.4', flex: 1 }}>
-                                <span style={{ fontWeight: '700', color: 'var(--text3)', marginRight: '6px' }}>#{i + 1}</span>
-                                {q.question}
-                              </div>
-                              <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: q.type === 'multiple' ? '#eff6ff' : '#f0fdf4', color: q.type === 'multiple' ? '#1d4ed8' : '#16a34a', flexShrink: 0 }}>
-                                {q.type === 'multiple' ? 'Pilihan Ganda' : 'Esai'}
-                              </span>
+                      {preToShow.map((q, i) => (
+                        <div key={i} style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 14px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                            <div style={{ fontSize: '13px', color: 'var(--text1)', lineHeight: '1.4', flex: 1 }}>
+                              <span style={{ fontWeight: '700', color: 'var(--text3)', marginRight: '6px' }}>#{i + 1}</span>
+                              {q.question}
                             </div>
-                            {trigger && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', padding: '6px 10px', background: '#fffbeb', borderRadius: '6px', border: '1px solid #fde68a' }}>
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                                </svg>
-                                <span style={{ fontSize: '11px', color: '#92400e', lineHeight: '1.4' }}>
-                                  Video akan <strong>berhenti otomatis di menit {trigger}</strong> dan menampilkan soal ini sebelum karyawan bisa melanjutkan menonton.
-                                </span>
-                              </div>
-                            )}
+                            <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', background: q.type === 'multiple' ? '#eff6ff' : '#f0fdf4', color: q.type === 'multiple' ? '#1d4ed8' : '#16a34a', flexShrink: 0 }}>
+                              {q.type === 'multiple' ? 'Pilihan Ganda' : 'Esai'}
+                            </span>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -2274,8 +2414,36 @@ export const UploadSOP = () => {
                   </div>
                 )}
 
+                {/* KUIS PEMICU WAKTU VIDEO — hanya untuk Video */}
+                {contentType === 'video' && videoTriggerQuizzes.filter(q => q.question.trim() !== '').length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
+                      Kuis Pemicu Waktu ({videoTriggerQuizzes.filter(q => q.question.trim() !== '').length} kuis)
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {videoTriggerQuizzes.filter(q => q.question.trim() !== '').map((q, i) => {
+                        const trigger = formatTrigger(q);
+                        return (
+                          <div key={i} style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 14px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                              <div style={{ fontSize: '13px', color: 'var(--text1)', lineHeight: '1.4', flex: 1 }}>
+                                <span style={{ fontWeight: '700', color: 'var(--text3)', marginRight: '6px' }}>#{i + 1}</span>
+                                {q.question}
+                              </div>
+                              <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '4px', background: '#fef3c7', color: '#92400e', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                Menit {trigger || '0:00'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* KUIS PEMICU SLIDE — hanya untuk PPT */}
-                {triggersToShow.length > 0 && (
+                {contentType === 'ppt' && triggersToShow.length > 0 && (
                   <div style={{ marginBottom: '20px' }}>
                     <div style={{ fontSize: '12px', fontWeight: '700', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
@@ -2299,7 +2467,7 @@ export const UploadSOP = () => {
                   </div>
                 )}
 
-                {preToShow.length === 0 && postToShow.length === 0 && triggersToShow.length === 0 && (
+                {preToShow.length === 0 && postToShow.length === 0 && triggersToShow.length === 0 && (contentType === 'ppt' || videoTriggerQuizzes.filter(q => q.question.trim() !== '').length === 0) && (
                   <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--text3)', textAlign: 'center' }}>
                     Tidak ada soal kuis yang dikonfigurasi
                   </div>
