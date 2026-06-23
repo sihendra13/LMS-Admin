@@ -21,20 +21,29 @@ export const ReviewSertifikat = () => {
   const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('rev-banner-dismissed') === '1');
   const [previewCert, setPreviewCert] = useState(null);
 
+  // ── deduplicate: keep only latest submission per employee+video ──────
+  const latestSubmissions = Object.values(
+    quizSubmissions.reduce((acc, s) => {
+      const key = `${s.employeeName}__${s.videoTitle}`;
+      if (!acc[key] || new Date(s.date) >= new Date(acc[key].date)) acc[key] = s;
+      return acc;
+    }, {})
+  );
+
   // ── filter helpers ───────────────────────────────────────────────────
   const myDept = currentUser.dept;
   const forMe = (sub) => isHRD || !sub.dept || sub.dept?.toLowerCase() === myDept?.toLowerCase();
 
   // HRD tabs
-  const readySubs      = quizSubmissions.filter(s => s.certStatus === 'supervisor_ok');
-  const inProgressSubs = quizSubmissions.filter(s => !s.certStatus || s.certStatus === 'pending' || s.certStatus === 'remedial');
-  const approvedSubs   = quizSubmissions.filter(s => s.certStatus === 'approved');
-  const rejectedSubs   = quizSubmissions.filter(s => s.certStatus === 'rejected');
+  const readySubs      = latestSubmissions.filter(s => s.certStatus === 'supervisor_ok');
+  const inProgressSubs = latestSubmissions.filter(s => !s.certStatus || s.certStatus === 'pending' || s.certStatus === 'remedial');
+  const approvedSubs   = latestSubmissions.filter(s => s.certStatus === 'approved');
+  const rejectedSubs   = latestSubmissions.filter(s => s.certStatus === 'rejected');
 
   // Supervisor tabs — hanya tampil divisi yg sama
-  const needReviewSubs  = quizSubmissions.filter(s => forMe(s) && (!s.certStatus || s.certStatus === 'pending'));
-  const remedialSubs    = quizSubmissions.filter(s => forMe(s) && s.certStatus === 'remedial');
-  const recommendedSubs = quizSubmissions.filter(s => forMe(s) && (s.certStatus === 'supervisor_ok' || s.certStatus === 'approved' || s.certStatus === 'rejected'));
+  const needReviewSubs  = latestSubmissions.filter(s => forMe(s) && (!s.certStatus || s.certStatus === 'pending'));
+  const remedialSubs    = latestSubmissions.filter(s => forMe(s) && s.certStatus === 'remedial');
+  const recommendedSubs = latestSubmissions.filter(s => forMe(s) && (s.certStatus === 'supervisor_ok' || s.certStatus === 'approved' || s.certStatus === 'rejected'));
 
   // ── action handlers ──────────────────────────────────────────────────
   const openModal = (type, sub) => { setActionModal({ open: true, type, sub }); setModalNote(''); };
