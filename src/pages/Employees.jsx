@@ -4,13 +4,16 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee, deleteEmployee, currentUser } = useTenant();
+  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [dept, setDept] = useState(isSupervisor ? currentUser.dept : 'Sales');
   const [city, setCity] = useState('Jakarta');
+
+  const [editEmp, setEditEmp] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   const [showImport, setShowImport] = useState(false);
   const [importRows, setImportRows] = useState([]);
@@ -166,20 +169,32 @@ export const Employees = () => {
                       <td style={{ padding: '14px 20px', fontWeight: '600', color: 'var(--accent)', textAlign: 'right' }}>{emp.score} SOP</td>
                       {!isSupervisor && (
                         <td style={{ padding: '14px 20px', textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            title="Hapus karyawan"
-                            onClick={() => {
-                              if (window.confirm(`Hapus karyawan "${emp.name}"?\n\nData karyawan ini akan dihapus permanen.`)) {
-                                deleteEmployee(emp.id);
-                              }
-                            }}
-                            style={{ background: 'none', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#b91c1c', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                          >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                            </svg>
-                          </button>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                            <button
+                              type="button"
+                              title="Edit karyawan"
+                              onClick={() => { setEditEmp(emp); setEditForm({ name: emp.name, email: emp.email || '', dept: emp.dept, city: emp.city || '' }); }}
+                              style={{ background: 'none', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#1d4ed8', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              title="Hapus karyawan"
+                              onClick={() => {
+                                if (window.confirm(`Hapus karyawan "${emp.name}"?\n\nData karyawan ini akan dihapus permanen.`)) {
+                                  deleteEmployee(emp.id);
+                                }
+                              }}
+                              style={{ background: 'none', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#b91c1c', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                              </svg>
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -425,6 +440,49 @@ export const Employees = () => {
                 style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: (!importRows.filter(r => !r.errors.length).length || isFull) ? 0.5 : 1 }}
               >
                 Tambahkan {Math.min(importRows.filter(r => !r.errors.length).length, limit === Infinity ? Infinity : Math.max(0, limit - totalCount))} Karyawan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT EMPLOYEE MODAL */}
+      {editEmp && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)' }}>Edit Karyawan</div>
+              <button onClick={() => setEditEmp(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text3)' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {[
+                { label: 'Nama Lengkap', key: 'name', placeholder: 'Nama karyawan' },
+                { label: 'Email', key: 'email', placeholder: 'email@perusahaan.com', type: 'email' },
+                { label: 'Departemen', key: 'dept', placeholder: 'Contoh: Sales, HR, IT' },
+                { label: 'Cabang / Kota', key: 'city', placeholder: 'Contoh: Jakarta, Surabaya' },
+              ].map(({ label, key, placeholder, type }) => (
+                <div key={key}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', display: 'block', marginBottom: '6px' }}>{label}</label>
+                  <input
+                    type={type || 'text'}
+                    value={editForm[key] || ''}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    style={{ width: '100%', padding: '9px 12px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '8px', outline: 'none', boxSizing: 'border-box', color: 'var(--text1)' }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setEditEmp(null)} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
+                Batal
+              </button>
+              <button
+                onClick={() => { updateEmployee(editEmp.id, editForm); setEditEmp(null); }}
+                disabled={!editForm.name?.trim()}
+                style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: !editForm.name?.trim() ? 0.5 : 1 }}
+              >
+                Simpan
               </button>
             </div>
           </div>
