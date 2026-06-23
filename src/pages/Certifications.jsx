@@ -57,26 +57,46 @@ export const Certifications = () => {
     );
   }
 
-  // Filter only passed submissions for certificates list
-  const certificates = quizSubmissions.map((sub, idx) => {
-    // Generate dates based on submission
-    const issueDate = sub.date === 'Hari ini' ? '09 Jun 2026' : 
-                      sub.date === '1 hari lalu' ? '08 Jun 2026' : 
-                      sub.date === '2 hari lalu' ? '07 Jun 2026' : '05 Jun 2026';
-    
-    // Calculate expiry
-    const expiryDate = validityMonths === 999 ? 'Selamanya' : `09 Jun ${2026 + Math.floor(validityMonths / 12)}`;
+  const formatDate = (str) => {
+    if (!str) return '—';
+    if (str.includes('T') || str.length > 15) {
+      const d = new Date(str);
+      if (!isNaN(d)) return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    return str;
+  };
 
-    return {
-      id: `CERT-${2026}${100 + idx}`,
-      employeeName: sub.employeeName,
-      videoTitle: sub.videoTitle,
-      score: sub.postScore,
-      issueDate,
-      expiryDate,
-      status: sub.status === 'Lulus' ? 'Aktif' : 'Kedaluwarsa'
-    };
-  }).filter(c => c.score >= passingScore);
+  const getExpiryDate = (issueDateStr, months) => {
+    if (months === 999) return 'Selamanya';
+    const monthMap = { 'Jan':0,'Feb':1,'Mar':2,'Apr':3,'Mei':4,'Jun':5,'Jul':6,'Agu':7,'Sep':8,'Okt':9,'Nov':10,'Des':11 };
+    const parts = (issueDateStr || '').split(' ');
+    let base;
+    if (parts.length === 3 && monthMap[parts[1]] !== undefined) {
+      base = new Date(parseInt(parts[2]), monthMap[parts[1]], parseInt(parts[0]));
+    } else {
+      base = new Date();
+    }
+    base.setMonth(base.getMonth() + months);
+    return base.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  // Only show approved certificates
+  const certificates = quizSubmissions
+    .filter(sub => sub.certStatus === 'approved' && sub.postScore >= passingScore)
+    .map((sub, idx) => {
+      const issueDate = formatDate(sub.approvedDate || sub.date);
+      const expiryDate = getExpiryDate(issueDate, validityMonths);
+      const year = new Date().getFullYear();
+      return {
+        id: `CERT-${year}${String(100 + idx).padStart(3, '0')}`,
+        employeeName: sub.employeeName,
+        videoTitle: sub.videoTitle,
+        score: sub.postScore,
+        issueDate,
+        expiryDate,
+        status: 'Aktif'
+      };
+    });
 
   return (
     <div className="content">

@@ -4,7 +4,7 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee, currentUser } = useTenant();
+  const { tenant, employees, addEmployee, deleteEmployee, currentUser } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
@@ -150,6 +150,7 @@ export const Employees = () => {
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang / Kota</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'right' }}>SOP Selesai</th>
+                    {!isSupervisor && <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'center' }}>Aksi</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -163,6 +164,24 @@ export const Employees = () => {
                       </td>
                       <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.city}</td>
                       <td style={{ padding: '14px 20px', fontWeight: '600', color: 'var(--accent)', textAlign: 'right' }}>{emp.score} SOP</td>
+                      {!isSupervisor && (
+                        <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            title="Hapus karyawan"
+                            onClick={() => {
+                              if (window.confirm(`Hapus karyawan "${emp.name}"?\n\nData karyawan ini akan dihapus permanen.`)) {
+                                deleteEmployee(emp.id);
+                              }
+                            }}
+                            style={{ background: 'none', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#b91c1c', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                            </svg>
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

@@ -326,6 +326,14 @@ export const TenantProvider = ({ children, authUser }) => {
     }
   };
 
+  const deleteEmployee = (id) => {
+    const emp = employees.find(e => e.id === id);
+    setEmployees(prev => prev.filter(e => e.id !== id));
+    if (emp?.email) supabase.from('employees').delete().eq('email', emp.email);
+    const newAct = { id: Date.now(), text: `Karyawan <strong>${emp?.name}</strong> dihapus dari sistem`, time: 'Baru saja', type: 'amber' };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
   const inviteSupervisor = (email, deptName) => {
     const newInvite = {
       id: Date.now(),
@@ -485,6 +493,7 @@ export const TenantProvider = ({ children, authUser }) => {
       setActivePage,
       employees,
       addEmployee,
+      deleteEmployee,
       videos,
       addSOP,
       updateSOP,
