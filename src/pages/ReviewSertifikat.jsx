@@ -90,7 +90,7 @@ export const ReviewSertifikat = () => {
       <span style={{
         fontSize: '11px',
         fontWeight: '700',
-        padding: '6px 14px',
+        padding: '3px 10px',
         borderRadius: '99px',
         background: meta.bg,
         color: meta.color,
