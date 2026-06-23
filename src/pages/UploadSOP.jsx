@@ -428,7 +428,15 @@ export const UploadSOP = () => {
       if (error) {
         setUploading(false);
         setUploadProgress(0);
-        return alert(`Gagal upload video: ${error.message}`);
+        const isOverSize = error.message?.toLowerCase().includes('maximum allowed size') || error.message?.toLowerCase().includes('too large') || error.statusCode === '413';
+        setTimeout(() => {
+          if (isOverSize) {
+            alert(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah 500MB.\nUkuran file Anda: ${(videoFile.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
+          } else {
+            alert(`Gagal upload video: ${error.message}`);
+          }
+        }, 100);
+        return;
       }
 
       setUploadProgress(95);
