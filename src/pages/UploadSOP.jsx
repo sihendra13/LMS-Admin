@@ -34,9 +34,9 @@ export const UploadSOP = () => {
 
   const selectVideoFile = (file) => {
     if (!file || !file.type.startsWith('video/')) return;
-    const MAX_VIDEO_MB = 500;
+    const MAX_VIDEO_MB = 50;
     if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
-      alert(`Ukuran file terlalu besar (${(file.size / 1024 / 1024).toFixed(1)} MB).\nMaksimal ${MAX_VIDEO_MB} MB.`);
+      alert(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah ${MAX_VIDEO_MB}MB.\nUkuran file Anda: ${(file.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
       return;
     }
     setVideoFile(file);
@@ -432,7 +432,7 @@ export const UploadSOP = () => {
         const isOverSize = error.message?.toLowerCase().includes('maximum allowed size') || error.message?.toLowerCase().includes('too large') || error.statusCode === '413';
         setTimeout(() => {
           if (isOverSize) {
-            alert(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah 500MB.\nUkuran file Anda: ${(videoFile.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
+            alert(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah 50MB.\nUkuran file Anda: ${(videoFile.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
           } else {
             alert(`Gagal upload video: ${error.message}`);
           }
@@ -853,7 +853,7 @@ export const UploadSOP = () => {
                       </svg>
                     </div>
                     <div className="upload-title" style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Seret dan letakkan file video Anda</div>
-                    <div className="upload-desc" style={{ fontSize: '11.5px', color: '#94a3b8', margin: '0 0 20px 0', lineHeight: '1.4' }}>Format MP4, MKV, atau AVI. Maksimal 500MB.</div>
+                    <div className="upload-desc" style={{ fontSize: '11.5px', color: '#94a3b8', margin: '0 0 20px 0', lineHeight: '1.4' }}>Format MP4, MKV, atau AVI. Maksimal 50MB.</div>
                     {uploading ? (
                       <div style={{ width: '280px', padding: '0 10px', boxSizing: 'border-box' }} onClick={(e) => e.stopPropagation()}>
                         <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
