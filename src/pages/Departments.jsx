@@ -34,7 +34,7 @@ export const Departments = () => {
     const deptEmployees = employees.filter(e => e.dept.toLowerCase() === meta.name.toLowerCase());
     const totalPairs = deptEmployees.length * (modules || 1);
     const completedPairs = deptVideos.reduce((acc, v) => {
-      return acc + quizSubmissions.filter(s => s.videoTitle === v.title && s.status === 'lulus' &&
+      return acc + quizSubmissions.filter(s => s.videoTitle === v.title && s.status?.toLowerCase() === 'lulus' &&
         deptEmployees.some(e => e.name === s.employeeName)).length;
     }, 0);
     const progress = totalPairs > 0 ? Math.round((completedPairs / totalPairs) * 100) : 0;
