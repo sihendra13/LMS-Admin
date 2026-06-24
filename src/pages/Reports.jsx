@@ -496,7 +496,7 @@ export const Reports = () => {
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)' }}>DEPARTEMEN</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textAlign: 'center' }}>TOTAL</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: STATUS_COLORS.tersertifikasi, textAlign: 'center' }}>TERSERTIFIKASI</th>
-                    <th style={{ padding: '12px 16px', fontSize: '11px', color: STATUS_COLORS.lulusMenunggu, textAlign: 'center' }}>LULUS (MENUNGGU)</th>
+                    <th style={{ padding: '12px 16px', fontSize: '11px', color: STATUS_COLORS.lulusMenunggu, textAlign: 'center' }}>LULUS (MENUNGGU APPROVAL)</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: STATUS_COLORS.remedial, textAlign: 'center' }}>REMEDIAL</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: STATUS_COLORS.tidakLulus, textAlign: 'center' }}>TIDAK LULUS</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textAlign: 'center' }}>BELUM IKUT</th>
