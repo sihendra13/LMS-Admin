@@ -39,32 +39,33 @@ export const LoginPage = ({ onLogin }) => {
     const slowTimer = setTimeout(() => setSlowWarning(true), 4000);
 
     try {
-      const BASE_URL = import.meta.env.VITE_API_URL || 'https://axara-lms-backend.onrender.com';
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 90000);
-
-      const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password }),
-        signal: controller.signal,
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
       });
-      clearTimeout(timeoutId);
+      if (authError) throw new Error(authError.message);
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login gagal');
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('id, name, role, avatar, tenant_id')
+        .eq('id', authData.user.id)
+        .single();
+      if (profileError) throw new Error('Gagal mengambil profil pengguna.');
 
-      localStorage.setItem('axara_token', data.accessToken);
-      localStorage.setItem('axara_refresh_token', data.refreshToken);
-      localStorage.setItem('axara_user', JSON.stringify(data.user));
+      const user = {
+        id: profile.id,
+        name: profile.name,
+        role: profile.role,
+        avatar: profile.avatar || profile.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+      };
 
-      onLogin(data.user);
+      localStorage.setItem('axara_token', authData.session.access_token);
+      localStorage.setItem('axara_refresh_token', authData.session.refresh_token);
+      localStorage.setItem('axara_user', JSON.stringify(user));
+
+      onLogin(user);
     } catch (err) {
-      if (err.name === 'AbortError') {
-        setError('Server tidak merespons. Silakan coba lagi.');
-      } else {
-        setError(err.message);
-      }
+      setError(err.message || 'Login gagal. Periksa email dan password.');
     } finally {
       clearTimeout(slowTimer);
       setLoading(false);

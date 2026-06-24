@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { PlanSwitcher } from './components/PlanSwitcher';
 import { LoginPage } from './pages/LoginPage';
+import { supabase } from './utils/supabase';
 
 // Pages
 import { Dashboard } from './pages/Dashboard';
@@ -68,7 +69,8 @@ function App() {
 
   const handleLogin = (user) => setAuthUser(user);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('axara_token');
     localStorage.removeItem('axara_refresh_token');
     localStorage.removeItem('axara_user');
