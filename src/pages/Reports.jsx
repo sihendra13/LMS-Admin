@@ -301,7 +301,7 @@ export const Reports = () => {
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: '600' }}>PERIODE</span>
-              <select value={selectedPeriod} onChange={handlePeriodChange} style={selectStyle}>
+              <select value={selectedPeriod} onChange={handlePeriodChange} className="form-select">
                 {periodOptions.map(o => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
@@ -311,7 +311,7 @@ export const Reports = () => {
             {!isSupervisor && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: '600' }}>DEPARTEMEN</span>
-                <select value={deptFilter} onChange={handleDeptChange} style={selectStyle}>
+                <select value={deptFilter} onChange={handleDeptChange} className="form-select">
                   <option value="">Semua</option>
                   {activeDepts.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
