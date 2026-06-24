@@ -204,6 +204,7 @@ export const TenantProvider = ({ children, authUser }) => {
     essayScore: row.essay_score ?? null,
     essayGradedBy: row.essay_graded_by || '',
     essayGradedDate: row.essay_graded_date || '',
+    acknowledged: row.acknowledged ?? false,
   });
 
   useEffect(() => {
