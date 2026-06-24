@@ -567,6 +567,13 @@ export const Reports = () => {
                     const progressLabel = imp > 0 ? `↑ ${imp}% Meningkat` : imp < 0 ? `↓ ${Math.abs(imp)}% Menurun` : '= Tidak Berubah';
                     const progressColor = imp > 0 ? 'var(--green)' : imp < 0 ? 'var(--red)' : 'var(--text3)';
                     const progressBg    = imp > 0 ? '#ecfdf5'      : imp < 0 ? '#fef2f2'    : '#f8fafc';
+                    const certLabel = (() => {
+                      if (sub.certStatus === 'approved') return { text: 'Tersertifikasi', color: STATUS_COLORS.tersertifikasi };
+                      if (['pending', 'supervisor_ok'].includes(sub.certStatus)) return { text: 'Lulus (Menunggu Approval)', color: STATUS_COLORS.lulusMenunggu };
+                      if (sub.certStatus === 'remedial' && (sub.retakeCount || 0) >= MAX_RETAKES) return { text: 'Tidak Lulus', color: STATUS_COLORS.tidakLulus };
+                      if (sub.certStatus === 'remedial') return { text: 'Remedi (Butuh Ujian Ulang)', color: STATUS_COLORS.remedial };
+                      return { text: sub.status || '-', color: 'var(--text2)' };
+                    })();
                     return (
                       <tr key={sub.id} style={{ borderBottom: '1px solid var(--border)' }}>
                         <td style={{ padding: '14px 16px', fontWeight: '500' }}>{sub.employeeName}</td>
@@ -576,7 +583,7 @@ export const Reports = () => {
                         <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                           <span style={{ fontSize: '11px', background: progressBg, color: progressColor, padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>{progressLabel}</span>
                         </td>
-                        <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '600', color: sub.status?.includes('Lulus') ? 'var(--green)' : 'var(--red)' }}>{sub.status}</td>
+                        <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '600', color: certLabel.color }}>{certLabel.text}</td>
                       </tr>
                     );
                   })}
