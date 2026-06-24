@@ -522,7 +522,6 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
       const msg = !import.meta.env.VITE_GROQ_API_KEY
         ? 'API key tidak ditemukan. Hubungi administrator.'
         : 'Maaf, saya sedang tidak bisa terhubung. Silakan coba lagi.';
-      console.error('[AXA]', err?.message);
       setChatMessages(prev => [...prev, {
         id: Date.now() + 1, sender: 'ai', name: 'AXA',
         text: msg,

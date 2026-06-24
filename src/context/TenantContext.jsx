@@ -259,7 +259,8 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const addSOP = async (newVideo) => {
     setVideos(prev => [newVideo, ...prev]); // optimistic update
-    await supabase.from('sop_videos').insert(toDbRow(newVideo));
+    await supabase.from('sop_videos').insert(toDbRow(newVideo))
+      .catch(err => console.error('Gagal simpan SOP:', err?.message));
     const newAct = {
       id: Date.now(),
       text: `SOP baru <strong>${newVideo.title}</strong> diunggah dengan ${newVideo.preQuizzes?.length || 0} soal Pre-Test & ${newVideo.postQuizzes?.length || 0} soal Post-Test`,
@@ -272,7 +273,8 @@ export const TenantProvider = ({ children, authUser }) => {
   const deleteSOP = async (id) => {
     const video = videos.find(v => v.id === id);
     setVideos(prev => prev.filter(v => v.id !== id)); // optimistic update
-    await supabase.from('sop_videos').delete().eq('id', id);
+    await supabase.from('sop_videos').delete().eq('id', id)
+      .catch(err => console.error('Gagal hapus SOP:', err?.message));
     if (video?.filePath) {
       supabase.storage.from('videos').remove([video.filePath]);
     }
@@ -283,7 +285,8 @@ export const TenantProvider = ({ children, authUser }) => {
   const archiveSOP = async (id) => {
     const video = videos.find(v => v.id === id);
     setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: true } : v)); // optimistic update
-    await supabase.from('sop_videos').update({ archived: true }).eq('id', id);
+    await supabase.from('sop_videos').update({ archived: true }).eq('id', id)
+      .catch(err => console.error('Gagal arsipkan SOP:', err?.message));
     const newAct = { id: Date.now(), text: `SOP <strong>${video?.title}</strong> diarsipkan`, time: 'Baru saja', type: 'amber' };
     setActivities(prev => [newAct, ...prev]);
   };
@@ -291,7 +294,8 @@ export const TenantProvider = ({ children, authUser }) => {
   const unarchiveSOP = async (id) => {
     const video = videos.find(v => v.id === id);
     setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: false } : v)); // optimistic update
-    await supabase.from('sop_videos').update({ archived: false }).eq('id', id);
+    await supabase.from('sop_videos').update({ archived: false }).eq('id', id)
+      .catch(err => console.error('Gagal pulihkan SOP:', err?.message));
     const newAct = { id: Date.now(), text: `SOP <strong>${video?.title}</strong> dipulihkan dari arsip`, time: 'Baru saja', type: 'blue' };
     setActivities(prev => [newAct, ...prev]);
   };
@@ -300,7 +304,8 @@ export const TenantProvider = ({ children, authUser }) => {
     const current = videos.find(v => v.id === id) || {};
     const merged = { ...current, ...fields };
     setVideos(prev => prev.map(v => v.id === id ? merged : v)); // optimistic update
-    await supabase.from('sop_videos').update(toDbRow(merged)).eq('id', id);
+    await supabase.from('sop_videos').update(toDbRow(merged)).eq('id', id)
+      .catch(err => console.error('Gagal update SOP:', err?.message));
   };
 
   const [editingVideoId, setEditingVideoId] = useState(null);
@@ -331,6 +336,16 @@ export const TenantProvider = ({ children, authUser }) => {
     setEmployees(prev => prev.filter(e => e.id !== id));
     if (emp?.email) supabase.from('employees').delete().eq('email', emp.email);
     const newAct = { id: Date.now(), text: `Karyawan <strong>${emp?.name}</strong> dihapus dari sistem`, time: 'Baru saja', type: 'amber' };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
+  const updateEmployee = (id, fields) => {
+    const emp = employees.find(e => e.id === id);
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...fields } : e));
+    if (emp?.email || fields.email) {
+      supabase.from('employees').update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city }).eq('email', emp?.email || fields.email);
+    }
+    const newAct = { id: Date.now(), text: `Data karyawan <strong>${fields.name}</strong> diperbarui`, time: 'Baru saja', type: 'blue' };
     setActivities(prev => [newAct, ...prev]);
   };
 
@@ -494,6 +509,7 @@ export const TenantProvider = ({ children, authUser }) => {
       employees,
       addEmployee,
       deleteEmployee,
+      updateEmployee,
       videos,
       addSOP,
       updateSOP,

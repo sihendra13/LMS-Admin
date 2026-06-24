@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
 
-const MAX_RETAKES = 3;
-
 const STATUS_META = {
   pending:       { label: 'Menunggu Supervisor', color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
   supervisor_ok: { label: 'Siap Diterbitkan',    color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
@@ -12,7 +10,7 @@ const STATUS_META = {
 };
 
 export const ReviewSertifikat = () => {
-  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, tenant, validityMonths } = useTenant();
+  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, tenant, validityMonths, MAX_RETAKES } = useTenant();
   const isHRD = currentUser.role === 'admin';
 
   const [activeTab, setActiveTab] = useState(isHRD ? 'ready' : 'need_review');
