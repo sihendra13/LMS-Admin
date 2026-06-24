@@ -10,7 +10,7 @@ const STATUS_META = {
 };
 
 export const ReviewSertifikat = () => {
-  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, tenant, validityMonths, MAX_RETAKES } = useTenant();
+  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES } = useTenant();
   const isHRD = currentUser.role === 'admin';
 
   const [activeTab, setActiveTab] = useState(isHRD ? 'ready' : 'need_review');
@@ -126,7 +126,7 @@ export const ReviewSertifikat = () => {
             <div style={{ fontSize: '11px', color: 'var(--text3)', textAlign: 'right' }}>
               {sub.date}
               {sub.retakeCount > 0 && (
-                <div style={{ marginTop: '2px', fontWeight: '700', color: '#b45309' }}>Percobaan ke-{sub.retakeCount + 1} dari {MAX_RETAKES}</div>
+                <div style={{ marginTop: '2px', fontWeight: '700', color: '#b45309' }}>Remedial ke-{sub.retakeCount} dari {MAX_RETAKES}</div>
               )}
             </div>
           </div>
@@ -142,7 +142,7 @@ export const ReviewSertifikat = () => {
               <div>
                 <div style={{ fontSize: '12px', fontWeight: '700', color: '#15803d' }}>
                   {sub.retakeCount > 0
-                    ? `Karyawan sudah menyelesaikan remedial (percobaan ke-${sub.retakeCount + 1} dari ${MAX_RETAKES})`
+                    ? `Karyawan sudah menyelesaikan remedial ke-${sub.retakeCount} dari ${MAX_RETAKES}`
                     : 'Karyawan sudah menyelesaikan remedial dan mengumpulkan ulang hasil kuis'}
                 </div>
                 <div style={{ fontSize: '11px', color: '#166534', marginTop: '2px' }}>
@@ -257,7 +257,7 @@ export const ReviewSertifikat = () => {
             <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{sub.date}</span>
             {(sub.retakeCount > 0 || sub.certStatus === 'remedial') && (
               <span style={{ fontSize: '10px', fontWeight: '700', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', padding: '1px 7px', borderRadius: '10px' }}>
-                {sub.certStatus === 'remedial' ? `🔄 Remedial · Percobaan ke-${sub.retakeCount + 1} dari ${MAX_RETAKES}` : `Percobaan ke-${sub.retakeCount + 1}`}
+                {sub.certStatus === 'remedial' ? `🔄 Remedial ke-${sub.retakeCount} dari ${MAX_RETAKES}` : `Remedial ke-${sub.retakeCount}`}
               </span>
             )}
           </div>
@@ -407,13 +407,56 @@ export const ReviewSertifikat = () => {
   return (
     <div className="content">
       <div style={{ marginBottom: '18px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '4px' }}>Review Sertifikat</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '4px' }}>Sertifikat</h2>
         <p style={{ fontSize: '13px', color: 'var(--text3)' }}>
           {isHRD
-            ? 'Review rekomendasi supervisor dan terbitkan sertifikat resmi karyawan.'
+            ? 'Kelola standar kelulusan dan terbitkan sertifikat resmi karyawan.'
             : `Beri rekomendasi kelulusan karyawan divisi ${myDept} sebelum diteruskan ke HRD.`}
         </p>
       </div>
+
+      {/* STANDAR KELULUSAN — hanya HRD Admin */}
+      {isHRD && (
+        <div className="card" style={{ padding: '20px 24px', marginBottom: '24px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+            </svg>
+            Standar Kelulusan
+          </div>
+
+          {/* Passing Score */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '220px' }}>
+            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', flexShrink: 0 }}>Nilai Minimum Lulus</label>
+            <input
+              type="range" min="50" max="100" step="5"
+              value={passingScore}
+              onChange={(e) => setPassingScore(Number(e.target.value))}
+              style={{ flex: 1, accentColor: 'var(--accent)' }}
+            />
+            <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)', minWidth: '42px', textAlign: 'right' }}>{passingScore}%</span>
+          </div>
+
+          <div style={{ width: '1px', height: '32px', background: 'var(--border)', flexShrink: 0 }} />
+
+          {/* Validity Months */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', flexShrink: 0 }}>Masa Berlaku</label>
+            <select
+              value={validityMonths}
+              onChange={(e) => setValidityMonths(Number(e.target.value))}
+              className="form-select"
+              style={{ fontSize: '13px', padding: '6px 10px', minWidth: '140px' }}
+            >
+              <option value={3}>3 Bulan</option>
+              <option value={6}>6 Bulan</option>
+              <option value={12}>12 Bulan</option>
+              <option value={24}>24 Bulan</option>
+              <option value={999}>Selamanya</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* STATS OVERVIEW */}
       <div className="stats-grid" style={{ marginBottom: '24px' }}>
@@ -663,7 +706,7 @@ export const ReviewSertifikat = () => {
               <strong>{actionModal.sub?.employeeName}</strong> — {actionModal.sub?.videoTitle}
               {actionModal.sub?.retakeCount > 0 && (
                 <span style={{ display: 'block', fontSize: '11px', color: '#b45309', marginTop: '4px' }}>
-                  Percobaan ke-{actionModal.sub.retakeCount + 1} dari {MAX_RETAKES}
+                  Remedial ke-{actionModal.sub.retakeCount} dari {MAX_RETAKES}
                 </span>
               )}
             </p>
