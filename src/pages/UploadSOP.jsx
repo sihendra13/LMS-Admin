@@ -371,6 +371,10 @@ export const UploadSOP = () => {
           for (let i = 0; i < latestSlideNarasi.length; i++) {
             const s = latestSlideNarasi[i];
             if (!s.audioFile) continue;
+            if (s.audioUrl) {
+              const oldPath = s.audioUrl.split('/narasi/')[1];
+              if (oldPath) await supabase.storage.from('narasi').remove([oldPath]);
+            }
             const ext = s.audioFile.name.split('.').pop();
             const path = `narasi/${sopId}/slide-${i + 1}.${ext}`;
             const { error } = await supabase.storage.from('narasi').upload(path, s.audioFile, { upsert: true });
@@ -396,6 +400,10 @@ export const UploadSOP = () => {
         for (let i = 0; i < latestSlideNarasi.length; i++) {
           const s = latestSlideNarasi[i];
           if (!s.audioFile) continue;
+          if (s.audioUrl) {
+            const oldPath = s.audioUrl.split('/narasi/')[1];
+            if (oldPath) await supabase.storage.from('narasi').remove([oldPath]);
+          }
           const ext = s.audioFile.name.split('.').pop();
           const path = `narasi/${sopId}/slide-${i + 1}.${ext}`;
           const { error } = await supabase.storage.from('narasi').upload(path, s.audioFile, { upsert: true });
