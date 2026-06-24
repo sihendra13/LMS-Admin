@@ -351,14 +351,12 @@ export const ReviewSertifikat = () => {
       </div>
     );
   };
-
   const EmptyState = ({ icon, msg }) => (
-    <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text3)' }}>
-      <div style={{ fontSize: '30px', marginBottom: '10px' }}>{icon}</div>
-      <p style={{ fontSize: '13px' }}>{msg}</p>
+    <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
+      <p style={{ fontSize: '13px', margin: 0 }}>{msg}</p>
     </div>
   );
-
   // ── HRD action config ────────────────────────────────────────────────
   const hrdActions = [
     { type: 'approve', label: '✓ Terbitkan',   color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
@@ -610,14 +608,21 @@ export const ReviewSertifikat = () => {
 
       {/* CONTENT */}
       <div className="card" style={{ padding: 0 }}>
-        {/* ── HRD: Siap Diterbitkan ── */}
         {isHRD && activeTab === 'ready' && (
           readySubs.length === 0
-            ? <EmptyState icon="✅" msg="Belum ada yang siap diterbitkan. Menunggu rekomendasi supervisor." />
+            ? <EmptyState
+                icon={
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f0fdf4', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="8" r="6" />
+                      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                    </svg>
+                  </div>
+                }
+                msg="Belum ada yang siap diterbitkan. Menunggu rekomendasi supervisor."
+              />
             : readySubs.map(sub => <Card key={sub.id} sub={sub} actions={hrdActions} />)
-        )}
-
-        {/* ── HRD: Dalam Proses (pending + remedial) ── */}
+        )}        {/* ── HRD: Dalam Proses (pending + remedial) ── */}
         {isHRD && activeTab === 'in_progress' && (
           inProgressSubs.length === 0
             ? <EmptyState icon="📋" msg="Tidak ada yang sedang dalam proses." />
