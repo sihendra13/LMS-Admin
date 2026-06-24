@@ -407,6 +407,60 @@ export const Dashboard = () => {
         return `Untuk tren penonton per bulan, dibutuhkan tabel log historis dengan timestamp per tayangan. Saat ini sistem hanya menyimpan total akumulasi views per video.\n\nData yang tersedia sekarang:\n${[...videos].sort((a,b) => (b.views||0)-(a.views||0)).slice(0,5).map((v,i) => `${i+1}. **${v.title}** — ${v.views||0} views`).join('\n')}\n\nFitur tren bulanan bisa ditambahkan di versi berikutnya.`;
       }
 
+      // 27. Deadline mendekat
+      if (/(deadline|tenggat|batas waktu).*(minggu|hari|besok|dekat)/.test(q) || /(sop|materi|training).*(deadline|harus selesai)/.test(q)) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const urgent = videos.filter(v => {
+          if (!v.deadline) return false;
+          const diff = Math.ceil((new Date(v.deadline) - today) / 86400000);
+          return diff <= 7 && diff >= 0;
+        });
+        if (urgent.length === 0) return 'Tidak ada SOP dengan deadline dalam 7 hari ke depan.';
+        return urgent.map(v => {
+          const diff = Math.ceil((new Date(v.deadline) - today) / 86400000);
+          return `⚠️ **${v.title}** — ${diff === 0 ? 'hari ini' : diff + ' hari lagi'}`;
+        }).join('\n');
+      }
+
+      // 28. Karyawan paling sering remedial
+      if (/(paling sering|berkali|berulang).*(gagal|remedial)/.test(q) || /(siapa).*(paling banyak).*(gagal|remedial)/.test(q)) {
+        const count = {};
+        quizSubmissions.filter(s => s.postScore < passingScore)
+          .forEach(s => { count[s.employeeName] = (count[s.employeeName] || 0) + 1; });
+        const sorted = Object.entries(count).sort((a,b) => b[1]-a[1]);
+        if (sorted.length === 0) return 'Tidak ada karyawan yang pernah remedial.';
+        return `Karyawan paling sering remedial:\n\n${sorted.slice(0,5).map((e,i) => `${i+1}. **${e[0]}** — ${e[1]}x remedial`).join('\n')}`;
+      }
+
+      // 29. Progress per karyawan individual
+      if (mentionedEmp && /(progress|sudah selesai|sudah ikut|sudah lulus berapa|riwayat)/.test(q)) {
+        const empSubs = quizSubmissions.filter(s => s.employeeName === mentionedEmp.name);
+        const lulus = empSubs.filter(s => s.postScore >= passingScore);
+        const gagal = empSubs.filter(s => s.postScore < passingScore);
+        if (empSubs.length === 0) return `**${mentionedEmp.name}** belum mengerjakan kuis apapun.`;
+        return `Progress **${mentionedEmp.name}** (${mentionedEmp.dept}):\n\n` +
+          `✅ Lulus: ${lulus.length} kuis\n` +
+          `❌ Remedial: ${gagal.length} kuis\n` +
+          `📊 Rata-rata skor: ${Math.round(empSubs.reduce((a,b) => a + b.postScore, 0) / empSubs.length)}%\n\n` +
+          lulus.map(s => `• ${s.videoTitle} — ${s.postScore}%`).join('\n');
+      }
+
+      // 30. Karyawan belum mulai sama sekali
+      if (/(belum mulai|belum buka|belum akses|belum mengerjakan apapun|belum ada aktivitas)/.test(q)) {
+        const sudahIkut = new Set(quizSubmissions.map(s => s.employeeName));
+        const belumMulai = employees.filter(e => !sudahIkut.has(e.name));
+        if (belumMulai.length === 0) return 'Semua karyawan sudah pernah mengerjakan minimal 1 kuis.';
+        return `${belumMulai.length} karyawan belum mulai training sama sekali:\n\n` +
+          belumMulai.map((e,i) => `${i+1}. **${e.name}** — Divisi ${e.dept}`).join('\n');
+      }
+
+      // 31. Total sertifikat
+      if (/(berapa|jumlah|total).*(sertifikat|sertifikasi)/.test(q) || /(sertifikat).*(sudah|telah|terbit)/.test(q)) {
+        const certified = quizSubmissions.filter(s => s.certStatus === 'approved');
+        return `Total sertifikat yang sudah diterbitkan: **${certified.length}**\n\n` +
+          `Dari ${quizSubmissions.length} total pengerjaan kuis, ${certified.length} sudah disetujui dan sertifikat diterbitkan.`;
+      }
+
       return null;
     })();
 
