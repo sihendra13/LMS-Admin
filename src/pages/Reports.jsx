@@ -55,6 +55,15 @@ export const Reports = () => {
     return (m || 0) + (s || 0) / 60;
   };
 
+  const getCertLabel = (sub) => {
+    if (sub.certStatus === 'approved') return { text: 'Tersertifikasi', color: STATUS_COLORS.tersertifikasi };
+    if (['pending', 'supervisor_ok'].includes(sub.certStatus)) return { text: 'Lulus (Menunggu Approval)', color: STATUS_COLORS.lulusMenunggu };
+    if (sub.certStatus === 'rejected') return { text: 'Ditolak', color: STATUS_COLORS.tidakLulus };
+    if (sub.certStatus === 'remedial' && (sub.retakeCount || 0) >= MAX_RETAKES) return { text: 'Tidak Lulus', color: STATUS_COLORS.tidakLulus };
+    if (sub.certStatus === 'remedial') return { text: 'Remedi (Butuh Ujian Ulang)', color: STATUS_COLORS.remedial };
+    return { text: sub.status || '-', color: 'var(--text2)' };
+  };
+
   // --- All submissions (scoped by supervisor dept if needed) ---
   const displaySubmissions = isSupervisor
     ? quizSubmissions.filter(sub => {
@@ -101,7 +110,7 @@ export const Reports = () => {
 
     const tersertifikasi = statuses.filter(s => s.certStatus === 'approved').length;
     const lulusMenunggu  = statuses.filter(s => ['pending', 'supervisor_ok'].includes(s.certStatus)).length;
-    const tidakLulus     = statuses.filter(s => s.certStatus === 'remedial' && (s.retakeCount || 0) >= MAX_RETAKES).length;
+    const tidakLulus     = statuses.filter(s => s.certStatus === 'rejected' || (s.certStatus === 'remedial' && (s.retakeCount || 0) >= MAX_RETAKES)).length;
     const remedial       = statuses.filter(s => s.certStatus === 'remedial' && (s.retakeCount || 0) < MAX_RETAKES).length;
     const belumIkut      = Math.max(0, total - statuses.length);
 
@@ -119,7 +128,9 @@ export const Reports = () => {
   });
 
   // --- Global stats (periode terpilih) ---
-  const totalEmployees   = employees.length;
+  const totalEmployees = isSupervisor
+    ? employees.filter(e => e.dept?.toLowerCase() === currentUser.dept.toLowerCase()).length
+    : employees.length;
   const uniqueSubmitters = new Set(periodSubs.map(s => s.employeeName)).size;
   const overallCompliance = totalEmployees > 0 ? Math.round((uniqueSubmitters / totalEmployees) * 100) : 0;
   const overallAvgScore  = periodSubs.length > 0
@@ -203,7 +214,8 @@ export const Reports = () => {
 
     const prePostRows = filteredTableSubs.map(sub => {
       const video = videos.find(v => v.title === sub.videoTitle);
-      const subDate = sub.date && sub.date.length > 10 ? new Date(sub.date) : null;
+      const subDateRaw = sub.date ? new Date(sub.date) : null;
+      const subDate = subDateRaw && !isNaN(subDateRaw) ? subDateRaw : null;
       const deadlineStatus = !video?.deadline ? '-'
         : !subDate ? 'Tidak diketahui'
         : subDate <= new Date(video.deadline) ? 'Tepat Waktu' : 'Terlambat';
@@ -222,7 +234,7 @@ export const Reports = () => {
         'Skor Pre-Test (%)': sub.preScore,
         'Skor Post-Test (%)': sub.postScore,
         'Peningkatan (%)': sub.postScore - sub.preScore,
-        'Status Kelulusan': sub.status,
+        'Status Kelulusan': getCertLabel(sub).text,
         'Status Sertifikat': sub.certStatus || '-',
       };
     });
@@ -260,7 +272,7 @@ export const Reports = () => {
   const barData = complianceMatrix.map(r => ({
     dept:            r.dept,
     Tersertifikasi:  r.tersertifikasi,
-    'Lulus (Menunggu)': r.lulusMenunggu,
+    'Lulus (Menunggu Approval)': r.lulusMenunggu,
     Remedial:        r.remedial,
     'Tidak Lulus':   r.tidakLulus,
     'Belum Ikut':    r.belumIkut,
@@ -434,7 +446,7 @@ export const Reports = () => {
                     <YAxis tick={{ fontSize: 11, fill: '#64748b' }} allowDecimals={false} />
                     <Tooltip content={customTooltip} />
                     <Bar dataKey="Tersertifikasi"    stackId="a" fill={STATUS_COLORS.tersertifikasi} radius={[0,0,0,0]} />
-                    <Bar dataKey="Lulus (Menunggu)"  stackId="a" fill={STATUS_COLORS.lulusMenunggu} />
+                    <Bar dataKey="Lulus (Menunggu Approval)"  stackId="a" fill={STATUS_COLORS.lulusMenunggu} />
                     <Bar dataKey="Remedial"          stackId="a" fill={STATUS_COLORS.remedial} />
                     <Bar dataKey="Tidak Lulus"       stackId="a" fill={STATUS_COLORS.tidakLulus} />
                     <Bar dataKey="Belum Ikut"        stackId="a" fill={STATUS_COLORS.belumIkut} radius={[4,4,0,0]} />
@@ -445,7 +457,7 @@ export const Reports = () => {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
                 {[
                   ['Tersertifikasi', STATUS_COLORS.tersertifikasi],
-                  ['Lulus (Menunggu)', STATUS_COLORS.lulusMenunggu],
+                  ['Lulus (Menunggu Approval)', STATUS_COLORS.lulusMenunggu],
                   ['Remedial', STATUS_COLORS.remedial],
                   ['Tidak Lulus', STATUS_COLORS.tidakLulus],
                   ['Belum Ikut', STATUS_COLORS.belumIkut],
@@ -567,13 +579,7 @@ export const Reports = () => {
                     const progressLabel = imp > 0 ? `↑ ${imp}% Meningkat` : imp < 0 ? `↓ ${Math.abs(imp)}% Menurun` : '= Tidak Berubah';
                     const progressColor = imp > 0 ? 'var(--green)' : imp < 0 ? 'var(--red)' : 'var(--text3)';
                     const progressBg    = imp > 0 ? '#ecfdf5'      : imp < 0 ? '#fef2f2'    : '#f8fafc';
-                    const certLabel = (() => {
-                      if (sub.certStatus === 'approved') return { text: 'Tersertifikasi', color: STATUS_COLORS.tersertifikasi };
-                      if (['pending', 'supervisor_ok'].includes(sub.certStatus)) return { text: 'Lulus (Menunggu Approval)', color: STATUS_COLORS.lulusMenunggu };
-                      if (sub.certStatus === 'remedial' && (sub.retakeCount || 0) >= MAX_RETAKES) return { text: 'Tidak Lulus', color: STATUS_COLORS.tidakLulus };
-                      if (sub.certStatus === 'remedial') return { text: 'Remedi (Butuh Ujian Ulang)', color: STATUS_COLORS.remedial };
-                      return { text: sub.status || '-', color: 'var(--text2)' };
-                    })();
+                    const certLabel = getCertLabel(sub);
                     return (
                       <tr key={sub.id} style={{ borderBottom: '1px solid var(--border)' }}>
                         <td style={{ padding: '14px 16px', fontWeight: '500' }}>{sub.employeeName}</td>
