@@ -386,6 +386,27 @@ export const Dashboard = () => {
         return `**${mentionedEmp.name}** sudah mengerjakan **${subs.length} kuis**.`;
       }
 
+      // 24. Video paling sering ditonton
+      if (/(video|sop|materi).*(paling sering|terbanyak|paling banyak|paling populer|terpopuler).*(ditonton|dibuka|dilihat)|(ditonton|dibuka|dilihat).*(paling sering|terbanyak|paling banyak|paling populer|terpopuler)/.test(q)) {
+        const sorted = [...videos].filter(v => v.views > 0).sort((a, b) => (b.views || 0) - (a.views || 0));
+        if (!sorted.length) return 'Belum ada data penonton yang terekam.';
+        const top3 = sorted.slice(0, 3).map((v, i) => `${i + 1}. **${v.title}** — ${v.views} kali ditonton`).join('\n');
+        return `Video yang paling sering ditonton:\n\n${top3}`;
+      }
+
+      // 25. Video paling jarang ditonton
+      if (/(video|sop|materi).*(paling jarang|paling sedikit|terendah).*(ditonton|dibuka|dilihat)|(ditonton|dibuka|dilihat).*(paling jarang|paling sedikit|terendah)/.test(q)) {
+        const sorted = [...videos].filter(v => (v.views || 0) >= 0).sort((a, b) => (a.views || 0) - (b.views || 0));
+        if (!sorted.length) return 'Belum ada data penonton.';
+        const bot3 = sorted.slice(0, 3).map((v, i) => `${i + 1}. **${v.title}** — ${v.views || 0} kali ditonton`).join('\n');
+        return `Video yang paling jarang ditonton:\n\n${bot3}\n\nVideo-video ini mungkin perlu dipromosikan lebih aktif ke karyawan.`;
+      }
+
+      // 26. Tren penonton per bulan
+      if (/(tren|trend|grafik|statistik).*(penonton|views|ditonton|dilihat)|(penonton|views).*(per bulan|bulanan|tren|trend)/.test(q)) {
+        return `Untuk tren penonton per bulan, dibutuhkan tabel log historis dengan timestamp per tayangan. Saat ini sistem hanya menyimpan total akumulasi views per video.\n\nData yang tersedia sekarang:\n${[...videos].sort((a,b) => (b.views||0)-(a.views||0)).slice(0,5).map((v,i) => `${i+1}. **${v.title}** — ${v.views||0} views`).join('\n')}\n\nFitur tren bulanan bisa ditambahkan di versi berikutnya.`;
+      }
+
       return null;
     })();
 
@@ -400,7 +421,7 @@ export const Dashboard = () => {
 
     try {
       const empData = employees.map(e => ({ name: e.name, dept: e.dept, role: e.role, email: e.email }));
-      const vidData = videos.map(v => ({ title: v.title, dept: v.dept, duration: v.duration, category: v.category }));
+      const vidData = videos.map(v => ({ title: v.title, dept: v.dept, duration: v.duration, category: v.category, views: v.views || 0 }));
       const quizData = quizSubmissions.map(q => ({ employee: q.employeeName, video: q.videoTitle, score: q.postScore, passed: (q.postScore ?? 0) >= passingScore }));
 
       const systemPrompt = `Kamu adalah AXA AI, asisten LMS Axara. Jawab dalam Bahasa Indonesia, gunakan data nyata berikut.
