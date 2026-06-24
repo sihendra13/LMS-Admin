@@ -12,7 +12,6 @@ import { Employees } from './pages/Employees';
 import { Reports } from './pages/Reports';
 import { UploadSOP } from './pages/UploadSOP';
 import { HeyGen } from './pages/HeyGen';
-import { Certifications } from './pages/Certifications';
 import { Departments } from './pages/Departments';
 import { QuizGrading } from './pages/QuizGrading';
 import { Settings } from './pages/Settings';
@@ -36,7 +35,6 @@ const AppContent = ({ onLogout }) => {
       case 'upload':       return <UploadSOP />;
 
       case 'heygen':       return <HeyGen />;
-      case 'sertifikasi':  return <Certifications />;
       case 'departemen':   return <Departments />;
       case 'penilaian':    return <QuizGrading />;
       case 'review-sertifikat': return <ReviewSertifikat />;

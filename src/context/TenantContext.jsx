@@ -140,11 +140,11 @@ export const TenantProvider = ({ children, authUser }) => {
 
   // Mock initial data that can be updated dynamically
   const [employees, setEmployees] = useState(storedDB.employees || [
-    { id: 1, name: 'Rini Wulandari', dept: 'Sales', city: 'Jakarta', score: 18 },
-    { id: 2, name: 'Budi Pratama', dept: 'Finance', city: 'Surabaya', score: 15 },
-    { id: 3, name: 'Sari Anggraeni', dept: 'HRD', city: 'Bandung', score: 14 },
-    { id: 4, name: 'Dika Kurniawan', dept: 'IT', city: 'Jakarta', score: 12 },
-    { id: 5, name: 'Nina Putri', dept: 'CS', city: 'Medan', score: 11 },
+    { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', role: 'employee', dept: 'Sales', city: 'Jakarta', score: 18 },
+    { id: 2, name: 'Budi Pratama', email: 'budi.p@majubersama.com', role: 'employee', dept: 'Finance', city: 'Surabaya', score: 15 },
+    { id: 3, name: 'Sari Anggraeni', email: 'sari.a@majubersama.com', role: 'employee', dept: 'HRD', city: 'Bandung', score: 14 },
+    { id: 4, name: 'Dika Kurniawan', email: 'dika.k@majubersama.com', role: 'employee', dept: 'IT', city: 'Jakarta', score: 12 },
+    { id: 5, name: 'Nina Putri', email: 'nina.p@majubersama.com', role: 'employee', dept: 'CS', city: 'Medan', score: 11 },
   ]);
 
   const [videos, setVideos] = useState([]);
@@ -170,6 +170,8 @@ export const TenantProvider = ({ children, authUser }) => {
       employees,
       pendingEssays,
       activities,
+      passingScore,
+      validityMonths,
     };
     try {
       // Simpan tanpa logo — logo disimpan terpisah di LOGO_KEY
@@ -178,7 +180,7 @@ export const TenantProvider = ({ children, authUser }) => {
     } catch {
       // storage penuh, lewati
     }
-  }, [tenant, currentUser, supervisors, invitations, employees, pendingEssays, activities]);
+  }, [tenant, currentUser, supervisors, invitations, employees, pendingEssays, activities, passingScore, validityMonths]);
 
   // Supabase: fetch all quiz submissions + realtime sync
   const mapRow = (row) => ({

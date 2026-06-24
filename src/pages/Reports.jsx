@@ -121,7 +121,6 @@ export const Reports = () => {
         })(),
         'Deadline': video?.deadline || '-',
         'Status Deadline': deadlineStatus,
-        'Dikonfirmasi Karyawan': sub.acknowledged ? 'Ya' : 'Tidak',
         'Skor Pre-Test (%)': sub.preScore,
         'Skor Post-Test (%)': sub.postScore,
         'Peningkatan (%)': sub.postScore - sub.preScore,

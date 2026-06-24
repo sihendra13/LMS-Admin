@@ -868,7 +868,7 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
               <div className="mini-stats">
                 <div className="mini-stat">
                   <div className="mini-label">Wajib ditonton</div>
-                  <div className="mini-val">{isSupervisor ? displayVideos.length : 18}</div>
+                  <div className="mini-val">{isSupervisor ? displayVideos.length : videos.filter(v => !v.archived).length}</div>
                   <div className="mini-sub" style={{ color: 'var(--accent)', fontSize: '11px' }}>SOP aktif</div>
                 </div>
                 <div className="mini-stat">

@@ -9,17 +9,7 @@ export const Settings = () => {
   const isHRDAdmin = currentUser.role === 'admin';
 
   // Branding/Integration states
-  const [syncStatus, setSyncStatus] = useState('Terakhir disinkronisasi: Hari ini, 09:30');
-  const [isSyncing, setIsSyncing] = useState(false);
   const [logoStatus, setLogoStatus] = useState('idle'); // 'idle' | 'processing' | 'saved' | 'error'
-
-  const handleSyncHRIS = () => {
-    setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
-      setSyncStatus(`Terakhir disinkronisasi: Baru saja (Sukses)`);
-    }, 1500);
-  };
 
   return (
     <div className="content">

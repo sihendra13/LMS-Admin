@@ -751,7 +751,7 @@ export const ReviewSertifikat = () => {
       {/* CERTIFICATE PREVIEW MODAL */}
       {previewCert && (() => {
         const { sub, idx } = previewCert;
-        const certId = `CERT-2026${100 + idx}`;
+        const certId = `CERT-${new Date().getFullYear()}${100 + idx}`;
         const issueDate = sub.approvedDate || sub.date || '—';
         const expiryDate = validityMonths === 999 ? 'Selamanya' : (() => {
           const d = new Date(issueDate); d.setMonth(d.getMonth() + (validityMonths || 12));

@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
 
 export const Departments = () => {
-  const { 
-    tenant, 
-    employees, 
-    videos, 
-    supervisors, 
-    invitations, 
-    inviteSupervisor, 
+  const {
+    tenant,
+    employees,
+    videos,
+    supervisors,
+    invitations,
+    inviteSupervisor,
     revokeSupervisor,
-    currentUser 
+    currentUser,
+    quizSubmissions,
   } = useTenant();
 
   // Local state for invitation form
@@ -18,15 +19,27 @@ export const Departments = () => {
   const [emailInput, setEmailInput] = useState('');
   const [deptInput, setDeptInput] = useState('Sales');
 
-  // Hardcoded initial manager names/progress for departments
-  const departmentData = [
-    { name: 'Sales', code: 'sales', color: '#eff6ff', textColor: '#2F7BFF', progress: 89, modules: 2 },
-    { name: 'Finance', code: 'finance', color: '#f5f3ff', textColor: '#8b5cf6', progress: 94, modules: 1 },
-    { name: 'HRD', code: 'hrd', color: '#f0fdf4', textColor: '#10b981', progress: 76, modules: 1 },
-    { name: 'Operasional', code: 'ops', color: '#fffbeb', textColor: '#f59e0b', progress: 61, modules: 1 },
-    { name: 'Customer Service', code: 'cs', color: '#ecfeff', textColor: '#06b6d4', progress: 70, modules: 0 },
-    { name: 'IT', code: 'it', color: '#fdf2f8', textColor: '#db2777', progress: 33, modules: 0 }
+  const departmentMeta = [
+    { name: 'Sales', code: 'sales', color: '#eff6ff', textColor: '#2F7BFF' },
+    { name: 'Finance', code: 'finance', color: '#f5f3ff', textColor: '#8b5cf6' },
+    { name: 'HRD', code: 'hrd', color: '#f0fdf4', textColor: '#10b981' },
+    { name: 'Operasional', code: 'ops', color: '#fffbeb', textColor: '#f59e0b' },
+    { name: 'Customer Service', code: 'cs', color: '#ecfeff', textColor: '#06b6d4' },
+    { name: 'IT', code: 'it', color: '#fdf2f8', textColor: '#db2777' }
   ];
+
+  const departmentData = departmentMeta.map(meta => {
+    const deptVideos = videos.filter(v => v.dept === meta.name && !v.archived);
+    const modules = deptVideos.length;
+    const deptEmployees = employees.filter(e => e.dept.toLowerCase() === meta.name.toLowerCase());
+    const totalPairs = deptEmployees.length * (modules || 1);
+    const completedPairs = deptVideos.reduce((acc, v) => {
+      return acc + quizSubmissions.filter(s => s.videoTitle === v.title && s.status === 'lulus' &&
+        deptEmployees.some(e => e.name === s.employeeName)).length;
+    }, 0);
+    const progress = totalPairs > 0 ? Math.round((completedPairs / totalPairs) * 100) : 0;
+    return { ...meta, modules, progress };
+  });
 
   const handleInviteSubmit = (e) => {
     e.preventDefault();

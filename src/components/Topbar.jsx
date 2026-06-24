@@ -9,7 +9,8 @@ export const Topbar = () => {
     switch (activePage) {
       case 'dashboard': return 'Dashboard';
       case 'sop': return 'Video Training & SOP';
-      case 'sertifikasi': return 'Sertifikasi';
+      case 'review-sertifikat': return 'Sertifikat';
+      case 'penilaian': return 'Hasil Penilaian Kuis';
       case 'laporan': return 'Laporan & Compliance';
       case 'karyawan': return 'Manajemen Karyawan';
       case 'departemen': return 'Daftar Departemen';
@@ -31,7 +32,7 @@ export const Topbar = () => {
         <div>
           <div className="page-title">{getPageTitle()}</div>
           <div className="page-sub">
-            {getTodayDateString()} &nbsp;·&nbsp; {tenant.name} Tbk
+            {getTodayDateString()} &nbsp;·&nbsp; {tenant.name}
           </div>
         </div>
         <div className="topbar-right">

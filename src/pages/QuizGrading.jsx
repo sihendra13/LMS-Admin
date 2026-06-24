@@ -61,7 +61,7 @@ export const QuizGrading = () => {
               <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
           </div>
-          <div className="stat-label" style={{ fontWarning: '500' }}>Karyawan Lulus</div>
+          <div className="stat-label" style={{ fontWeight: '500' }}>Karyawan Lulus</div>
           <div className="stat-value" style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
             {passed}
             <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: 'normal' }}>karyawan</span>
