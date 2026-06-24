@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
+import {
+  BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, CartesianGrid,
+} from 'recharts';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { useTenant } from '../context/TenantContext';
-import { hasFullComplianceReports, hasAuditReport } from '../utils/featureGates';
+import { hasFullComplianceReports } from '../utils/featureGates';
 
 export const Reports = () => {
   const { tenant, quizSubmissions, videos, employees, currentUser, passingScore } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
+  const reportRef = useRef(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const displaySubmissions = isSupervisor
     ? quizSubmissions.filter(sub => {
@@ -15,13 +23,14 @@ export const Reports = () => {
     : quizSubmissions;
 
   const isFullReportEnabled = hasFullComplianceReports(tenant.plan);
-  const isAuditEnabled = hasAuditReport(tenant.plan);
 
-  // Date range filter for audit
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [histDeptFilter, setHistDeptFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
-  // --- Computed compliance stats ---
+  // --- Helpers ---
   const parseDuration = (str) => {
     if (!str) return 0;
     const [m, s] = str.split(':').map(Number);
@@ -35,6 +44,9 @@ export const Reports = () => {
     return { label: 'Berisiko', color: 'var(--red)' };
   };
 
+  const getBarColor = (rate) => rate >= 75 ? '#22c55e' : rate >= 60 ? '#f59e0b' : '#ef4444';
+
+  // --- Compliance matrix ---
   const activeDepts = isSupervisor
     ? [currentUser.dept]
     : [...new Set(videos.filter(v => !v.archived && v.dept !== 'Semua').map(v => v.dept))].sort();
@@ -53,20 +65,69 @@ export const Reports = () => {
     return { dept, sopWajib: deptVideos.length, completedRate, avgScore, status: getComplianceStatus(completedRate) };
   });
 
+  // --- Global stats ---
   const totalEmployees = employees.length;
   const uniqueGlobalSubmitters = new Set(quizSubmissions.map(s => s.employeeName)).size;
   const overallCompliance = totalEmployees > 0 ? Math.round((uniqueGlobalSubmitters / totalEmployees) * 100) : 0;
   const overallAvgScore = quizSubmissions.length > 0
     ? Math.round(quizSubmissions.reduce((sum, s) => sum + (s.postScore || 0), 0) / quizSubmissions.length)
     : 0;
-  // Waktu belajar: hitung dari jumlah submisi × rata-rata durasi video (lebih akurat dari progress localStorage)
   const avgVideoDurationMinutes = videos.length > 0
     ? videos.reduce((sum, v) => sum + parseDuration(v.duration), 0) / videos.length
     : 0;
   const totalWatchHours = Math.round((quizSubmissions.length * avgVideoDurationMinutes) / 60);
 
-  // Filter Pre/Post-Test table for HRD
-  const [histDeptFilter, setHistDeptFilter] = useState('');
+  // --- Trend data (6 bulan terakhir) ---
+  const trendData = (() => {
+    const monthMap = {};
+    quizSubmissions.forEach(s => {
+      if (!s.date || s.date.length <= 10) return;
+      const d = new Date(s.date);
+      if (isNaN(d)) return;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
+      if (!monthMap[key]) monthMap[key] = { key, label, submitters: new Set() };
+      monthMap[key].submitters.add(s.employeeName);
+    });
+    return Object.values(monthMap)
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .slice(-6)
+      .map(m => ({
+        label: m.label,
+        compliance: totalEmployees > 0 ? Math.round((m.submitters.size / totalEmployees) * 100) : 0,
+      }));
+  })();
+
+  // --- Summary insight ---
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+  const monthName = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  const thisMonthSubs = quizSubmissions.filter(s => s.date?.startsWith(thisMonth));
+  const lastMonthSubs = quizSubmissions.filter(s => s.date?.startsWith(lastMonth));
+  const thisMonthCompliance = totalEmployees > 0
+    ? Math.round((new Set(thisMonthSubs.map(s => s.employeeName)).size / totalEmployees) * 100) : 0;
+  const lastMonthCompliance = totalEmployees > 0
+    ? Math.round((new Set(lastMonthSubs.map(s => s.employeeName)).size / totalEmployees) * 100) : 0;
+  const complianceChange = thisMonthCompliance - lastMonthCompliance;
+
+  const bestDept = complianceMatrix.length > 0
+    ? complianceMatrix.reduce((best, d) => d.completedRate > best.completedRate ? d : best)
+    : null;
+  const worstDept = complianceMatrix.filter(d => d.completedRate < 75).length > 0
+    ? complianceMatrix.filter(d => d.completedRate < 75).reduce((worst, d) => d.completedRate < worst.completedRate ? d : worst)
+    : null;
+  const thisMonthCerts = thisMonthSubs.filter(s => s.certStatus === 'approved').length;
+  const upcomingDeadlines = videos.filter(v => {
+    if (!v.deadline || v.archived) return false;
+    const dl = new Date(v.deadline);
+    const diff = (dl - now) / 86400000;
+    return diff >= 0 && diff <= 7;
+  });
+
+  // --- Filtered submissions ---
   const filteredDisplaySubmissions = displaySubmissions.filter(s => {
     if (!isSupervisor && histDeptFilter && (s.dept || '').toLowerCase() !== histDeptFilter.toLowerCase()) return false;
     if (dateFrom && s.date && s.date.length > 10) {
@@ -78,13 +139,22 @@ export const Reports = () => {
     return true;
   });
 
-  // Export XLSX
+  const totalPages = Math.ceil(filteredDisplaySubmissions.length / ITEMS_PER_PAGE);
+  const paginatedSubmissions = filteredDisplaySubmissions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
+  const handleFilterChange = (setter) => (e) => {
+    setter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // --- Export XLSX ---
   const handleExport = () => {
     const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-
     const wb = XLSX.utils.book_new();
 
-    // Sheet 1: Matriks Compliance
     const complianceRows = complianceMatrix.map(row => ({
       'Departemen': row.dept,
       'SOP Wajib': `${row.sopWajib} Video`,
@@ -95,7 +165,6 @@ export const Reports = () => {
     const ws1 = XLSX.utils.json_to_sheet(complianceRows);
     XLSX.utils.book_append_sheet(wb, ws1, 'Compliance Departemen');
 
-    // Sheet 2: Pre/Post-Test (Audit-Ready)
     const prePostRows = filteredDisplaySubmissions.map(sub => {
       const video = videos.find(v => v.title === sub.videoTitle);
       const deadlineStatus = (() => {
@@ -134,8 +203,47 @@ export const Reports = () => {
     XLSX.writeFile(wb, `Laporan_LMS_${today}.xlsx`);
   };
 
+  // --- Export PDF ---
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    setPdfLoading(true);
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      let yOffset = 0;
+      while (yOffset < imgHeight) {
+        pdf.addImage(imgData, 'PNG', 0, -yOffset, pdfWidth, imgHeight);
+        yOffset += pageHeight;
+        if (yOffset < imgHeight) pdf.addPage();
+      }
+      const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      pdf.save(`Laporan_LMS_${today}.pdf`);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const inputStyle = {
+    padding: '6px 10px',
+    borderRadius: '6px',
+    border: '1px solid var(--border)',
+    fontSize: '12px',
+    background: 'var(--surface)',
+    color: 'var(--text1)',
+    height: '32px',
+  };
+
   return (
-    <div className="content">
+    <div className="content" ref={reportRef}>
       <div style={{ marginBottom: '22px' }}>
         <h2 style={{ fontSize: '20px' }}>Laporan Pelatihan & Compliance</h2>
         <p style={{ fontSize: '12px', color: 'var(--text3)' }}>
@@ -144,7 +252,6 @@ export const Reports = () => {
       </div>
 
       {!isFullReportEnabled ? (
-        // 1. BASIC REPORTING (Starter Plan)
         <div>
           <div style={{ background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '8px', padding: '14px', marginBottom: '22px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>ℹ️ Akun Anda menggunakan <strong>Paket Starter</strong>. Fitur audit compliance lengkap terkunci.</span>
@@ -180,8 +287,44 @@ export const Reports = () => {
           </div>
         </div>
       ) : (
-        // 2. COMPLIANCE & FULL REPORTING (Business & Enterprise Plans)
         <div>
+
+          {/* SUMMARY INSIGHT */}
+          <div className="card" style={{ marginBottom: '22px', background: 'linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%)', border: '1px solid #dbeafe' }}>
+            <div style={{ padding: '20px 24px' }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+                📊 Ringkasan {monthName}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', color: 'var(--text1)', lineHeight: '1.8' }}>
+                {lastMonthSubs.length > 0 ? (
+                  complianceChange > 0 ? (
+                    <span>✅ Compliance rate bulan ini <strong>{thisMonthCompliance}%</strong>, naik dari {lastMonthCompliance}% bulan lalu <strong style={{ color: 'var(--green)' }}>(+{complianceChange}%)</strong>.</span>
+                  ) : complianceChange < 0 ? (
+                    <span>⚠️ Compliance rate bulan ini <strong>{thisMonthCompliance}%</strong>, turun dari {lastMonthCompliance}% bulan lalu <strong style={{ color: 'var(--red)' }}>({complianceChange}%)</strong>.</span>
+                  ) : (
+                    <span>📈 Compliance rate bulan ini <strong>{thisMonthCompliance}%</strong>, sama dengan bulan lalu.</span>
+                  )
+                ) : (
+                  <span>📈 Overall compliance rate saat ini <strong>{overallCompliance}%</strong> dari {totalEmployees} karyawan aktif.</span>
+                )}
+                {bestDept && <span>🏆 Departemen <strong>{bestDept.dept}</strong> terbaik dengan completion rate <strong>{bestDept.completedRate}%</strong>.</span>}
+                {worstDept && (
+                  <span>⚠️ Departemen <strong>{worstDept.dept}</strong> perlu perhatian — hanya <strong style={{ color: 'var(--red)' }}>{worstDept.completedRate}%</strong> completion rate.</span>
+                )}
+                {thisMonthCerts > 0 && (
+                  <span>🎓 <strong>{thisMonthCerts}</strong> sertifikat diterbitkan bulan ini.</span>
+                )}
+                {upcomingDeadlines.length > 0 && (
+                  <span>🔔 <strong>{upcomingDeadlines.length}</strong> SOP mendekati deadline dalam 7 hari: <em>{upcomingDeadlines.map(v => v.title).join(', ')}</em>.</span>
+                )}
+                {!worstDept && complianceMatrix.length > 0 && (
+                  <span>✅ Semua departemen berada di atas 75% compliance — program pelatihan berjalan baik.</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* STAT CARDS */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '22px' }}>
             <div className="card" style={{ padding: '16px 20px' }}>
               <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '4px' }}>Compliance Rate</div>
@@ -206,13 +349,78 @@ export const Reports = () => {
             </div>
           </div>
 
-          {/* COMPLIANCE DEPT */}
+          {/* CHARTS */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '22px' }}>
+            <div className="card" style={{ padding: '20px' }}>
+              <div className="card-title" style={{ marginBottom: '16px' }}>Completion Rate per Departemen</div>
+              {complianceMatrix.length === 0 ? (
+                <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text3)', fontSize: '13px' }}>
+                  Belum ada data departemen.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={complianceMatrix} barSize={32} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="dept" tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} domain={[0, 100]} tickFormatter={v => `${v}%`} />
+                    <Tooltip formatter={(v) => [`${v}%`, 'Completion Rate']} cursor={{ fill: '#f1f5f9' }} />
+                    <Bar dataKey="completedRate" radius={[4, 4, 0, 0]}>
+                      {complianceMatrix.map((entry, idx) => (
+                        <Cell key={idx} fill={getBarColor(entry.completedRate)} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="card" style={{ padding: '20px' }}>
+              <div className="card-title" style={{ marginBottom: '16px' }}>Tren Compliance (6 Bulan Terakhir)</div>
+              {trendData.length < 2 ? (
+                <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text3)', fontSize: '13px', textAlign: 'center', lineHeight: '1.6' }}>
+                  Data belum cukup.<br />Tren muncul setelah ada submission di 2+ bulan berbeda.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart data={trendData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} domain={[0, 100]} tickFormatter={v => `${v}%`} />
+                    <Tooltip formatter={(v) => [`${v}%`, 'Compliance']} />
+                    <Line
+                      type="monotone"
+                      dataKey="compliance"
+                      stroke="#2F7BFF"
+                      strokeWidth={2.5}
+                      dot={{ fill: '#2F7BFF', r: 4, strokeWidth: 0 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* COMPLIANCE MATRIX TABLE */}
           <div className="card" style={{ marginBottom: '22px' }}>
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="card-title">Matriks Compliance & Risiko Departemen</div>
-              <button className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }} onClick={handleExport}>
-                📥 Ekspor Laporan Lengkap (.XLSX)
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  style={{ ...inputStyle, height: 'auto', padding: '6px 12px', cursor: 'pointer', background: 'var(--surface2)', fontWeight: '500', border: '1px solid var(--border)' }}
+                  onClick={handleExport}
+                >
+                  📥 Ekspor XLSX
+                </button>
+                <button
+                  className="btn-primary"
+                  style={{ fontSize: '12px', padding: '6px 14px', opacity: pdfLoading ? 0.7 : 1 }}
+                  onClick={handleExportPDF}
+                  disabled={pdfLoading}
+                >
+                  {pdfLoading ? '⏳ Memproses...' : '📄 Ekspor PDF'}
+                </button>
+              </div>
             </div>
             <div className="card-body">
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -253,26 +461,51 @@ export const Reports = () => {
             </div>
           </div>
 
-          {/* NEW PRE-TEST & POST-TEST MONITORING */}
+          {/* PRE/POST TEST TABLE */}
           <div className="card">
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <div className="card-title">Evaluasi Efektivitas Pembelajaran (Pre-Test vs Post-Test)</div>
                 <span style={{ fontSize: '12px', color: 'var(--text3)' }}>Membandingkan pemahaman sebelum & sesudah menonton SOP</span>
               </div>
-              {!isSupervisor && (
-                <select
-                  className="form-select"
-                  style={{ fontSize: '12px', height: '34px', padding: '0 10px', minWidth: '180px' }}
-                  value={histDeptFilter}
-                  onChange={e => setHistDeptFilter(e.target.value)}
-                >
-                  <option value="">Semua Departemen</option>
-                  {activeDepts.map(d => (
-                    <option key={d} value={d}>Divisi {d}</option>
-                  ))}
-                </select>
-              )}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={handleFilterChange(setDateFrom)}
+                  style={inputStyle}
+                  title="Dari tanggal"
+                />
+                <span style={{ color: 'var(--text3)', fontSize: '12px' }}>—</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={handleFilterChange(setDateTo)}
+                  style={inputStyle}
+                  title="Sampai tanggal"
+                />
+                {(dateFrom || dateTo) && (
+                  <button
+                    onClick={() => { setDateFrom(''); setDateTo(''); setCurrentPage(1); }}
+                    style={{ ...inputStyle, height: 'auto', padding: '5px 10px', cursor: 'pointer', color: 'var(--text3)', background: 'none' }}
+                  >
+                    ✕ Reset
+                  </button>
+                )}
+                {!isSupervisor && (
+                  <select
+                    className="form-select"
+                    style={{ fontSize: '12px', height: '32px', padding: '0 10px', minWidth: '160px' }}
+                    value={histDeptFilter}
+                    onChange={handleFilterChange(setHistDeptFilter)}
+                  >
+                    <option value="">Semua Departemen</option>
+                    {activeDepts.map(d => (
+                      <option key={d} value={d}>Divisi {d}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
             <div className="card-body">
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -287,7 +520,13 @@ export const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredDisplaySubmissions.map((sub) => {
+                  {paginatedSubmissions.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--text3)', fontSize: '13px' }}>
+                        {filteredDisplaySubmissions.length === 0 ? 'Belum ada data evaluasi.' : 'Tidak ada data untuk filter ini.'}
+                      </td>
+                    </tr>
+                  ) : paginatedSubmissions.map((sub) => {
                     const improvement = sub.postScore - sub.preScore;
                     const progressLabel = improvement > 0
                       ? `↑ ${improvement}% Meningkat`
@@ -303,7 +542,7 @@ export const Reports = () => {
                           {sub.videoTitle}
                         </td>
                         <td style={{ padding: '14px 20px', textAlign: 'center', fontWeight: '500', color: 'var(--text3)' }}>{sub.preScore}%</td>
-                        <td style={{ padding: '14px 20px', textAlign: 'center', fontWeight: '600', color: 'var(--text1)' }}>{sub.postScore}%</td>
+                        <td style={{ padding: '14px 20px', textAlign: 'center', fontWeight: '600' }}>{sub.postScore}%</td>
                         <td style={{ padding: '14px 20px', textAlign: 'center' }}>
                           <span style={{ fontSize: '11px', background: progressBg, color: progressColor, padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>
                             {progressLabel}
@@ -317,6 +556,43 @@ export const Reports = () => {
                   })}
                 </tbody>
               </table>
+
+              {/* PAGINATION */}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text3)' }}>
+                    Menampilkan {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredDisplaySubmissions.length)} dari {filteredDisplaySubmissions.length} data
+                  </span>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: currentPage === 1 ? 'var(--surface2)' : 'var(--surface)', cursor: currentPage === 1 ? 'default' : 'pointer', fontSize: '13px', color: currentPage === 1 ? 'var(--text3)' : 'var(--text1)' }}
+                    >
+                      ‹ Prev
+                    </button>
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const page = totalPages <= 5 ? i + 1 : Math.min(Math.max(currentPage - 2, 1) + i, totalPages);
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: currentPage === page ? 'var(--accent)' : 'var(--surface)', cursor: 'pointer', fontSize: '13px', color: currentPage === page ? '#fff' : 'var(--text1)', fontWeight: currentPage === page ? '600' : '400' }}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: currentPage === totalPages ? 'var(--surface2)' : 'var(--surface)', cursor: currentPage === totalPages ? 'default' : 'pointer', fontSize: '13px', color: currentPage === totalPages ? 'var(--text3)' : 'var(--text1)' }}
+                    >
+                      Next ›
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
