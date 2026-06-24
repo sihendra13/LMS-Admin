@@ -601,10 +601,6 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
                              {video.duration}
                            </span>
                          )}
-                        <span style={{ fontSize: '10px', fontWeight: '600', color: '#6b7280', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                          {video.views || 0}
-                        </span>
                         {video.type === 'ppt' && video.narasiMode && video.narasiMode !== 'none' && (
                            <span style={{
                              display: 'inline-flex',
