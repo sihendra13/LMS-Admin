@@ -415,49 +415,6 @@ export const ReviewSertifikat = () => {
         </p>
       </div>
 
-      {/* STANDAR KELULUSAN — hanya HRD Admin */}
-      {isHRD && (
-        <div className="card" style={{ padding: '20px 24px', marginBottom: '24px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-            </svg>
-            Standar Kelulusan
-          </div>
-
-          {/* Passing Score */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '220px' }}>
-            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', flexShrink: 0 }}>Nilai Minimum Lulus</label>
-            <input
-              type="range" min="50" max="100" step="5"
-              value={passingScore}
-              onChange={(e) => setPassingScore(Number(e.target.value))}
-              style={{ flex: 1, accentColor: 'var(--accent)' }}
-            />
-            <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)', minWidth: '42px', textAlign: 'right' }}>{passingScore}%</span>
-          </div>
-
-          <div style={{ width: '1px', height: '32px', background: 'var(--border)', flexShrink: 0 }} />
-
-          {/* Validity Months */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', flexShrink: 0 }}>Masa Berlaku</label>
-            <select
-              value={validityMonths}
-              onChange={(e) => setValidityMonths(Number(e.target.value))}
-              className="form-select"
-              style={{ fontSize: '13px', padding: '6px 10px', minWidth: '140px' }}
-            >
-              <option value={3}>3 Bulan</option>
-              <option value={6}>6 Bulan</option>
-              <option value={12}>12 Bulan</option>
-              <option value={24}>24 Bulan</option>
-              <option value={999}>Selamanya</option>
-            </select>
-          </div>
-        </div>
-      )}
-
       {/* STATS OVERVIEW */}
       <div className="stats-grid" style={{ marginBottom: '24px' }}>
         {isHRD ? (
@@ -545,6 +502,49 @@ export const ReviewSertifikat = () => {
           </>
         )}
       </div>
+
+      {/* STANDAR KELULUSAN — hanya HRD Admin */}
+      {isHRD && (
+        <div className="card" style={{ padding: '20px 24px', marginBottom: '24px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text1)', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+            </svg>
+            Standar Kelulusan
+          </div>
+
+          {/* Passing Score */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '220px' }}>
+            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', flexShrink: 0 }}>Nilai Minimum Lulus</label>
+            <input
+              type="range" min="50" max="100" step="5"
+              value={passingScore}
+              onChange={(e) => setPassingScore(Number(e.target.value))}
+              style={{ flex: 1, accentColor: 'var(--accent)' }}
+            />
+            <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)', minWidth: '42px', textAlign: 'right' }}>{passingScore}%</span>
+          </div>
+
+          <div style={{ width: '1px', height: '32px', background: 'var(--border)', flexShrink: 0 }} />
+
+          {/* Validity Months */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', flexShrink: 0 }}>Masa Berlaku Sertifikat</label>
+            <select
+              value={validityMonths}
+              onChange={(e) => setValidityMonths(Number(e.target.value))}
+              className="form-select"
+              style={{ fontSize: '13px', padding: '6px 10px', minWidth: '140px' }}
+            >
+              <option value={3}>3 Bulan</option>
+              <option value={6}>6 Bulan</option>
+              <option value={12}>12 Bulan</option>
+              <option value={24}>24 Bulan</option>
+              <option value={999}>Selamanya</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* ROLE INFO BANNER */}
       {!isHRD && (
