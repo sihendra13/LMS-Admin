@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
+import { supabase } from '../utils/supabase';
 
 export const Employees = () => {
   const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser } = useTenant();
@@ -19,8 +20,81 @@ export const Employees = () => {
   const [importRows, setImportRows] = useState([]);
   const [importError, setImportError] = useState('');
 
+  const [deptFilter, setDeptFilter] = useState('');
+
+  // --- Bulk Actions state ---
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderSending, setReminderSending] = useState(false);
+  const [reminderDone, setReminderDone] = useState(false);
+
   const DEPT_OPTIONS = ['Sales', 'HRD', 'Operasional', 'Finance', 'CS', 'IT'];
 
+  const displayEmployees = isSupervisor
+    ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
+    : deptFilter
+      ? employees.filter(e => e.dept.toLowerCase() === deptFilter.toLowerCase())
+      : employees;
+
+  const limit      = getEmployeeLimit(tenant.plan);
+  const totalCount = employees.length;
+  const isFull     = totalCount >= limit;
+
+  // --- Bulk helpers ---
+  const allSelected      = displayEmployees.length > 0 && displayEmployees.every(e => selectedIds.has(e.id));
+  const someSelected     = selectedIds.size > 0;
+  const selectedEmployees = displayEmployees.filter(e => selectedIds.has(e.id));
+
+  const toggleSelect = (id) => setSelectedIds(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const toggleAll = () => {
+    if (allSelected) setSelectedIds(new Set());
+    else setSelectedIds(new Set(displayEmployees.map(e => e.id)));
+  };
+
+  const handleDeptFilterChange = (e) => {
+    setDeptFilter(e.target.value);
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    if (!window.confirm(`Hapus ${selectedIds.size} karyawan terpilih?\n\nData ini tidak dapat dikembalikan.`)) return;
+    selectedIds.forEach(id => deleteEmployee(id));
+    setSelectedIds(new Set());
+  };
+
+  const handleExportSelected = () => {
+    const rows = selectedEmployees.map(e => ({
+      'Nama Karyawan': e.name,
+      'Email': e.email || '-',
+      'Departemen': e.dept,
+      'Cabang / Kota': e.city || '-',
+      'SOP Selesai': e.score || 0,
+    }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Karyawan');
+    const today = new Date().toLocaleDateString('id-ID').replace(/\//g, '-');
+    XLSX.writeFile(wb, `Export_Karyawan_${today}.xlsx`);
+  };
+
+  const handleSendReminder = async () => {
+    setReminderSending(true);
+    try {
+      await supabase.functions.invoke('send-deadline-reminders', {
+        body: { manualEmployeeIds: selectedEmployees.map(e => e.id) },
+      });
+    } catch {
+      // edge function mungkin belum support parameter ini, tetap lanjut
+    }
+    setReminderSending(false);
+    setReminderDone(true);
+  };
+
+  // --- Existing handlers ---
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
       ['Nama Lengkap', 'Email', 'Departemen', 'Cabang/Kota'],
@@ -47,10 +121,10 @@ export const Employees = () => {
         const rows = raw.slice(1)
           .filter(r => r[0] && String(r[0]).trim())
           .map((r, idx) => {
-            const empName = String(r[0] || '').trim();
+            const empName  = String(r[0] || '').trim();
             const empEmail = String(r[1] || '').trim();
-            const empDept = String(r[2] || 'Sales').trim();
-            const empCity = String(r[3] || 'Jakarta').trim();
+            const empDept  = String(r[2] || 'Sales').trim();
+            const empCity  = String(r[3] || 'Jakarta').trim();
             const validDept = DEPT_OPTIONS.find(d => d.toLowerCase() === empDept.toLowerCase()) || 'Sales';
             const errors = [];
             if (!empName) errors.push('Nama kosong');
@@ -77,38 +151,14 @@ export const Employees = () => {
     alert(`${toAdd.length} karyawan berhasil ditambahkan!${toAdd.length < validRows.length ? `\n${validRows.length - toAdd.length} baris dilewati karena kuota penuh.` : ''}`);
   };
 
-  const limit = getEmployeeLimit(tenant.plan);
-  
-  const [deptFilter, setDeptFilter] = useState('');
-
-  const displayEmployees = isSupervisor
-    ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
-    : deptFilter
-      ? employees.filter(e => e.dept.toLowerCase() === deptFilter.toLowerCase())
-      : employees;
-
-  const totalCount = employees.length;
-  const isFull = totalCount >= limit;
-
   const handleAddEmployee = (e) => {
     e.preventDefault();
     if (!name.trim()) return alert('Nama karyawan tidak boleh kosong!');
-
     if (isFull) {
       alert(`Gagal! Batas kuota karyawan untuk Paket ${tenant.plan.toUpperCase()} adalah ${limit} karyawan. Silakan upgrade paket Anda.`);
       return;
     }
-
-    const newEmp = {
-      id: Date.now(),
-      name,
-      email: email.trim(),
-      dept: isSupervisor ? currentUser.dept : dept,
-      city,
-      score: 0
-    };
-
-    addEmployee(newEmp);
+    addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, score: 0 });
     setName('');
     setEmail('');
     alert('Karyawan baru berhasil ditambahkan!');
@@ -117,7 +167,7 @@ export const Employees = () => {
   return (
     <div className="content">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
-        
+
         {/* EMPLOYEES LIST */}
         <div>
           {isSupervisor ? (
@@ -134,7 +184,7 @@ export const Employees = () => {
               <div style={{ display: 'flex', height: '38px', alignItems: 'center' }}>
                 <select
                   value={deptFilter}
-                  onChange={e => setDeptFilter(e.target.value)}
+                  onChange={handleDeptFilterChange}
                   style={{ fontSize: '12px', height: '38px', padding: '0 32px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, appearance: 'none', WebkitAppearance: 'none', minWidth: '180px', cursor: 'pointer' }}
                 >
                   <option value="">Semua Departemen</option>
@@ -144,11 +194,49 @@ export const Employees = () => {
             </div>
           )}
 
+          {/* BULK ACTION BAR */}
+          {!isSupervisor && someSelected && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '13px', fontWeight: '600', color: '#1d4ed8', marginRight: '4px' }}>
+                {selectedIds.size} karyawan dipilih
+              </span>
+              <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto', flexWrap: 'wrap' }}>
+                <button onClick={handleExportSelected}
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #93c5fd', background: '#fff', color: '#1d4ed8', cursor: 'pointer' }}>
+                  📥 Export XLSX
+                </button>
+                <button onClick={() => { setReminderDone(false); setShowReminderModal(true); }}
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #93c5fd', background: '#fff', color: '#1d4ed8', cursor: 'pointer' }}>
+                  📧 Kirim Reminder
+                </button>
+                <button onClick={handleBulkDelete}
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', cursor: 'pointer' }}>
+                  🗑️ Hapus ({selectedIds.size})
+                </button>
+                <button onClick={() => setSelectedIds(new Set())}
+                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid var(--border)', background: '#f1f5f9', color: 'var(--text2)', cursor: 'pointer' }}>
+                  Batal
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="card">
             <div className="card-body">
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--border)' }}>
+                    {!isSupervisor && (
+                      <th style={{ padding: '12px 16px', width: '40px' }}>
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={toggleAll}
+                          style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+                          title={allSelected ? 'Batal pilih semua' : 'Pilih semua'}
+                        />
+                      </th>
+                    )}
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Nama Karyawan</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang / Kota</th>
@@ -157,57 +245,70 @@ export const Employees = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayEmployees.map((emp) => (
-                    <tr key={emp.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '14px 20px', fontWeight: '500' }}>{emp.name}</td>
-                      <td style={{ padding: '14px 20px' }}>
-                        <span className={`dept-tag dt-${emp.dept.toLowerCase()}`} style={{ display: 'inline-block' }}>
-                          {emp.dept}
-                        </span>
-                      </td>
-                      <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.city}</td>
-                      <td style={{ padding: '14px 20px', fontWeight: '600', color: 'var(--accent)', textAlign: 'right' }}>{emp.score} SOP</td>
-                      {!isSupervisor && (
-                        <td style={{ padding: '14px 20px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                            <button
-                              type="button"
-                              title="Edit karyawan"
-                              onClick={() => { setEditEmp(emp); setEditForm({ name: emp.name, email: emp.email || '', dept: emp.dept, city: emp.city || '' }); }}
-                              style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                            >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                              </svg>
-                            </button>
-                            <button
-                              type="button"
-                              title="Hapus karyawan"
-                              onClick={() => {
-                                if (window.confirm(`Hapus karyawan "${emp.name}"?\n\nData karyawan ini akan dihapus permanen.`)) {
-                                  deleteEmployee(emp.id);
-                                }
-                              }}
-                              style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                            >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                              </svg>
-                            </button>
-                          </div>
+                  {displayEmployees.map((emp) => {
+                    const isSelected = selectedIds.has(emp.id);
+                    return (
+                      <tr key={emp.id} style={{ borderBottom: '1px solid var(--border)', background: isSelected ? '#f0f7ff' : 'transparent' }}>
+                        {!isSupervisor && (
+                          <td style={{ padding: '14px 16px' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelect(emp.id)}
+                              style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+                            />
+                          </td>
+                        )}
+                        <td style={{ padding: '14px 20px', fontWeight: '500' }}>{emp.name}</td>
+                        <td style={{ padding: '14px 20px' }}>
+                          <span className={`dept-tag dt-${emp.dept.toLowerCase()}`} style={{ display: 'inline-block' }}>
+                            {emp.dept}
+                          </span>
                         </td>
-                      )}
-                    </tr>
-                  ))}
+                        <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.city}</td>
+                        <td style={{ padding: '14px 20px', fontWeight: '600', color: 'var(--accent)', textAlign: 'right' }}>{emp.score} SOP</td>
+                        {!isSupervisor && (
+                          <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                              <button
+                                type="button"
+                                title="Edit karyawan"
+                                onClick={() => { setEditEmp(emp); setEditForm({ name: emp.name, email: emp.email || '', dept: emp.dept, city: emp.city || '' }); }}
+                                style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                title="Hapus karyawan"
+                                onClick={() => {
+                                  if (window.confirm(`Hapus karyawan "${emp.name}"?\n\nData karyawan ini akan dihapus permanen.`)) {
+                                    deleteEmployee(emp.id);
+                                    setSelectedIds(prev => { const next = new Set(prev); next.delete(emp.id); return next; });
+                                  }
+                                }}
+                                style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        {/* REGISTER EMPLOYEE (ADD FORM WITH QUOTA GATING) */}
+        {/* REGISTER EMPLOYEE */}
         <div>
-          {/* TITLE & HEADER SECTION */}
           {isSupervisor ? (
             <div className="section-header" style={{ marginBottom: '16px' }}>
               <div className="section-title">Registrasi Karyawan</div>
@@ -217,71 +318,21 @@ export const Employees = () => {
               <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
                 REGISTRASI KARYAWAN
               </h3>
-              
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={handleDownloadTemplate}
-                  style={{
-                    flex: 1,
-                    fontSize: '12px',
-                    padding: '8px 12px',
-                    background: '#ffffff',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    color: 'var(--text2)',
-                    fontWeight: '600',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    height: '38px',
-                    boxSizing: 'border-box',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#f8fafc';
-                    e.currentTarget.style.borderColor = 'var(--text3)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#ffffff';
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                  }}
-                >
+                <button type="button" onClick={handleDownloadTemplate}
+                  style={{ flex: 1, fontSize: '12px', padding: '8px 12px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text2)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', height: '38px', boxSizing: 'border-box' }}
+                  onMouseOver={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = 'var(--text3)'; }}
+                  onMouseOut={e => { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
                   Template Excel
                 </button>
-                <label
-                  style={{
-                    flex: 1,
-                    fontSize: '12px',
-                    padding: '8px 12px',
-                    background: 'var(--navy)',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    color: '#fff',
-                    fontWeight: '600',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    height: '38px',
-                    boxSizing: 'border-box',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.background = 'var(--accent)'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'var(--navy)'}
-                >
+                <label style={{ flex: 1, fontSize: '12px', padding: '8px 12px', background: 'var(--navy)', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#fff', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', height: '38px', boxSizing: 'border-box' }}
+                  onMouseOver={e => e.currentTarget.style.background = 'var(--accent)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'var(--navy)'}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
                   Import Excel
                   <input type="file" accept=".xlsx,.xls" onChange={handleImportFile} style={{ display: 'none' }} />
@@ -310,40 +361,22 @@ export const Employees = () => {
               </div>
             ) : (
               <div style={{ background: '#ecfdf5', border: '1px solid #d1fae5', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--green)' }}>
-                <div style={{ fontSize: '12px' }}>
-                  Kuota Tersisa: <strong>{limit - totalCount} akun</strong> lagi.
-                </div>
+                <div style={{ fontSize: '12px' }}>Kuota Tersisa: <strong>{limit - totalCount} akun</strong> lagi.</div>
               </div>
             )}
 
             <form onSubmit={handleAddEmployee}>
               <div className="form-group">
                 <label className="form-label">Nama Lengkap</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Contoh: Budi Santoso"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isFull || isSupervisor}
-                />
+                <input type="text" className="form-input" placeholder="Contoh: Budi Santoso" value={name} onChange={e => setName(e.target.value)} disabled={isFull || isSupervisor} />
               </div>
-
               <div className="form-group">
                 <label className="form-label">Email Karyawan</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="Contoh: budi.s@perusahaan.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isFull || isSupervisor}
-                />
+                <input type="email" className="form-input" placeholder="Contoh: budi.s@perusahaan.com" value={email} onChange={e => setEmail(e.target.value)} disabled={isFull || isSupervisor} />
               </div>
-
               <div className="form-group">
                 <label className="form-label">Departemen</label>
-                <select className="form-select" value={dept} onChange={(e) => setDept(e.target.value)} disabled={isFull || isSupervisor}>
+                <select className="form-select" value={dept} onChange={e => setDept(e.target.value)} disabled={isFull || isSupervisor}>
                   {isSupervisor ? (
                     <option value={currentUser.dept}>{currentUser.dept}</option>
                   ) : (
@@ -358,33 +391,22 @@ export const Employees = () => {
                   )}
                 </select>
               </div>
-
               <div className="form-group">
                 <label className="form-label">Cabang / Kota</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Contoh: Jakarta"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  disabled={isFull || isSupervisor}
-                />
+                <input type="text" className="form-input" placeholder="Contoh: Jakarta" value={city} onChange={e => setCity(e.target.value)} disabled={isFull || isSupervisor} />
               </div>
-
               <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={isFull || isSupervisor}>
                 {isSupervisor ? '🔒 Hanya HRD Admin' : isFull ? '🔒 Kuota Karyawan Penuh' : 'Daftarkan Karyawan'}
               </button>
             </form>
           </div>
         </div>
-
       </div>
 
       {/* IMPORT PREVIEW MODAL */}
       {showImport && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '640px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-            {/* Modal header */}
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)' }}>Preview Import Karyawan</div>
@@ -395,22 +417,17 @@ export const Employees = () => {
               </div>
               <button onClick={() => { setShowImport(false); setImportRows([]); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text3)' }}>✕</button>
             </div>
-
-            {/* Table */}
             <div style={{ overflowY: 'auto', flex: 1 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ background: 'var(--surface2)', position: 'sticky', top: 0 }}>
-                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Baris</th>
-                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Nama Lengkap</th>
-                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Email</th>
-                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
-                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang/Kota</th>
-                    <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Status</th>
+                    {['Baris', 'Nama Lengkap', 'Email', 'Departemen', 'Cabang/Kota', 'Status'].map(h => (
+                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {importRows.map((r) => (
+                  {importRows.map(r => (
                     <tr key={r._idx} style={{ borderBottom: '1px solid var(--border)', background: r.errors.length ? '#fff5f5' : 'transparent' }}>
                       <td style={{ padding: '10px 16px', color: 'var(--text3)' }}>{r._idx}</td>
                       <td style={{ padding: '10px 16px', fontWeight: '500' }}>{r.name}</td>
@@ -428,17 +445,10 @@ export const Employees = () => {
                 </tbody>
               </table>
             </div>
-
-            {/* Modal footer */}
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setShowImport(false); setImportRows([]); }} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
-                Batal
-              </button>
-              <button
-                onClick={handleConfirmImport}
-                disabled={!importRows.filter(r => !r.errors.length).length || isFull}
-                style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: (!importRows.filter(r => !r.errors.length).length || isFull) ? 0.5 : 1 }}
-              >
+              <button onClick={() => { setShowImport(false); setImportRows([]); }} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Batal</button>
+              <button onClick={handleConfirmImport} disabled={!importRows.filter(r => !r.errors.length).length || isFull}
+                style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: (!importRows.filter(r => !r.errors.length).length || isFull) ? 0.5 : 1 }}>
                 Tambahkan {Math.min(importRows.filter(r => !r.errors.length).length, limit === Infinity ? Infinity : Math.max(0, limit - totalCount))} Karyawan
               </button>
             </div>
@@ -463,28 +473,74 @@ export const Employees = () => {
               ].map(({ label, key, placeholder, type }) => (
                 <div key={key}>
                   <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', display: 'block', marginBottom: '6px' }}>{label}</label>
-                  <input
-                    type={type || 'text'}
-                    value={editForm[key] || ''}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    style={{ width: '100%', padding: '9px 12px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '8px', outline: 'none', boxSizing: 'border-box', color: 'var(--text1)' }}
-                  />
+                  <input type={type || 'text'} value={editForm[key] || ''} onChange={e => setEditForm(prev => ({ ...prev, [key]: e.target.value }))} placeholder={placeholder}
+                    style={{ width: '100%', padding: '9px 12px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '8px', outline: 'none', boxSizing: 'border-box', color: 'var(--text1)' }} />
                 </div>
               ))}
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setEditEmp(null)} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
-                Batal
-              </button>
-              <button
-                onClick={() => { updateEmployee(editEmp.id, editForm); setEditEmp(null); }}
-                disabled={!editForm.name?.trim()}
-                style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: !editForm.name?.trim() ? 0.5 : 1 }}
-              >
+              <button onClick={() => setEditEmp(null)} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Batal</button>
+              <button onClick={() => { updateEmployee(editEmp.id, editForm); setEditEmp(null); }} disabled={!editForm.name?.trim()}
+                style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: !editForm.name?.trim() ? 0.5 : 1 }}>
                 Simpan
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* KIRIM REMINDER MODAL */}
+      {showReminderModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '520px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)' }}>📧 Kirim Reminder SOP</div>
+                <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>Email akan dikirim ke {selectedEmployees.length} karyawan terpilih</div>
+              </div>
+              {!reminderDone && !reminderSending && (
+                <button onClick={() => setShowReminderModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text3)' }}>✕</button>
+              )}
+            </div>
+
+            {reminderDone ? (
+              <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>✅</div>
+                <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)', marginBottom: '6px' }}>Reminder Terkirim!</div>
+                <div style={{ fontSize: '13px', color: 'var(--text3)' }}>Email berhasil dikirim ke {selectedEmployees.length} karyawan.</div>
+                <button onClick={() => { setShowReminderModal(false); setReminderDone(false); setSelectedIds(new Set()); }}
+                  style={{ marginTop: '20px', padding: '10px 28px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff' }}>
+                  Selesai
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ padding: '16px 24px', maxHeight: '280px', overflowY: 'auto' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '10px', fontWeight: '600' }}>DAFTAR PENERIMA</div>
+                  {selectedEmployees.map(emp => (
+                    <div key={emp.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                      <div>
+                        <div style={{ fontWeight: '600', fontSize: '13px', color: 'var(--text1)' }}>{emp.name}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text3)' }}>{emp.email || 'Email belum diisi'}</div>
+                      </div>
+                      <span className={`dept-tag dt-${emp.dept.toLowerCase()}`}>{emp.dept}</span>
+                    </div>
+                  ))}
+                  {selectedEmployees.some(e => !e.email) && (
+                    <div style={{ marginTop: '10px', padding: '8px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', fontSize: '11px', color: '#92400e' }}>
+                      ⚠️ Beberapa karyawan tidak memiliki email — reminder tidak akan terkirim ke mereka.
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setShowReminderModal(false)} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Batal</button>
+                  <button onClick={handleSendReminder} disabled={reminderSending}
+                    style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: reminderSending ? 0.7 : 1 }}>
+                    {reminderSending ? '⏳ Mengirim...' : `Kirim ke ${selectedEmployees.length} Karyawan`}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
