@@ -118,174 +118,176 @@ export const LoginPage = ({ onLogin }) => {
         }
       `}</style>
 
-      {/* LEFT COLUMN: Login Form */}
-      <div style={styles.leftCol}>
-        <div style={styles.formContainer}>
-          <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
-          <p style={styles.subheading}>Silakan masukkan email corporate dan password Anda</p>
+      <div style={styles.innerContainer}>
+        {/* LEFT COLUMN: Login Form */}
+        <div style={styles.leftCol}>
+          <div style={styles.formContainer}>
+            <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
+            <p style={styles.subheading}>Silakan masukkan email corporate dan password Anda</p>
 
-          {forgotSuccess ? (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px' }}>📧</div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>Email Terkirim!</div>
-              <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>
-                Link reset password sudah dikirim ke <strong>{form.email}</strong>. Cek inbox atau folder spam Anda.
-              </div>
-              <button onClick={() => { setForgotSuccess(false); setForgotMode(false); }} style={styles.btn}>
-                Kembali ke Login
-              </button>
-            </div>
-          ) : forgotMode ? (
-            <form onSubmit={handleForgotPassword} style={styles.form}>
-              <div style={styles.field}>
-                <label style={styles.label}>EMAIL CORPORATE</label>
-                <input
-                  type="email"
-                  placeholder="email@perusahaan.com"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  style={styles.input}
-                  required
-                />
-              </div>
-              {error && <div style={styles.error}>{error}</div>}
-              <button type="submit" style={{ ...styles.btn, opacity: forgotLoading ? 0.7 : 1 }} disabled={forgotLoading}>
-                {forgotLoading ? 'Mengirim...' : 'Kirim Link Reset Password'}
-              </button>
-              <button type="button" onClick={() => { setForgotMode(false); setError(''); }} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer', textAlign: 'center', marginTop: '4px' }}>
-                Kembali ke Login
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleSubmit} style={styles.form}>
-              <div style={styles.field}>
-                <label style={styles.label}>EMAIL CORPORATE</label>
-                <input
-                  type="email"
-                  placeholder="email@perusahaan.com"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  style={styles.input}
-                  required
-                />
-              </div>
-
-              <div style={styles.field}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label style={styles.label}>PASSWORD</label>
-                  <button type="button" onClick={() => { setForgotMode(true); setError(''); }} style={{ background: 'none', border: 'none', color: '#002D72', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}>
-                    Lupa Password?
-                  </button>
+            {forgotSuccess ? (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '40px', marginBottom: '16px' }}>📧</div>
+                <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>Email Terkirim!</div>
+                <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>
+                  Link reset password sudah dikirim ke <strong>{form.email}</strong>. Cek inbox atau folder spam Anda.
                 </div>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <button onClick={() => { setForgotSuccess(false); setForgotMode(false); }} style={styles.btn}>
+                  Kembali ke Login
+                </button>
+              </div>
+            ) : forgotMode ? (
+              <form onSubmit={handleForgotPassword} style={styles.form}>
+                <div style={styles.field}>
+                  <label style={styles.label}>EMAIL CORPORATE</label>
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                    style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
+                    type="email"
+                    placeholder="email@perusahaan.com"
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    style={styles.input}
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={styles.eyeBtn}
-                  >
-                    {showPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    )}
-                  </button>
                 </div>
-              </div>
-
-              {error && <div style={styles.error}>{error}</div>}
-
-              <button type="submit" style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
-                {loading ? 'Memproses Masuk...' : 'Masuk Sekarang'}
-              </button>
-              {slowWarning && (
-                <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginTop: '-8px', lineHeight: '1.5' }}>
-                  Server sedang menyala, mohon tunggu sebentar...
+                {error && <div style={styles.error}>{error}</div>}
+                <button type="submit" style={{ ...styles.btn, opacity: forgotLoading ? 0.7 : 1 }} disabled={forgotLoading}>
+                  {forgotLoading ? 'Mengirim...' : 'Kirim Link Reset Password'}
+                </button>
+                <button type="button" onClick={() => { setForgotMode(false); setError(''); }} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer', textAlign: 'center', marginTop: '4px' }}>
+                  Kembali ke Login
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmit} style={styles.form}>
+                <div style={styles.field}>
+                  <label style={styles.label}>EMAIL CORPORATE</label>
+                  <input
+                    type="email"
+                    placeholder="email@perusahaan.com"
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    style={styles.input}
+                    required
+                  />
                 </div>
-              )}
-            </form>
-          )}
 
-          <div style={styles.footer}>
-            Belum memiliki akses? Silakan hubungi Administrator HRD perusahaan Anda untuk pendaftaran akun baru.
-          </div>
+                <div style={styles.field}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={styles.label}>PASSWORD</label>
+                    <button type="button" onClick={() => { setForgotMode(true); setError(''); }} style={{ background: 'none', border: 'none', color: '#002D72', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}>
+                      Lupa Password?
+                    </button>
+                  </div>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={form.password}
+                      onChange={e => setForm({ ...form, password: e.target.value })}
+                      style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={styles.eyeBtn}
+                    >
+                      {showPassword ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                          <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-          <div style={styles.platformBranding}>
-            Powered by Axara
+                {error && <div style={styles.error}>{error}</div>}
+
+                <button type="submit" style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }} disabled={loading}>
+                  {loading ? 'Memproses Masuk...' : 'Masuk Sekarang'}
+                </button>
+                {slowWarning && (
+                  <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginTop: '-8px', lineHeight: '1.5' }}>
+                    Server sedang menyala, mohon tunggu sebentar...
+                  </div>
+                )}
+              </form>
+            )}
+
+            <div style={styles.footer}>
+              Belum memiliki akses? Silakan hubungi Administrator HRD perusahaan Anda untuk pendaftaran akun baru.
+            </div>
+
+            <div style={styles.platformBranding}>
+              Powered by Axara
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* RIGHT COLUMN: Masked Slideshow of Employee Faces */}
-      <div style={styles.rightCol}>
-        <div style={styles.rightColContent}>
-          {/* Photo Ring & Slideshow Wrapper */}
-          <div style={styles.photoRingWrapper}>
-            {/* Rotating Decorative dashed Ring */}
-            <div style={styles.rotatingRing}></div>
-            
-            {/* Slideshow container for circular photos */}
-            <div style={styles.slideshowContainer}>
-              {employees.map((emp, idx) => {
-                const isActive = idx === activeEmpIdx;
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      opacity: isActive ? 1 : 0,
-                      transform: isActive ? 'scale(1)' : 'scale(0.9)',
-                      transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
-                      pointerEvents: isActive ? 'auto' : 'none',
-                    }}
-                  >
-                    <div style={styles.imageMaskCircle}>
-                      <img
-                        src={emp.url}
-                        alt={emp.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
+        {/* RIGHT COLUMN: Masked Slideshow of Employee Faces */}
+        <div style={styles.rightCol}>
+          <div style={styles.rightColContent}>
+            {/* Photo Ring & Slideshow Wrapper */}
+            <div style={styles.photoRingWrapper}>
+              {/* Rotating Decorative dashed Ring */}
+              <div style={styles.rotatingRing}></div>
+              
+              {/* Slideshow container for circular photos */}
+              <div style={styles.slideshowContainer}>
+                {employees.map((emp, idx) => {
+                  const isActive = idx === activeEmpIdx;
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        opacity: isActive ? 1 : 0,
+                        transform: isActive ? 'scale(1)' : 'scale(0.9)',
+                        transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
+                        pointerEvents: isActive ? 'auto' : 'none',
+                      }}
+                    >
+                      <div style={styles.imageMaskCircle}>
+                        <img
+                          src={emp.url}
+                          alt={emp.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Caption info (outside loop to prevent text overlapping) */}
-          <div style={{ marginTop: '32px', textAlign: 'center', maxWidth: '320px', padding: '0 16px', minHeight: '120px' }}>
-            <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
-              {employees[activeEmpIdx].name}
-            </div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {employees[activeEmpIdx].dept}
-            </div>
-            <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text2)', marginTop: '16px', lineHeight: '1.6' }}>
-              {employees[activeEmpIdx].quote}
+            {/* Caption info (outside loop to prevent text overlapping) */}
+            <div style={{ marginTop: '32px', textAlign: 'center', maxWidth: '320px', padding: '0 16px', minHeight: '120px' }}>
+              <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
+                {employees[activeEmpIdx].name}
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {employees[activeEmpIdx].dept}
+              </div>
+              <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text2)', marginTop: '16px', lineHeight: '1.6' }}>
+                {employees[activeEmpIdx].quote}
+              </div>
             </div>
           </div>
         </div>
@@ -298,8 +300,9 @@ const styles = {
   wrapper: {
     minHeight: '100vh',
     width: '100vw',
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     background: '#ffffff',
     position: 'absolute',
     top: 0,
@@ -307,12 +310,20 @@ const styles = {
     zIndex: 9999,
     boxSizing: 'border-box',
     fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+    padding: '40px',
+  },
+  innerContainer: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    width: '100%',
+    maxWidth: '860px',
+    margin: '0 auto',
+    gap: '40px',
   },
   leftCol: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '40px',
     boxSizing: 'border-box',
     width: '100%',
   },
@@ -321,7 +332,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     background: '#ffffff',
-    borderLeft: '1px solid #f1f5f9',
     position: 'relative',
     overflow: 'hidden',
   },
