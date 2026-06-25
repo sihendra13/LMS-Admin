@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
-import { supabase } from '../utils/supabase';
 
 export const Employees = () => {
   const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser } = useTenant();
@@ -24,9 +23,6 @@ export const Employees = () => {
 
   // --- Bulk Actions state ---
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const [showReminderModal, setShowReminderModal] = useState(false);
-  const [reminderSending, setReminderSending] = useState(false);
-  const [reminderDone, setReminderDone] = useState(false);
 
   const DEPT_OPTIONS = ['Sales', 'HRD', 'Operasional', 'Finance', 'CS', 'IT'];
 
@@ -81,18 +77,6 @@ export const Employees = () => {
     XLSX.writeFile(wb, `Export_Karyawan_${today}.xlsx`);
   };
 
-  const handleSendReminder = async () => {
-    setReminderSending(true);
-    try {
-      await supabase.functions.invoke('send-deadline-reminders', {
-        body: { manualEmployeeIds: selectedEmployees.map(e => e.id) },
-      });
-    } catch {
-      // edge function mungkin belum support parameter ini, tetap lanjut
-    }
-    setReminderSending(false);
-    setReminderDone(true);
-  };
 
   // --- Existing handlers ---
   const handleDownloadTemplate = () => {
@@ -204,10 +188,6 @@ export const Employees = () => {
                 <button onClick={handleExportSelected}
                   style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #93c5fd', background: '#fff', color: '#1d4ed8', cursor: 'pointer' }}>
                   📥 Export XLSX
-                </button>
-                <button onClick={() => { setReminderDone(false); setShowReminderModal(true); }}
-                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #93c5fd', background: '#fff', color: '#1d4ed8', cursor: 'pointer' }}>
-                  📧 Kirim Reminder
                 </button>
                 <button onClick={handleBulkDelete}
                   style={{ padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', cursor: 'pointer' }}>
@@ -489,61 +469,6 @@ export const Employees = () => {
         </div>
       )}
 
-      {/* KIRIM REMINDER MODAL */}
-      {showReminderModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '520px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)' }}>📧 Kirim Reminder SOP</div>
-                <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>Email akan dikirim ke {selectedEmployees.length} karyawan terpilih</div>
-              </div>
-              {!reminderDone && !reminderSending && (
-                <button onClick={() => setShowReminderModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text3)' }}>✕</button>
-              )}
-            </div>
-
-            {reminderDone ? (
-              <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-                <div style={{ fontSize: '40px', marginBottom: '12px' }}>✅</div>
-                <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)', marginBottom: '6px' }}>Reminder Terkirim!</div>
-                <div style={{ fontSize: '13px', color: 'var(--text3)' }}>Email berhasil dikirim ke {selectedEmployees.length} karyawan.</div>
-                <button onClick={() => { setShowReminderModal(false); setReminderDone(false); setSelectedIds(new Set()); }}
-                  style={{ marginTop: '20px', padding: '10px 28px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff' }}>
-                  Selesai
-                </button>
-              </div>
-            ) : (
-              <>
-                <div style={{ padding: '16px 24px', maxHeight: '280px', overflowY: 'auto' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '10px', fontWeight: '600' }}>DAFTAR PENERIMA</div>
-                  {selectedEmployees.map(emp => (
-                    <div key={emp.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                      <div>
-                        <div style={{ fontWeight: '600', fontSize: '13px', color: 'var(--text1)' }}>{emp.name}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text3)' }}>{emp.email || 'Email belum diisi'}</div>
-                      </div>
-                      <span className={`dept-tag dt-${emp.dept.toLowerCase()}`}>{emp.dept}</span>
-                    </div>
-                  ))}
-                  {selectedEmployees.some(e => !e.email) && (
-                    <div style={{ marginTop: '10px', padding: '8px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', fontSize: '11px', color: '#92400e' }}>
-                      ⚠️ Beberapa karyawan tidak memiliki email — reminder tidak akan terkirim ke mereka.
-                    </div>
-                  )}
-                </div>
-                <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setShowReminderModal(false)} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Batal</button>
-                  <button onClick={handleSendReminder} disabled={reminderSending}
-                    style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: reminderSending ? 0.7 : 1 }}>
-                    {reminderSending ? '⏳ Mengirim...' : `Kirim ke ${selectedEmployees.length} Karyawan`}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
