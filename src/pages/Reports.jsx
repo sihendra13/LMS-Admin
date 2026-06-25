@@ -474,9 +474,9 @@ export const Reports = () => {
             <div className="card" style={{ padding: '20px' }}>
               <div className="card-title" style={{ marginBottom: '2px' }}>Tren Aktivitas Kuis</div>
               <div style={{ fontSize: '11px', color: 'var(--text3)', marginBottom: '14px' }}>6 bulan terakhir</div>
-              {trendData.length < 2 ? (
+              {trendData.length === 0 ? (
                 <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text3)', fontSize: '13px', textAlign: 'center', lineHeight: '1.6' }}>
-                  Data belum cukup.<br />Tren muncul setelah ada submission di 2+ bulan berbeda.
+                  Belum ada data aktivitas kuis.
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
