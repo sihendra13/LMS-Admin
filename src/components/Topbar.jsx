@@ -40,7 +40,12 @@ export const Topbar = () => {
   if (readyToApprove.length > 0) {
     notifications.push({
       id: 'cert-approve',
-      icon: '🎓',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
+          <circle cx="12" cy="8" r="6" />
+          <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+        </svg>
+      ),
       color: '#3b82f6',
       bg: '#eff6ff',
       title: `${readyToApprove.length} sertifikat siap di-approve`,
@@ -54,7 +59,15 @@ export const Topbar = () => {
   if (pendingReview.length > 0) {
     notifications.push({
       id: 'cert-pending',
-      icon: '📋',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+          <path d="M9 14h6" />
+          <path d="M9 18h6" />
+          <path d="M9 10h6" />
+        </svg>
+      ),
       color: '#f59e0b',
       bg: '#fffbeb',
       title: `${pendingReview.length} submission belum direview supervisor`,
@@ -73,7 +86,12 @@ export const Topbar = () => {
     const diff = Math.ceil((new Date(v.deadline) - now) / 86400000);
     notifications.push({
       id: `deadline-${v.id}`,
-      icon: '⏰',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      ),
       color: '#ef4444',
       bg: '#fef2f2',
       title: `Deadline "${v.title}"`,
@@ -87,7 +105,13 @@ export const Topbar = () => {
   if (tidakLulus.length > 0) {
     notifications.push({
       id: 'tidak-lulus',
-      icon: '🚨',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      ),
       color: '#ef4444',
       bg: '#fef2f2',
       title: `${tidakLulus.length} karyawan tidak lulus setelah ${MAX_RETAKES}x remedial`,
@@ -229,8 +253,8 @@ export const Topbar = () => {
                   >
                     <div style={{
                       width: '36px', height: '36px', borderRadius: '8px',
-                      background: n.bg, display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', fontSize: '16px', flexShrink: 0,
+                      background: n.bg, color: n.color, display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', flexShrink: 0,
                     }}>
                       {n.icon}
                     </div>
