@@ -56,7 +56,7 @@ export const Sidebar = ({ onLogout }) => {
         <a className={getNavItemClass('sop')} href="#sop" onClick={(e) => { e.preventDefault(); setActivePage('sop'); }}>
           <span className="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span>
           Video Training & SOP
-          <span className="nav-badge">{videos.length}</span>
+          <span className="nav-badge">{videos.filter(v => !v.archived).length}</span>
         </a>
         <a className={getNavItemClass('review-sertifikat')} href="#review-sertifikat" onClick={(e) => { e.preventDefault(); setActivePage('review-sertifikat'); }}>
           <span className="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>

@@ -138,6 +138,28 @@ export const TenantProvider = ({ children, authUser }) => {
   const [passingScore, setPassingScore] = useState(storedDB.passingScore || 80);
   const [validityMonths, setValidityMonths] = useState(storedDB.validityMonths || 12);
 
+  // Sync passingScore & validityMonths dari Supabase on mount
+  useEffect(() => {
+    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months'])
+      .then(({ data }) => {
+        if (!data) return;
+        data.forEach(row => {
+          if (row.key === 'passing_score') setPassingScore(Number(row.value));
+          if (row.key === 'validity_months') setValidityMonths(Number(row.value));
+        });
+      });
+  }, []);
+
+  const updatePassingScore = (val) => {
+    setPassingScore(val);
+    supabase.from('app_settings').update({ value: String(val), updated_at: new Date().toISOString() }).eq('key', 'passing_score');
+  };
+
+  const updateValidityMonths = (val) => {
+    setValidityMonths(val);
+    supabase.from('app_settings').update({ value: String(val), updated_at: new Date().toISOString() }).eq('key', 'validity_months');
+  };
+
   // Mock initial data that can be updated dynamically
   const [employees, setEmployees] = useState(storedDB.employees || [
     { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', role: 'employee', dept: 'Sales', city: 'Jakarta', score: 18 },
@@ -536,9 +558,9 @@ export const TenantProvider = ({ children, authUser }) => {
       supervisorRecommend,
       MAX_RETAKES,
       passingScore,
-      setPassingScore,
+      setPassingScore: updatePassingScore,
       validityMonths,
-      setValidityMonths,
+      setValidityMonths: updateValidityMonths,
       exportDBString,
       importDBString,
       updateTenantLogo
