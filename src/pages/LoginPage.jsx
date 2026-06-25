@@ -13,37 +13,42 @@ export const LoginPage = ({ onLogin }) => {
 
   const [activeEmpIdx, setActiveEmpIdx] = useState(0);
 
+  // Indonesian names and warm portraits
   const employees = [
     {
-      url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600&h=600',
+      url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Rini Wulandari',
       dept: 'Sales Manager',
-      quote: '"Video SOP sangat membantu saya memahami regulasi penjualan terbaru dengan cepat."'
+      quote: '"Video SOP sangat membantu saya memahami regulasi penjualan terbaru dengan cepat."',
+      achievement: 'Onboarding Sales · Lulus 100%'
     },
     {
-      url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600&h=600',
+      url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Hendra Fitriadi',
       dept: 'HR Coordinator',
-      quote: '"Proses training onboarding karyawan baru sekarang 100% otomatis dan terpantau."'
+      quote: '"Proses training onboarding karyawan baru sekarang 100% otomatis dan terpantau."',
+      achievement: 'Pelatihan HR Kepatuhan · Lulus'
     },
     {
-      url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=600&h=600',
+      url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Sari Anggraeni',
       dept: 'Customer Service',
-      quote: '"Kuis interaktif di akhir setiap video SOP membuat belajar materi baru jadi lebih menyenangkan."'
+      quote: '"Kuis interaktif di akhir setiap video SOP membuat belajar materi baru jadi lebih menyenangkan."',
+      achievement: 'Standard Pelayanan CS · Lulus'
     },
     {
-      url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600&h=600',
+      url: 'https://images.unsplash.com/photo-1607990283143-e81e7a2c93ab?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Budi Pratama',
       dept: 'Finance Specialist',
-      quote: '"Semua regulasi kepatuhan keuangan terdokumentasi rapi dan mudah diakses kapan saja."'
+      quote: '"Semua regulasi kepatuhan keuangan terdokumentasi rapi dan mudah diakses kapan saja."',
+      achievement: 'Prosedur Audit Keuangan · Lulus'
     },
   ];
 
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveEmpIdx(prev => (prev + 1) % employees.length);
-    }, 4000);
+    }, 4500); // 4.5 seconds for plenty of reading time
     return () => clearInterval(timer);
   }, []);
 
@@ -108,25 +113,92 @@ export const LoginPage = ({ onLogin }) => {
     }
   };
 
+  const getCardStyle = (idx) => {
+    let diff = (idx - activeEmpIdx + employees.length) % employees.length;
+    
+    // Swipe out card
+    if (diff === employees.length - 1) {
+      return {
+        position: 'absolute',
+        width: '340px',
+        padding: '24px',
+        borderRadius: '20px',
+        background: '#ffffff',
+        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.08)',
+        border: '1.5px solid #f1f5f9',
+        transform: 'translate(-260px, -40px) rotate(-14deg) scale(0.9)',
+        opacity: 0,
+        zIndex: 10,
+        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+        pointerEvents: 'none',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      };
+    }
+    
+    if (diff >= 3) {
+      return {
+        position: 'absolute',
+        width: '340px',
+        padding: '24px',
+        borderRadius: '20px',
+        background: '#ffffff',
+        opacity: 0,
+        transform: 'translate(40px, 40px) scale(0.8) rotate(8deg)',
+        zIndex: 0,
+        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+        pointerEvents: 'none',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      };
+    }
+    
+    const offsets = [
+      { x: 0, y: 0, scale: 1, rotate: -2, zIndex: 5, opacity: 1 },
+      { x: 16, y: 20, scale: 0.95, rotate: 2, zIndex: 4, opacity: 0.9 },
+      { x: 32, y: 40, scale: 0.90, rotate: 6, zIndex: 3, opacity: 0.65 }
+    ];
+    
+    const config = offsets[diff];
+    return {
+      position: 'absolute',
+      width: '340px',
+      padding: '24px',
+      borderRadius: '20px',
+      background: '#ffffff',
+      boxShadow: '0 20px 45px rgba(15, 23, 42, 0.08)',
+      border: '1.5px solid #f1f5f9',
+      transform: `translate(${config.x}px, ${config.y}px) scale(${config.scale}) rotate(${config.rotate}deg)`,
+      zIndex: config.zIndex,
+      opacity: config.opacity,
+      transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+      pointerEvents: diff === 0 ? 'auto' : 'none',
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px'
+    };
+  };
+
   return (
     <div style={styles.wrapper}>
       {/* CSS Animation injection */}
       <style>{`
-        @keyframes rotate-ring {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
         @keyframes rotate-ring-reverse {
           from { transform: rotate(360deg); }
           to { transform: rotate(0deg); }
         }
-        @keyframes dynamic-float {
-          0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
-          20% { transform: translate(15px, -18px) scale(1.02) rotate(2deg); }
-          40% { transform: translate(-12px, 12px) scale(0.97) rotate(-3deg); }
-          60% { transform: translate(18px, 15px) scale(1.03) rotate(3deg); }
-          80% { transform: translate(-15px, -10px) scale(0.98) rotate(-2deg); }
-          100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+        @keyframes rotate-ring {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes bounce-subtle {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
         }
       `}</style>
 
@@ -242,72 +314,43 @@ export const LoginPage = ({ onLogin }) => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Masked Slideshow of Employee Faces */}
+        {/* RIGHT COLUMN: Masked Card Stack of Employee Profiles */}
         <div style={styles.rightCol}>
-          {/* Abstract background decorative lines and shapes */}
+          {/* Blueprint/grid pattern background */}
           <div style={styles.decorGridBackground}></div>
           <div style={styles.decorCircleLarge}></div>
-          <div style={styles.decorCircleMedium}></div>
           <div style={styles.decorCircleSmall}></div>
 
           <div style={styles.rightColContent}>
-            {/* Photo Ring & Slideshow Wrapper (with floating wobble animation) */}
-            <div style={styles.photoRingWrapper}>
-              {/* Outer Rotating dashes Ring */}
-              <div style={styles.rotatingRing}></div>
-              {/* Inner Opposite Rotating dashed Ring */}
-              <div style={styles.rotatingRingReverse}></div>
-              
-              {/* Slideshow container for circular photos */}
-              <div style={styles.slideshowContainer}>
-                {employees.map((emp, idx) => {
-                  const isActive = idx === activeEmpIdx;
-                  return (
-                    <div
-                      key={idx}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        opacity: isActive ? 1 : 0,
-                        transform: isActive ? 'scale(1)' : 'scale(0.9)',
-                        transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
-                        pointerEvents: isActive ? 'auto' : 'none',
-                      }}
-                    >
-                      <div style={styles.imageMaskCircle}>
-                        <img
-                          src={emp.url}
-                          alt={emp.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      </div>
+            {/* Card Stack Container */}
+            <div style={styles.stackWrapper}>
+              {employees.map((emp, idx) => (
+                <div key={idx} style={getCardStyle(idx)}>
+                  {/* Card Header: Profile Info */}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={styles.avatarWrap}>
+                      <img src={emp.url} alt={emp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text1)', letterSpacing: '-0.3px' }}>{emp.name}</div>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>{emp.dept}</div>
+                    </div>
+                  </div>
 
-            {/* Caption info */}
-            <div style={{ marginTop: '36px', textAlign: 'center', maxWidth: '320px', padding: '0 16px', minHeight: '120px', zIndex: 2 }}>
-              <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
-                {employees[activeEmpIdx].name}
-              </div>
-              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {employees[activeEmpIdx].dept}
-              </div>
-              <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text2)', marginTop: '16px', lineHeight: '1.6' }}>
-                {employees[activeEmpIdx].quote}
-              </div>
+                  {/* Card Body: Testimonial */}
+                  <div style={{ fontSize: '13px', fontStyle: 'italic', color: 'var(--text2)', lineHeight: '1.6', flex: 1 }}>
+                    {emp.quote}
+                  </div>
+
+                  {/* Card Footer: Achievement Badge */}
+                  <div style={styles.badgeWrap}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span>{emp.achievement}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -359,9 +402,9 @@ const styles = {
   decorGridBackground: {
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(90deg, #f1f5f9 1px, transparent 1px), linear-gradient(0deg, #f1f5f9 1px, transparent 1px)',
+    background: 'linear-gradient(90deg, #f8fafc 1px, transparent 1px), linear-gradient(0deg, #f8fafc 1px, transparent 1px)',
     backgroundSize: '48px 48px',
-    opacity: 0.5,
+    opacity: 0.7,
     zIndex: 1,
   },
   decorCircleLarge: {
@@ -369,32 +412,21 @@ const styles = {
     width: '420px',
     height: '420px',
     borderRadius: '50%',
-    border: '1.5px dashed #cbd5e1',
+    border: '1.5px dashed #e2e8f0',
     bottom: '-120px',
     right: '-120px',
-    opacity: 0.35,
+    opacity: 0.4,
     zIndex: 1,
     animation: 'rotate-ring-reverse 45s linear infinite',
   },
-  decorCircleMedium: {
-    position: 'absolute',
-    width: '280px',
-    height: '280px',
-    borderRadius: '50%',
-    border: '1px solid #e2e8f0',
-    top: '-80px',
-    left: '-80px',
-    opacity: 0.4,
-    zIndex: 1,
-  },
   decorCircleSmall: {
     position: 'absolute',
-    width: '180px',
-    height: '180px',
+    width: '240px',
+    height: '240px',
     borderRadius: '50%',
-    border: '1px dashed #e2e8f0',
-    top: '30%',
-    right: '-40px',
+    border: '1px dashed #cbd5e1',
+    top: '-80px',
+    left: '-80px',
     opacity: 0.3,
     zIndex: 1,
     animation: 'rotate-ring 30s linear infinite',
@@ -502,44 +534,34 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
   },
-  photoRingWrapper: {
+  stackWrapper: {
     position: 'relative',
-    width: '270px',
-    height: '270px',
+    width: '380px',
+    height: '340px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    animation: 'dynamic-float 15s ease-in-out infinite',
+    animation: 'bounce-subtle 6s ease-in-out infinite',
   },
-  rotatingRing: {
-    position: 'absolute',
-    width: '266px',
-    height: '266px',
-    borderRadius: '50%',
-    border: '2px dashed var(--accent)',
-    opacity: 0.35,
-    animation: 'rotate-ring 8s linear infinite',
-  },
-  rotatingRingReverse: {
-    position: 'absolute',
-    width: '258px',
-    height: '258px',
-    borderRadius: '50%',
-    border: '1px dashed var(--accent)',
-    opacity: 0.25,
-    animation: 'rotate-ring-reverse 12s linear infinite',
-  },
-  slideshowContainer: {
-    position: 'relative',
-    width: '250px',
-    height: '250px',
-  },
-  imageMaskCircle: {
-    width: '250px',
-    height: '250px',
+  avatarWrap: {
+    width: '54px',
+    height: '54px',
     borderRadius: '50%',
     overflow: 'hidden',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
-    border: '4px solid #ffffff',
+    marginRight: '14px',
+    border: '2.5px solid #ffffff',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
   },
+  badgeWrap: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: '11px',
+    fontWeight: '700',
+    color: '#16a34a',
+    background: '#f0fdf4',
+    padding: '6px 12px',
+    borderRadius: '20px',
+    width: 'fit-content',
+    border: '1px solid #bbf7d0',
+  }
 };
