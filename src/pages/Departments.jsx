@@ -27,21 +27,25 @@ export const Departments = () => {
   const [deptError, setDeptError] = useState('');
 
   const DEPT_COLORS = [
-    { color: '#eff6ff', textColor: '#2F7BFF' },
-    { color: '#f5f3ff', textColor: '#8b5cf6' },
-    { color: '#f0fdf4', textColor: '#10b981' },
-    { color: '#fffbeb', textColor: '#f59e0b' },
-    { color: '#ecfeff', textColor: '#06b6d4' },
-    { color: '#fdf2f8', textColor: '#db2777' },
-    { color: '#fff7ed', textColor: '#ea580c' },
-    { color: '#f0fdf4', textColor: '#16a34a' },
+    { bg: '#eff6ff', text: '#2F7BFF' },
+    { bg: '#f5f3ff', text: '#8b5cf6' },
+    { bg: '#f0fdf4', text: '#10b981' },
+    { bg: '#fffbeb', text: '#f59e0b' },
+    { bg: '#ecfeff', text: '#06b6d4' },
+    { bg: '#fdf2f8', text: '#db2777' },
+    { bg: '#fff7ed', text: '#ea580c' },
+    { bg: '#f0fdf4', text: '#16a34a' },
   ];
 
-  const departmentMeta = departments.map((name, i) => ({
-    name,
-    code: name.toLowerCase().replace(/\s+/g, ''),
-    ...DEPT_COLORS[i % DEPT_COLORS.length],
-  }));
+  const departmentMeta = departments.map((name, i) => {
+    const c = DEPT_COLORS[i % DEPT_COLORS.length];
+    return {
+      name,
+      code: name.toLowerCase().replace(/\s+/g, ''),
+      color: c.bg,
+      textColor: c.text,
+    };
+  });
 
   const departmentData = departmentMeta.map(meta => {
     const deptVideos = videos.filter(v => v.dept === meta.name && !v.archived);
@@ -164,7 +168,23 @@ export const Departments = () => {
                   return (
                     <tr key={dept.name} style={{ borderBottom: '1px solid var(--border)' }}>
                       <td style={{ padding: '16px 20px' }}>
-                        <span className="dept-tag" style={{ background: dept.color, color: dept.textColor, fontWeight: '600' }}>
+                        <span 
+                          className="dept-tag" 
+                          title={dept.name}
+                          style={{ 
+                            background: dept.color, 
+                            color: dept.textColor, 
+                            fontWeight: '600',
+                            display: 'inline-block',
+                            maxWidth: '180px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            verticalAlign: 'middle',
+                            lineHeight: '1.2',
+                            padding: '4px 10px',
+                          }}
+                        >
                           {dept.name}
                         </span>
                       </td>

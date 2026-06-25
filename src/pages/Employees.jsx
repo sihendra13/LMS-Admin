@@ -65,14 +65,14 @@ const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = fa
 };
 
 const DEPT_COLORS = [
-  { bg: '#dbeafe', text: '#1d4ed8' },
-  { bg: '#dcfce7', text: '#15803d' },
-  { bg: '#fef3c7', text: '#b45309' },
-  { bg: '#ede9fe', text: '#6d28d9' },
-  { bg: '#cffafe', text: '#0e7490' },
-  { bg: '#fce7f3', text: '#9d174d' },
-  { bg: '#fff7ed', text: '#c2410c' },
-  { bg: '#f0fdf4', text: '#166534' },
+  { bg: '#eff6ff', text: '#2F7BFF' },
+  { bg: '#f5f3ff', text: '#8b5cf6' },
+  { bg: '#f0fdf4', text: '#10b981' },
+  { bg: '#fffbeb', text: '#f59e0b' },
+  { bg: '#ecfeff', text: '#06b6d4' },
+  { bg: '#fdf2f8', text: '#db2777' },
+  { bg: '#fff7ed', text: '#ea580c' },
+  { bg: '#f0fdf4', text: '#16a34a' },
 ];
 
 export const Employees = () => {
@@ -355,7 +355,25 @@ export const Employees = () => {
                             const idx = departments.indexOf(emp.dept);
                             const c = DEPT_COLORS[(idx >= 0 ? idx : 0) % DEPT_COLORS.length];
                             return (
-                              <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.03em', background: c.bg, color: c.text, display: 'inline-block' }}>
+                              <span 
+                                title={emp.dept}
+                                style={{ 
+                                  fontSize: '10px', 
+                                  fontWeight: '600', 
+                                  padding: '4px 10px', 
+                                  borderRadius: '99px', 
+                                  letterSpacing: '0.03em', 
+                                  background: c.bg, 
+                                  color: c.text, 
+                                  display: 'inline-block',
+                                  maxWidth: '180px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  verticalAlign: 'middle',
+                                  lineHeight: '1.2'
+                                }}
+                              >
                                 {emp.dept}
                               </span>
                             );
