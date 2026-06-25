@@ -213,24 +213,22 @@ export const Employees = () => {
           {(() => {
             const totalPages = Math.ceil(displayEmployees.length / PAGE_SIZE);
             if (totalPages <= 1) return null;
+            const btnBase = { padding: '5px 12px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' };
             return (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', marginBottom: '8px' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text3)' }}>
-                  Menampilkan {Math.min((currentPage - 1) * PAGE_SIZE + 1, displayEmployees.length)}–{Math.min(currentPage * PAGE_SIZE, displayEmployees.length)} dari {displayEmployees.length} karyawan
+                  {Math.min((currentPage - 1) * PAGE_SIZE + 1, displayEmployees.length)}–{Math.min(currentPage * PAGE_SIZE, displayEmployees.length)} dari {displayEmployees.length} karyawan
                 </span>
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                   <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                    style={{ padding: '5px 12px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '6px', background: currentPage === 1 ? '#f1f5f9' : '#fff', color: currentPage === 1 ? 'var(--text3)' : 'var(--text1)', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>
+                    style={{ ...btnBase, background: currentPage === 1 ? '#f1f5f9' : '#fff', color: currentPage === 1 ? 'var(--text3)' : 'var(--text1)', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>
                     ← Prev
                   </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                    <button key={p} onClick={() => setCurrentPage(p)}
-                      style={{ padding: '5px 10px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '6px', background: p === currentPage ? 'var(--accent)' : '#fff', color: p === currentPage ? '#fff' : 'var(--text2)', cursor: 'pointer', minWidth: '32px' }}>
-                      {p}
-                    </button>
-                  ))}
+                  <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', padding: '0 4px' }}>
+                    {currentPage} / {totalPages}
+                  </span>
                   <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                    style={{ padding: '5px 12px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '6px', background: currentPage === totalPages ? '#f1f5f9' : '#fff', color: currentPage === totalPages ? 'var(--text3)' : 'var(--text1)', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>
+                    style={{ ...btnBase, background: currentPage === totalPages ? '#f1f5f9' : '#fff', color: currentPage === totalPages ? 'var(--text3)' : 'var(--text1)', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>
                     Next →
                   </button>
                 </div>
