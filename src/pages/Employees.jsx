@@ -41,7 +41,7 @@ const SearchableDeptSelect = ({ value, onChange, departments }) => {
               style={{ width: '100%', padding: '6px 10px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
-          <div style={{ maxHeight: '260px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '200px', overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}>
             {filtered.map(d => (
               <div
                 key={d}
