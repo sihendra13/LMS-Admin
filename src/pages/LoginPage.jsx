@@ -27,7 +27,7 @@ export const LoginPage = ({ onLogin }) => {
       achievement: 'Onboarding Sales · Lulus 100%'
     },
     {
-      url: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&q=80&w=300&h=300',
+      url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Satrio Pamungkas',
       dept: 'HR Coordinator',
       quote: '"Proses training onboarding karyawan baru sekarang 100% otomatis dan terpantau."',
