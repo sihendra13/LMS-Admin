@@ -1,16 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTenant } from '../context/TenantContext';
+import { supabase } from '../utils/supabase';
 
 const MAX_RETAKES = 3;
 
 export const Topbar = () => {
-  const { tenant, activePage, setActivePage, quizSubmissions, videos } = useTenant();
+  const { tenant, activePage, setActivePage, quizSubmissions, videos, currentUser } = useTenant();
   const [showNotif, setShowNotif] = useState(false);
   const [readIds, setReadIds] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem('axara_notif_read') || '[]')); }
     catch { return new Set(); }
   });
   const panelRef = useRef(null);
+
+  // Sync read state from Supabase on mount
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    supabase
+      .from('notification_reads')
+      .select('read_keys')
+      .eq('user_id', currentUser.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.read_keys?.length) {
+          const keys = new Set(data.read_keys);
+          setReadIds(keys);
+          localStorage.setItem('axara_notif_read', JSON.stringify([...keys]));
+        }
+      });
+  }, [currentUser?.id]);
 
   const now = new Date();
 
@@ -83,7 +101,15 @@ export const Topbar = () => {
   const markAllRead = () => {
     const next = new Set(notifications.map(n => n.id));
     setReadIds(next);
-    localStorage.setItem('axara_notif_read', JSON.stringify([...next]));
+    const keys = [...next];
+    localStorage.setItem('axara_notif_read', JSON.stringify(keys));
+    if (currentUser?.id) {
+      supabase.from('notification_reads').upsert({
+        user_id: currentUser.id,
+        read_keys: keys,
+        updated_at: new Date().toISOString(),
+      });
+    }
   };
 
   const handleNotifClick = (page) => {
