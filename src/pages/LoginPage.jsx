@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabase';
 
 export const LoginPage = ({ onLogin }) => {
@@ -11,9 +11,13 @@ export const LoginPage = ({ onLogin }) => {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // States for Concept 2 Layout
   const [activeEmpIdx, setActiveEmpIdx] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const tiltContainerRef = useRef(null);
 
-  // Indonesian names and warm portraits
+  // Indonesian names and warm portraits (updated with brighter Satrio & Hijab woman)
   const employees = [
     {
       url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300&h=300',
@@ -23,11 +27,18 @@ export const LoginPage = ({ onLogin }) => {
       achievement: 'Onboarding Sales · Lulus 100%'
     },
     {
-      url: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=300&h=300',
+      url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Satrio Pamungkas',
       dept: 'HR Coordinator',
       quote: '"Proses training onboarding karyawan baru sekarang 100% otomatis dan terpantau."',
       achievement: 'Pelatihan HR Kepatuhan · Lulus'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=300&h=300',
+      name: 'Fitri Rahayu',
+      dept: 'L&D Specialist',
+      quote: '"Materi pelatihan interaktif membuat karyawan kami lebih cepat paham dan produktif."',
+      achievement: 'Sertifikasi L&D · Lulus'
     },
     {
       url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=300&h=300',
@@ -48,9 +59,9 @@ export const LoginPage = ({ onLogin }) => {
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveEmpIdx(prev => (prev + 1) % employees.length);
-    }, 4500); // 4.5 seconds for plenty of reading time
+    }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [employees.length]);
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
@@ -113,56 +124,47 @@ export const LoginPage = ({ onLogin }) => {
     }
   };
 
+  // Card styles with 3D tilt calculation
   const getCardStyle = (idx) => {
     let diff = (idx - activeEmpIdx + employees.length) % employees.length;
     
-    // Swipe out card
+    // Swipe out card animation
     if (diff === employees.length - 1) {
       return {
-        position: 'absolute',
-        width: '400px',
-        padding: '30px',
-        borderRadius: '20px',
-        background: '#ffffff',
-        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.08)',
-        border: '1.5px solid #f1f5f9',
-        transform: 'translate(-300px, -45px) rotate(-14deg) scale(0.9)',
-        opacity: 0,
-        zIndex: 10,
-        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-        pointerEvents: 'none',
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px'
+        position: 'absolute', width: '400px', padding: '30px', borderRadius: '20px', background: '#ffffff',
+        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.08)', border: '1.5px solid #f1f5f9',
+        transform: 'translate(-300px, -45px) rotate(-14deg) scale(0.9)', opacity: 0, zIndex: 10,
+        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: 'none', boxSizing: 'border-box',
+        display: 'flex', flexDirection: 'column', gap: '20px'
       };
     }
     
     if (diff >= 3) {
       return {
-        position: 'absolute',
-        width: '400px',
-        padding: '30px',
-        borderRadius: '20px',
-        background: '#ffffff',
-        opacity: 0,
-        transform: 'translate(50px, 50px) scale(0.8) rotate(8deg)',
-        zIndex: 0,
-        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-        pointerEvents: 'none',
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px'
+        position: 'absolute', width: '400px', padding: '30px', borderRadius: '20px', background: '#ffffff',
+        opacity: 0, transform: 'translate(50px, 50px) scale(0.8) rotate(8deg)', zIndex: 0,
+        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)', pointerEvents: 'none', boxSizing: 'border-box',
+        display: 'flex', flexDirection: 'column', gap: '20px'
       };
     }
-    
+
     const offsets = [
-      { x: 0, y: 0, scale: 1, rotate: -2, zIndex: 5, opacity: 1 },
-      { x: 18, y: 22, scale: 0.95, rotate: 2, zIndex: 4, opacity: 0.9 },
-      { x: 36, y: 44, scale: 0.90, rotate: 6, zIndex: 3, opacity: 0.65 }
+      {
+        transform: diff === 0 && (tilt.x !== 0 || tilt.y !== 0) 
+          ? `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale(${isFocused ? 1.05 : 1.02})`
+          : `perspective(1000px) rotate(-2deg) scale(${isFocused ? 1.03 : 1})`,
+        zIndex: 5, opacity: 1
+      },
+      {
+        transform: 'perspective(1000px) translate(18px, 22px) scale(0.95) rotate(2deg)',
+        zIndex: 4, opacity: 0.9
+      },
+      {
+        transform: 'perspective(1000px) translate(36px, 44px) scale(0.90) rotate(6deg)',
+        zIndex: 3, opacity: 0.65
+      }
     ];
-    
+
     const config = offsets[diff];
     return {
       position: 'absolute',
@@ -170,12 +172,12 @@ export const LoginPage = ({ onLogin }) => {
       padding: '30px',
       borderRadius: '20px',
       background: '#ffffff',
-      boxShadow: '0 20px 45px rgba(15, 23, 42, 0.08)',
+      boxShadow: diff === 0 ? '0 30px 60px rgba(15, 23, 42, 0.12)' : '0 20px 45px rgba(15, 23, 42, 0.08)',
       border: '1.5px solid #f1f5f9',
-      transform: `translate(${config.x}px, ${config.y}px) scale(${config.scale}) rotate(${config.rotate}deg)`,
+      transform: config.transform,
       zIndex: config.zIndex,
       opacity: config.opacity,
-      transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: tilt.x !== 0 || tilt.y !== 0 ? 'opacity 0.8s, transform 0.1s ease-out' : 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
       pointerEvents: diff === 0 ? 'auto' : 'none',
       boxSizing: 'border-box',
       display: 'flex',
@@ -184,8 +186,20 @@ export const LoginPage = ({ onLogin }) => {
     };
   };
 
+  const handleMouseMove = (e) => {
+    const rect = tiltContainerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ x: x * 18, y: -y * 18 });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
+
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.pageWrapper}>
       {/* CSS Animation injection */}
       <style>{`
         @keyframes rotate-ring-reverse {
@@ -229,6 +243,8 @@ export const LoginPage = ({ onLogin }) => {
                     placeholder="email@perusahaan.com"
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     style={styles.input}
                     required
                   />
@@ -250,6 +266,8 @@ export const LoginPage = ({ onLogin }) => {
                     placeholder="email@perusahaan.com"
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     style={styles.input}
                     required
                   />
@@ -268,6 +286,8 @@ export const LoginPage = ({ onLogin }) => {
                       placeholder="••••••••"
                       value={form.password}
                       onChange={e => setForm({ ...form, password: e.target.value })}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
                       style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
                       required
                     />
@@ -307,26 +327,29 @@ export const LoginPage = ({ onLogin }) => {
             <div style={styles.footer}>
               Belum memiliki akses? Silakan hubungi Administrator HRD perusahaan Anda untuk pendaftaran akun baru.
             </div>
-
-            <div style={styles.platformBranding}>
-              Powered by Axara
-            </div>
+            <div style={styles.platformBranding}>Powered by Axara</div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Masked Card Stack of Employee Profiles */}
-        <div style={styles.rightCol}>
-          {/* Blueprint/grid pattern background */}
+        {/* RIGHT COLUMN: 3D Interactive Card Stack */}
+        <div
+          style={styles.rightCol}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          ref={tiltContainerRef}
+        >
           <div style={styles.decorGridBackground}></div>
           <div style={styles.decorCircleLarge}></div>
           <div style={styles.decorCircleSmall}></div>
 
           <div style={styles.rightColContent}>
-            {/* Card Stack Container */}
-            <div style={styles.stackWrapper}>
+            <div style={{
+              ...styles.stackWrapper,
+              transform: isFocused ? 'translateY(-12px) scale(1.02)' : 'translateY(0px)',
+              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}>
               {employees.map((emp, idx) => (
                 <div key={idx} style={getCardStyle(idx)}>
-                  {/* Card Header: Profile Info */}
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <div style={styles.avatarWrap}>
                       <img src={emp.url} alt={emp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -336,13 +359,9 @@ export const LoginPage = ({ onLogin }) => {
                       <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>{emp.dept}</div>
                     </div>
                   </div>
-
-                  {/* Card Body: Testimonial */}
                   <div style={{ fontSize: '14.5px', fontStyle: 'italic', color: 'var(--text2)', lineHeight: '1.6', flex: 1 }}>
                     {emp.quote}
                   </div>
-
-                  {/* Card Footer: Achievement Badge */}
                   <div style={styles.badgeWrap}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
                       <polyline points="20 6 9 17 4 12" />
@@ -360,8 +379,8 @@ export const LoginPage = ({ onLogin }) => {
 };
 
 const styles = {
-  wrapper: {
-    minHeight: '100vh',
+  pageWrapper: {
+    height: '100vh',
     width: '100vw',
     display: 'flex',
     alignItems: 'center',
@@ -373,7 +392,7 @@ const styles = {
     zIndex: 9999,
     boxSizing: 'border-box',
     fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-    padding: '40px',
+    overflow: 'hidden',
   },
   innerContainer: {
     display: 'grid',
@@ -479,10 +498,15 @@ const styles = {
     border: '1.5px solid #cbd5e1',
     fontSize: '14px',
     outline: 'none',
-    transition: 'border-color 0.2s',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
     color: '#0f172a',
     background: '#f8fafc',
     boxSizing: 'border-box',
+    width: '100%',
+    ':focus': {
+      borderColor: 'var(--accent)',
+      boxShadow: '0 0 0 4px rgba(14, 165, 233, 0.1)'
+    }
   },
   eyeBtn: {
     position: 'absolute',
@@ -515,6 +539,11 @@ const styles = {
     cursor: 'pointer',
     marginTop: '6px',
     boxShadow: '0 4px 12px rgba(0,45,114,0.15)',
+    transition: 'transform 0.2s, background-color 0.2s',
+    ':hover': {
+      background: '#001A4E',
+      transform: 'translateY(-1px)'
+    }
   },
   footer: {
     marginTop: '32px',
