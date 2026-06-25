@@ -23,8 +23,8 @@ export const LoginPage = ({ onLogin }) => {
       achievement: 'Onboarding Sales · Lulus 100%'
     },
     {
-      url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300&h=300',
-      name: 'Hendra Fitriadi',
+      url: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=300&h=300',
+      name: 'Satrio Pamungkas',
       dept: 'HR Coordinator',
       quote: '"Proses training onboarding karyawan baru sekarang 100% otomatis dan terpantau."',
       achievement: 'Pelatihan HR Kepatuhan · Lulus'
