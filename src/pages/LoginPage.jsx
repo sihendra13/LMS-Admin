@@ -101,7 +101,7 @@ export const LoginPage = ({ onLogin }) => {
         .select('id, name, role, avatar, tenant_id')
         .eq('id', authData.user.id)
         .single();
-      if (profileError) throw new Error(`[${profileError.code}] ${profileError.message}`);
+      if (profileError) throw new Error('Gagal mengambil profil pengguna.');
 
       const user = {
         id: profile.id,
