@@ -138,14 +138,20 @@ export const TenantProvider = ({ children, authUser }) => {
   const [passingScore, setPassingScore] = useState(storedDB.passingScore || 80);
   const [validityMonths, setValidityMonths] = useState(storedDB.validityMonths || 12);
 
-  // Sync passingScore & validityMonths dari Supabase on mount
+  // Sync passingScore, validityMonths, & departments dari Supabase on mount
+  const DEFAULT_DEPTS = ['Sales', 'HRD', 'Operasional', 'Finance', 'CS', 'IT'];
+  const [departments, setDepartments] = useState(DEFAULT_DEPTS);
+
   useEffect(() => {
-    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months'])
+    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months', 'departments_list'])
       .then(({ data }) => {
         if (!data) return;
         data.forEach(row => {
           if (row.key === 'passing_score') setPassingScore(Number(row.value));
           if (row.key === 'validity_months') setValidityMonths(Number(row.value));
+          if (row.key === 'departments_list') {
+            try { setDepartments(JSON.parse(row.value)); } catch {}
+          }
         });
       });
   }, []);
@@ -158,6 +164,25 @@ export const TenantProvider = ({ children, authUser }) => {
   const updateValidityMonths = (val) => {
     setValidityMonths(val);
     supabase.from('app_settings').update({ value: String(val), updated_at: new Date().toISOString() }).eq('key', 'validity_months');
+  };
+
+  const saveDepartments = (next) => {
+    setDepartments(next);
+    supabase.from('app_settings').upsert(
+      { key: 'departments_list', value: JSON.stringify(next), updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+  };
+
+  const addDepartment = (name) => {
+    const trimmed = name.trim();
+    if (!trimmed || departments.includes(trimmed)) return false;
+    saveDepartments([...departments, trimmed]);
+    return true;
+  };
+
+  const deleteDepartment = (name) => {
+    saveDepartments(departments.filter(d => d !== name));
   };
 
   const defaultEmployees = [
@@ -600,6 +625,9 @@ export const TenantProvider = ({ children, authUser }) => {
       setPassingScore: updatePassingScore,
       validityMonths,
       setValidityMonths: updateValidityMonths,
+      departments,
+      addDepartment,
+      deleteDepartment,
       exportDBString,
       importDBString,
       updateTenantLogo

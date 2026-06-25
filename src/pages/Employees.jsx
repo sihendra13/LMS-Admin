@@ -4,12 +4,12 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser } = useTenant();
+  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [dept, setDept] = useState(isSupervisor ? currentUser.dept : 'Sales');
+  const [dept, setDept] = useState(isSupervisor ? currentUser.dept : (departments[0] || 'Sales'));
   const [city, setCity] = useState('Jakarta');
 
   const [editEmp, setEditEmp] = useState(null);
@@ -21,10 +21,12 @@ export const Employees = () => {
 
   const [deptFilter, setDeptFilter] = useState('');
 
+  // --- Pagination ---
+  const PAGE_SIZE = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+
   // --- Bulk Actions state ---
   const [selectedIds, setSelectedIds] = useState(new Set());
-
-  const DEPT_OPTIONS = ['Sales', 'HRD', 'Operasional', 'Finance', 'CS', 'IT'];
 
   const displayEmployees = isSupervisor
     ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
@@ -55,6 +57,7 @@ export const Employees = () => {
   const handleDeptFilterChange = (e) => {
     setDeptFilter(e.target.value);
     setSelectedIds(new Set());
+    setCurrentPage(1);
   };
 
   const handleBulkDelete = () => {
@@ -107,9 +110,9 @@ export const Employees = () => {
           .map((r, idx) => {
             const empName  = String(r[0] || '').trim();
             const empEmail = String(r[1] || '').trim();
-            const empDept  = String(r[2] || 'Sales').trim();
+            const empDept  = String(r[2] || '').trim();
             const empCity  = String(r[3] || 'Jakarta').trim();
-            const validDept = DEPT_OPTIONS.find(d => d.toLowerCase() === empDept.toLowerCase()) || 'Sales';
+            const validDept = empDept || departments[0] || 'Sales';
             const errors = [];
             if (!empName) errors.push('Nama kosong');
             return { _idx: idx + 2, name: empName, email: empEmail, dept: validDept, city: empCity, errors };
@@ -172,7 +175,7 @@ export const Employees = () => {
                   style={{ fontSize: '12px', height: '38px', padding: '0 32px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, appearance: 'none', WebkitAppearance: 'none', minWidth: '180px', cursor: 'pointer' }}
                 >
                   <option value="">Semua Departemen</option>
-                  {DEPT_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>
@@ -207,6 +210,34 @@ export const Employees = () => {
             </div>
           )}
 
+          {(() => {
+            const totalPages = Math.ceil(displayEmployees.length / PAGE_SIZE);
+            if (totalPages <= 1) return null;
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: '8px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text3)' }}>
+                  Menampilkan {Math.min((currentPage - 1) * PAGE_SIZE + 1, displayEmployees.length)}–{Math.min(currentPage * PAGE_SIZE, displayEmployees.length)} dari {displayEmployees.length} karyawan
+                </span>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                    style={{ padding: '5px 12px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '6px', background: currentPage === 1 ? '#f1f5f9' : '#fff', color: currentPage === 1 ? 'var(--text3)' : 'var(--text1)', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>
+                    ← Prev
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                    <button key={p} onClick={() => setCurrentPage(p)}
+                      style={{ padding: '5px 10px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '6px', background: p === currentPage ? 'var(--accent)' : '#fff', color: p === currentPage ? '#fff' : 'var(--text2)', cursor: 'pointer', minWidth: '32px' }}>
+                      {p}
+                    </button>
+                  ))}
+                  <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                    style={{ padding: '5px 12px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '6px', background: currentPage === totalPages ? '#f1f5f9' : '#fff', color: currentPage === totalPages ? 'var(--text3)' : 'var(--text1)', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>
+                    Next →
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="card">
             <div className="card-body">
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -231,7 +262,7 @@ export const Employees = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayEmployees.map((emp) => {
+                  {displayEmployees.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE).map((emp) => {
                     const isSelected = selectedIds.has(emp.id);
                     return (
                       <tr key={emp.id} style={{ borderBottom: '1px solid var(--border)', background: isSelected ? '#f0f7ff' : 'transparent' }}>
@@ -366,14 +397,7 @@ export const Employees = () => {
                   {isSupervisor ? (
                     <option value={currentUser.dept}>{currentUser.dept}</option>
                   ) : (
-                    <>
-                      <option value="Sales">Sales</option>
-                      <option value="HRD">HRD</option>
-                      <option value="Operasional">Operasional</option>
-                      <option value="Finance">Finance</option>
-                      <option value="CS">Customer Service</option>
-                      <option value="IT">IT</option>
-                    </>
+                    departments.map(d => <option key={d} value={d}>{d}</option>)
                   )}
                 </select>
               </div>

@@ -12,21 +12,36 @@ export const Departments = () => {
     revokeSupervisor,
     currentUser,
     quizSubmissions,
+    departments,
+    addDepartment,
+    deleteDepartment,
   } = useTenant();
 
   // Local state for invitation form
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
-  const [deptInput, setDeptInput] = useState('Sales');
+  const [deptInput, setDeptInput] = useState(departments[0] || 'Sales');
 
-  const departmentMeta = [
-    { name: 'Sales', code: 'sales', color: '#eff6ff', textColor: '#2F7BFF' },
-    { name: 'Finance', code: 'finance', color: '#f5f3ff', textColor: '#8b5cf6' },
-    { name: 'HRD', code: 'hrd', color: '#f0fdf4', textColor: '#10b981' },
-    { name: 'Operasional', code: 'ops', color: '#fffbeb', textColor: '#f59e0b' },
-    { name: 'Customer Service', code: 'cs', color: '#ecfeff', textColor: '#06b6d4' },
-    { name: 'IT', code: 'it', color: '#fdf2f8', textColor: '#db2777' }
+  // Local state for dept management
+  const [newDeptName, setNewDeptName] = useState('');
+  const [deptError, setDeptError] = useState('');
+
+  const DEPT_COLORS = [
+    { color: '#eff6ff', textColor: '#2F7BFF' },
+    { color: '#f5f3ff', textColor: '#8b5cf6' },
+    { color: '#f0fdf4', textColor: '#10b981' },
+    { color: '#fffbeb', textColor: '#f59e0b' },
+    { color: '#ecfeff', textColor: '#06b6d4' },
+    { color: '#fdf2f8', textColor: '#db2777' },
+    { color: '#fff7ed', textColor: '#ea580c' },
+    { color: '#f0fdf4', textColor: '#16a34a' },
   ];
+
+  const departmentMeta = departments.map((name, i) => ({
+    name,
+    code: name.toLowerCase().replace(/\s+/g, ''),
+    ...DEPT_COLORS[i % DEPT_COLORS.length],
+  }));
 
   const departmentData = departmentMeta.map(meta => {
     const deptVideos = videos.filter(v => v.dept === meta.name && !v.archived);
@@ -182,6 +197,75 @@ export const Departments = () => {
 
         {/* RIGHT COLUMN: KELOLA HAK AKSES */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+          {/* KELOLA DEPARTEMEN */}
+          <div className="card" style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
+              Kelola Departemen
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+              {departments.map(d => {
+                const empCount = employees.filter(e => e.dept.toLowerCase() === d.toLowerCase()).length;
+                return (
+                  <div key={d} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{d}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text3)', marginLeft: '8px' }}>{empCount} karyawan</span>
+                    </div>
+                    <button
+                      type="button"
+                      title="Hapus departemen"
+                      onClick={() => {
+                        if (empCount > 0) { setDeptError(`Tidak bisa hapus "${d}" karena masih ada ${empCount} karyawan.`); return; }
+                        if (departments.length <= 1) { setDeptError('Minimal harus ada 1 departemen.'); return; }
+                        if (window.confirm(`Hapus departemen "${d}"?`)) { deleteDepartment(d); setDeptError(''); }
+                      }}
+                      style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center' }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            {deptError && (
+              <div style={{ fontSize: '12px', color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px', marginBottom: '10px' }}>
+                {deptError}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                value={newDeptName}
+                onChange={e => { setNewDeptName(e.target.value); setDeptError(''); }}
+                placeholder="Nama departemen baru"
+                style={{ flex: 1, padding: '8px 10px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '6px', outline: 'none', color: 'var(--text1)' }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!newDeptName.trim()) return;
+                    const ok = addDepartment(newDeptName);
+                    if (ok) { setNewDeptName(''); setDeptError(''); }
+                    else setDeptError(`"${newDeptName.trim()}" sudah ada.`);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!newDeptName.trim()) return;
+                  const ok = addDepartment(newDeptName);
+                  if (ok) { setNewDeptName(''); setDeptError(''); }
+                  else setDeptError(`"${newDeptName.trim()}" sudah ada.`);
+                }}
+                style={{ padding: '8px 14px', background: 'var(--navy)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                + Tambah
+              </button>
+            </div>
+          </div>
           
           {/* ACTIVE SUPERVISORS */}
           <div className="card" style={{ padding: '20px' }}>
@@ -316,12 +400,7 @@ export const Departments = () => {
                   value={deptInput}
                   onChange={(e) => setDeptInput(e.target.value)}
                 >
-                  <option value="Sales">Sales</option>
-                  <option value="Finance">Finance</option>
-                  <option value="HRD">HRD</option>
-                  <option value="Operasional">Operasional</option>
-                  <option value="Customer Service">Customer Service</option>
-                  <option value="IT">IT</option>
+                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
 
