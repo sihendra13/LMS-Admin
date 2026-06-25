@@ -227,6 +227,14 @@ export const TenantProvider = ({ children, authUser }) => {
             score: local?.score ?? 0,
           };
         }));
+
+        // Merge dept names dari employees ke departments state
+        // Ini memastikan semua dept dari Excel import selalu muncul di dropdown
+        const fromEmployees = [...new Set(data.map(r => r.dept).filter(Boolean))];
+        setDepartments(prev => {
+          const merged = [...new Set([...prev, ...fromEmployees])].sort();
+          return merged;
+        });
       }
     };
 
