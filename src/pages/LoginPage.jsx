@@ -11,7 +11,6 @@ export const LoginPage = ({ onLogin }) => {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
   const [activeEmpIdx, setActiveEmpIdx] = useState(0);
 
   const employees = [
@@ -40,12 +39,6 @@ export const LoginPage = ({ onLogin }) => {
       quote: '"Semua regulasi kepatuhan keuangan terdokumentasi rapi dan mudah diakses kapan saja."'
     },
   ];
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 900);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -116,7 +109,7 @@ export const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div style={isMobile ? styles.wrapperMobile : styles.wrapper}>
+    <div style={styles.wrapper}>
       {/* LEFT COLUMN: Login Form */}
       <div style={styles.leftCol}>
         <div style={styles.formContainer}>
@@ -234,61 +227,59 @@ export const LoginPage = ({ onLogin }) => {
       </div>
 
       {/* RIGHT COLUMN: Masked Slideshow of Employee Faces */}
-      {!isMobile && (
-        <div style={styles.rightCol}>
-          <div style={styles.maskContainer}>
-            {employees.map((emp, idx) => {
-              const isActive = idx === activeEmpIdx;
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: isActive ? 1 : 0,
-                    transform: isActive ? 'scale(1)' : 'scale(0.95)',
-                    transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
-                    pointerEvents: isActive ? 'auto' : 'none',
-                  }}
-                >
-                  {/* Masked image */}
-                  <div style={styles.imageMask}>
-                    <img
-                      src={emp.url}
-                      alt={emp.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  </div>
+      <div style={styles.rightCol}>
+        <div style={styles.maskContainer}>
+          {employees.map((emp, idx) => {
+            const isActive = idx === activeEmpIdx;
+            return (
+              <div
+                key={idx}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: isActive ? 1 : 0,
+                  transform: isActive ? 'scale(1)' : 'scale(0.95)',
+                  transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
+                  pointerEvents: isActive ? 'auto' : 'none',
+                }}
+              >
+                {/* Masked image */}
+                <div style={styles.imageMask}>
+                  <img
+                    src={emp.url}
+                    alt={emp.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                </div>
 
-                  {/* Caption info */}
-                  <div style={{ marginTop: '24px', textAlign: 'center', maxWidth: '320px', padding: '0 16px' }}>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
-                      {emp.name}
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {emp.dept}
-                    </div>
-                    <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text2)', marginTop: '16px', lineHeight: '1.6' }}>
-                      {emp.quote}
-                    </div>
+                {/* Caption info */}
+                <div style={{ marginTop: '24px', textAlign: 'center', maxWidth: '320px', padding: '0 16px' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
+                    {emp.name}
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {emp.dept}
+                  </div>
+                  <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text2)', marginTop: '16px', lineHeight: '1.6' }}>
+                    {emp.quote}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -306,22 +297,6 @@ const styles = {
     zIndex: 9999,
     boxSizing: 'border-box',
     fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-  },
-  wrapperMobile: {
-    minHeight: '100vh',
-    width: '100vw',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#ffffff',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    zIndex: 9999,
-    boxSizing: 'border-box',
-    fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-    padding: '20px',
   },
   leftCol: {
     display: 'flex',
