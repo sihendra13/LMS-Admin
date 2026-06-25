@@ -37,7 +37,7 @@ export const LoginPage = ({ onLogin }) => {
       achievement: 'Standard Pelayanan CS · Lulus'
     },
     {
-      url: 'https://images.unsplash.com/photo-1607990283143-e81e7a2c93ab?auto=format&fit=crop&q=80&w=300&h=300',
+      url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Budi Pratama',
       dept: 'Finance Specialist',
       quote: '"Semua regulasi kepatuhan keuangan terdokumentasi rapi dan mudah diakses kapan saja."',
