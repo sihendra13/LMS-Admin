@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
-const SearchableDeptSelect = ({ value, onChange, departments }) => {
+const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = false, disabled = false, align = 'left' }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef(null);
@@ -14,25 +14,26 @@ const SearchableDeptSelect = ({ value, onChange, departments }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const filtered = ['', ...departments].filter(d => {
+  const options = showAllOption ? ['', ...departments] : departments;
+  const filtered = options.filter(d => {
     if (d === '') return true;
     return d.toLowerCase().includes(search.toLowerCase());
   });
 
-  const label = value === '' ? 'Semua Departemen' : value;
+  const label = value === '' ? 'Semua Departemen' : (value || departments[0] || 'Pilih...');
 
   return (
-    <div ref={ref} style={{ position: 'relative', minWidth: '220px' }}>
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
       <button
         type="button"
-        onClick={() => { setOpen(o => !o); setSearch(''); }}
-        style={{ width: '100%', height: '38px', padding: '0 32px 0 10px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, textAlign: 'left', color: 'var(--text2)', cursor: 'pointer', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+        onClick={() => { if (!disabled) { setOpen(o => !o); setSearch(''); } }}
+        style={{ width: '100%', height: '38px', padding: '0 32px 0 10px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', background: disabled ? 'var(--surface2)' : `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, textAlign: 'left', color: disabled ? 'var(--text3)' : 'var(--text2)', cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
       >
         {label}
       </button>
-      {open && (
-        <div style={{ position: 'absolute', top: '42px', left: 0, zIndex: 100, background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: '280px', maxWidth: '380px' }}>
-          <div style={{ padding: '8px' }}>
+      {open && !disabled && (
+        <div style={{ position: 'absolute', top: '42px', [align === 'right' ? 'right' : 'left']: 0, zIndex: 200, background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: '280px', maxWidth: '380px' }}>
+          <div style={{ padding: '8px', borderBottom: '1px solid var(--border)' }}>
             <input
               autoFocus
               value={search}
@@ -249,6 +250,7 @@ export const Employees = () => {
                   value={deptFilter}
                   onChange={(val) => { setDeptFilter(val); setSelectedIds(new Set()); setCurrentPage(1); }}
                   departments={departments}
+                  showAllOption
                 />
               </div>
             </div>
@@ -470,13 +472,17 @@ export const Employees = () => {
               </div>
               <div className="form-group">
                 <label className="form-label">Departemen</label>
-                <select className="form-select" value={dept} onChange={e => setDept(e.target.value)} disabled={isFull || isSupervisor}>
-                  {isSupervisor ? (
-                    <option value={currentUser.dept}>{currentUser.dept}</option>
-                  ) : (
-                    departments.map(d => <option key={d} value={d}>{d}</option>)
-                  )}
-                </select>
+                {isSupervisor ? (
+                  <input className="form-input" value={currentUser.dept} disabled style={{ background: 'var(--surface2)', color: 'var(--text3)' }} readOnly />
+                ) : (
+                  <SearchableDeptSelect
+                    value={dept}
+                    onChange={setDept}
+                    departments={departments}
+                    disabled={isFull}
+                    align="right"
+                  />
+                )}
               </div>
               <div className="form-group">
                 <label className="form-label">Cabang / Kota</label>
