@@ -160,14 +160,53 @@ export const TenantProvider = ({ children, authUser }) => {
     supabase.from('app_settings').update({ value: String(val), updated_at: new Date().toISOString() }).eq('key', 'validity_months');
   };
 
-  // Mock initial data that can be updated dynamically
-  const [employees, setEmployees] = useState(storedDB.employees || [
+  const defaultEmployees = [
     { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', role: 'employee', dept: 'Sales', city: 'Jakarta', score: 18 },
     { id: 2, name: 'Budi Pratama', email: 'budi.p@majubersama.com', role: 'employee', dept: 'Finance', city: 'Surabaya', score: 15 },
     { id: 3, name: 'Sari Anggraeni', email: 'sari.a@majubersama.com', role: 'employee', dept: 'HRD', city: 'Bandung', score: 14 },
     { id: 4, name: 'Dika Kurniawan', email: 'dika.k@majubersama.com', role: 'employee', dept: 'IT', city: 'Jakarta', score: 12 },
     { id: 5, name: 'Nina Putri', email: 'nina.p@majubersama.com', role: 'employee', dept: 'CS', city: 'Medan', score: 11 },
-  ]);
+  ];
+
+  const [employees, setEmployees] = useState(storedDB.employees || defaultEmployees);
+
+  // Sync employees: fetch from Supabase on mount, seed defaults jika Supabase kosong
+  useEffect(() => {
+    const syncEmployees = async () => {
+      const { data } = await supabase.from('employees').select('*').order('created_at', { ascending: true });
+      if (!data) return;
+
+      if (data.length === 0) {
+        // Supabase kosong → seed default employees
+        const toUpsert = defaultEmployees.filter(e => e.email).map(e => ({
+          email: e.email, name: e.name, dept: e.dept, city: e.city || '', status: 'Aktif',
+        }));
+        await supabase.from('employees').upsert(toUpsert, { onConflict: 'email' });
+      } else {
+        // Supabase punya data → merge dengan local (preserve score)
+        setEmployees(prev => data.map(row => {
+          const local = prev.find(e => e.email === row.email);
+          return {
+            id: local?.id || row.email,
+            name: row.name,
+            email: row.email,
+            dept: row.dept,
+            city: row.city || '',
+            role: local?.role || 'employee',
+            score: local?.score ?? 0,
+          };
+        }));
+      }
+    };
+
+    const channel = supabase
+      .channel('admin_employees')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, () => syncEmployees())
+      .subscribe();
+
+    syncEmployees();
+    return () => supabase.removeChannel(channel);
+  }, []);
 
   const [videos, setVideos] = useState([]);
 
