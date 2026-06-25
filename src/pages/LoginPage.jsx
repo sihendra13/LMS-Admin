@@ -27,18 +27,18 @@ export const LoginPage = ({ onLogin }) => {
       achievement: 'Onboarding Sales · Lulus 100%'
     },
     {
-      url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300&h=300',
+      url: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Satrio Pamungkas',
       dept: 'HR Coordinator',
       quote: '"Proses training onboarding karyawan baru sekarang 100% otomatis dan terpantau."',
       achievement: 'Pelatihan HR Kepatuhan · Lulus'
     },
     {
-      url: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=300&h=300',
+      url: 'https://images.unsplash.com/photo-1609172793268-d05adcf80bb3?auto=format&fit=crop&q=80&w=300&h=300',
       name: 'Fitri Rahayu',
-      dept: 'L&D Specialist',
+      dept: 'HR Specialist',
       quote: '"Materi pelatihan interaktif membuat karyawan kami lebih cepat paham dan produktif."',
-      achievement: 'Sertifikasi L&D · Lulus'
+      achievement: 'Sertifikasi HR · Lulus'
     },
     {
       url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=300&h=300',
