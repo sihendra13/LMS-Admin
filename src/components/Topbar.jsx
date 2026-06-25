@@ -57,8 +57,8 @@ export const Topbar = () => {
       icon: '📋',
       color: '#f59e0b',
       bg: '#fffbeb',
-      title: `${pendingReview.length} submission menunggu review`,
-      sub: 'Belum ada supervisor yang mereview',
+      title: `${pendingReview.length} submission belum direview supervisor`,
+      sub: 'Supervisor belum memberikan keputusan',
       page: 'review-sertifikat',
     });
   }

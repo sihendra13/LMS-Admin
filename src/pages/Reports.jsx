@@ -282,6 +282,14 @@ export const Reports = () => {
   const customTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     const total = payload.reduce((s, p) => s + (p.value || 0), 0);
+    if (total === 0) {
+      return (
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', minWidth: '180px' }}>
+          <div style={{ fontWeight: '700', marginBottom: '6px', color: '#0f172a' }}>{label}</div>
+          <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>Tidak ada karyawan di departemen ini</div>
+        </div>
+      );
+    }
     return (
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', minWidth: '160px' }}>
         <div style={{ fontWeight: '700', marginBottom: '8px', color: '#0f172a' }}>{label}</div>
@@ -291,7 +299,7 @@ export const Reports = () => {
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.fill, display: 'inline-block' }} />
               {p.name}
             </span>
-            <span style={{ fontWeight: '600', color: '#0f172a' }}>{p.value} ({total > 0 ? Math.round(p.value / total * 100) : 0}%)</span>
+            <span style={{ fontWeight: '600', color: '#0f172a' }}>{p.value} ({Math.round(p.value / total * 100)}%)</span>
           </div>
         ))}
         <div style={{ borderTop: '1px solid #e2e8f0', marginTop: '6px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', fontWeight: '700' }}>
