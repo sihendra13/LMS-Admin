@@ -18,7 +18,7 @@ export const LoginPage = ({ onLogin }) => {
       url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600&h=600',
       name: 'Rini Wulandari',
       dept: 'Sales Manager',
-      quote: '"SOP Laris sangat membantu saya memahami regulasi penjualan terbaru dengan cepat."'
+      quote: '"Video SOP sangat membantu saya memahami regulasi penjualan terbaru dengan cepat."'
     },
     {
       url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600&h=600',
@@ -110,14 +110,17 @@ export const LoginPage = ({ onLogin }) => {
 
   return (
     <div style={styles.wrapper}>
+      {/* CSS Animation injection */}
+      <style>{`
+        @keyframes rotate-ring {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
       {/* LEFT COLUMN: Login Form */}
       <div style={styles.leftCol}>
         <div style={styles.formContainer}>
-          {/* Logo */}
-          <div style={styles.logoWrap}>
-            <span style={styles.logoText}>Laris<span style={{ color: 'var(--accent)' }}>i</span></span>
-          </div>
-
           <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
           <p style={styles.subheading}>Silakan masukkan email corporate dan password Anda</p>
 
@@ -228,56 +231,63 @@ export const LoginPage = ({ onLogin }) => {
 
       {/* RIGHT COLUMN: Masked Slideshow of Employee Faces */}
       <div style={styles.rightCol}>
-        <div style={styles.maskContainer}>
-          {employees.map((emp, idx) => {
-            const isActive = idx === activeEmpIdx;
-            return (
-              <div
-                key={idx}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: isActive ? 1 : 0,
-                  transform: isActive ? 'scale(1)' : 'scale(0.95)',
-                  transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
-                  pointerEvents: isActive ? 'auto' : 'none',
-                }}
-              >
-                {/* Masked image */}
-                <div style={styles.imageMask}>
-                  <img
-                    src={emp.url}
-                    alt={emp.name}
+        <div style={styles.rightColContent}>
+          {/* Photo Ring & Slideshow Wrapper */}
+          <div style={styles.photoRingWrapper}>
+            {/* Rotating Decorative dashed Ring */}
+            <div style={styles.rotatingRing}></div>
+            
+            {/* Slideshow container for circular photos */}
+            <div style={styles.slideshowContainer}>
+              {employees.map((emp, idx) => {
+                const isActive = idx === activeEmpIdx;
+                return (
+                  <div
+                    key={idx}
                     style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
                       width: '100%',
                       height: '100%',
-                      objectFit: 'cover',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: isActive ? 1 : 0,
+                      transform: isActive ? 'scale(1)' : 'scale(0.9)',
+                      transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
+                      pointerEvents: isActive ? 'auto' : 'none',
                     }}
-                  />
-                </div>
+                  >
+                    <div style={styles.imageMaskCircle}>
+                      <img
+                        src={emp.url}
+                        alt={emp.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                {/* Caption info */}
-                <div style={{ marginTop: '24px', textAlign: 'center', maxWidth: '320px', padding: '0 16px' }}>
-                  <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
-                    {emp.name}
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {emp.dept}
-                  </div>
-                  <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text2)', marginTop: '16px', lineHeight: '1.6' }}>
-                    {emp.quote}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {/* Caption info (outside loop to prevent text overlapping) */}
+          <div style={{ marginTop: '32px', textAlign: 'center', maxWidth: '320px', padding: '0 16px', minHeight: '120px' }}>
+            <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
+              {employees[activeEmpIdx].name}
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {employees[activeEmpIdx].dept}
+            </div>
+            <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--text2)', marginTop: '16px', lineHeight: '1.6' }}>
+              {employees[activeEmpIdx].quote}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -310,25 +320,22 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#f8fafc',
+    background: '#ffffff',
     borderLeft: '1px solid #f1f5f9',
     position: 'relative',
     overflow: 'hidden',
+  },
+  rightColContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   formContainer: {
     width: '100%',
     maxWidth: '400px',
     display: 'flex',
     flexDirection: 'column',
-  },
-  logoWrap: {
-    marginBottom: '32px',
-  },
-  logoText: {
-    fontSize: '26px',
-    fontWeight: '900',
-    color: '#0f172a',
-    letterSpacing: '-1.2px',
   },
   heading: {
     fontSize: '24px',
@@ -420,21 +427,34 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
   },
-  maskContainer: {
+  photoRingWrapper: {
     position: 'relative',
-    width: '100%',
-    height: '100%',
+    width: '270px',
+    height: '270px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  imageMask: {
-    width: '260px',
-    height: '260px',
-    borderRadius: '50px', // squircle shape style masking
+  rotatingRing: {
+    position: 'absolute',
+    width: '266px',
+    height: '266px',
+    borderRadius: '50%',
+    border: '2px dashed var(--accent)',
+    opacity: 0.35,
+    animation: 'rotate-ring 24s linear infinite',
+  },
+  slideshowContainer: {
+    position: 'relative',
+    width: '250px',
+    height: '250px',
+  },
+  imageMaskCircle: {
+    width: '250px',
+    height: '250px',
+    borderRadius: '50%',
     overflow: 'hidden',
-    boxShadow: '0 20px 40px -10px rgba(0,0,0,0.15)',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
     border: '4px solid #ffffff',
-    transform: 'rotate(-4deg)',
   },
 };
