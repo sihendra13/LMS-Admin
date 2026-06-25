@@ -120,13 +120,13 @@ export const LoginPage = ({ onLogin }) => {
     if (diff === employees.length - 1) {
       return {
         position: 'absolute',
-        width: '340px',
-        padding: '24px',
+        width: '400px',
+        padding: '30px',
         borderRadius: '20px',
         background: '#ffffff',
         boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.08)',
         border: '1.5px solid #f1f5f9',
-        transform: 'translate(-260px, -40px) rotate(-14deg) scale(0.9)',
+        transform: 'translate(-300px, -45px) rotate(-14deg) scale(0.9)',
         opacity: 0,
         zIndex: 10,
         transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -134,40 +134,40 @@ export const LoginPage = ({ onLogin }) => {
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px'
+        gap: '20px'
       };
     }
     
     if (diff >= 3) {
       return {
         position: 'absolute',
-        width: '340px',
-        padding: '24px',
+        width: '400px',
+        padding: '30px',
         borderRadius: '20px',
         background: '#ffffff',
         opacity: 0,
-        transform: 'translate(40px, 40px) scale(0.8) rotate(8deg)',
+        transform: 'translate(50px, 50px) scale(0.8) rotate(8deg)',
         zIndex: 0,
         transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: 'none',
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px'
+        gap: '20px'
       };
     }
     
     const offsets = [
       { x: 0, y: 0, scale: 1, rotate: -2, zIndex: 5, opacity: 1 },
-      { x: 16, y: 20, scale: 0.95, rotate: 2, zIndex: 4, opacity: 0.9 },
-      { x: 32, y: 40, scale: 0.90, rotate: 6, zIndex: 3, opacity: 0.65 }
+      { x: 18, y: 22, scale: 0.95, rotate: 2, zIndex: 4, opacity: 0.9 },
+      { x: 36, y: 44, scale: 0.90, rotate: 6, zIndex: 3, opacity: 0.65 }
     ];
     
     const config = offsets[diff];
     return {
       position: 'absolute',
-      width: '340px',
-      padding: '24px',
+      width: '400px',
+      padding: '30px',
       borderRadius: '20px',
       background: '#ffffff',
       boxShadow: '0 20px 45px rgba(15, 23, 42, 0.08)',
@@ -180,7 +180,7 @@ export const LoginPage = ({ onLogin }) => {
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px'
+      gap: '20px'
     };
   };
 
@@ -332,13 +332,13 @@ export const LoginPage = ({ onLogin }) => {
                       <img src={emp.url} alt={emp.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text1)', letterSpacing: '-0.3px' }}>{emp.name}</div>
-                      <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>{emp.dept}</div>
+                      <div style={{ fontSize: '17px', fontWeight: '800', color: 'var(--text1)', letterSpacing: '-0.3px' }}>{emp.name}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>{emp.dept}</div>
                     </div>
                   </div>
 
                   {/* Card Body: Testimonial */}
-                  <div style={{ fontSize: '13px', fontStyle: 'italic', color: 'var(--text2)', lineHeight: '1.6', flex: 1 }}>
+                  <div style={{ fontSize: '14.5px', fontStyle: 'italic', color: 'var(--text2)', lineHeight: '1.6', flex: 1 }}>
                     {emp.quote}
                   </div>
 
@@ -379,7 +379,7 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '1.1fr 1fr',
     width: '100%',
-    maxWidth: '1000px',
+    maxWidth: '1060px',
     margin: '0 auto',
     gap: '100px',
   },
@@ -536,26 +536,27 @@ const styles = {
   },
   stackWrapper: {
     position: 'relative',
-    width: '380px',
-    height: '340px',
+    width: '440px',
+    height: '380px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     animation: 'bounce-subtle 6s ease-in-out infinite',
   },
   avatarWrap: {
-    width: '54px',
-    height: '54px',
+    width: '80px',
+    height: '80px',
     borderRadius: '50%',
     overflow: 'hidden',
-    marginRight: '14px',
-    border: '2.5px solid #ffffff',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    marginRight: '16px',
+    border: '3px solid #ffffff',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+    flexShrink: 0,
   },
   badgeWrap: {
     display: 'inline-flex',
     alignItems: 'center',
-    fontSize: '11px',
+    fontSize: '12px',
     fontWeight: '700',
     color: '#16a34a',
     background: '#f0fdf4',
