@@ -136,8 +136,9 @@ export const Reports = () => {
   const overallAvgScore  = periodSubs.length > 0
     ? Math.round(periodSubs.reduce((sum, s) => sum + (s.postScore || 0), 0) / periodSubs.length)
     : 0;
-  const avgVideoDurationMinutes = videos.length > 0
-    ? videos.reduce((sum, v) => sum + parseDuration(v.duration), 0) / videos.length
+  const activeVideos = videos.filter(v => !v.archived);
+  const avgVideoDurationMinutes = activeVideos.length > 0
+    ? activeVideos.reduce((sum, v) => sum + parseDuration(v.duration), 0) / activeVideos.length
     : 0;
   const totalWatchHours = Math.round((periodSubs.length * avgVideoDurationMinutes) / 60);
 
@@ -206,7 +207,7 @@ export const Reports = () => {
       'Tersertifikasi (%)': row.total > 0 ? Math.round(row.tersertifikasi / row.total * 100) : 0,
       'Lulus (Menunggu Approval)': row.lulusMenunggu,
       'Remedial': row.remedial,
-      'Tidak Lulus (>3x)': row.tidakLulus,
+      'Tidak Lulus / Ditolak': row.tidakLulus,
       'Belum Ikut Kuis': row.belumIkut,
       'SOP Wajib': row.sopWajib,
     }));
