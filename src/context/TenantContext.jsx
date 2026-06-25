@@ -181,6 +181,12 @@ export const TenantProvider = ({ children, authUser }) => {
     return true;
   };
 
+  const addDepartmentsBatch = (names) => {
+    const newOnes = [...new Set(names.map(n => n.trim()).filter(n => n && !departments.includes(n)))];
+    if (newOnes.length === 0) return;
+    saveDepartments([...departments, ...newOnes]);
+  };
+
   const deleteDepartment = (name) => {
     saveDepartments(departments.filter(d => d !== name));
   };
@@ -627,6 +633,7 @@ export const TenantProvider = ({ children, authUser }) => {
       setValidityMonths: updateValidityMonths,
       departments,
       addDepartment,
+      addDepartmentsBatch,
       deleteDepartment,
       exportDBString,
       importDBString,

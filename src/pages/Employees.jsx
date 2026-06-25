@@ -4,7 +4,7 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartment } = useTenant();
+  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
@@ -133,9 +133,9 @@ export const Employees = () => {
     const remaining = limit - totalCount;
     const toAdd = limit === Infinity ? validRows : validRows.slice(0, remaining);
 
-    // Auto-create new departments from Excel that don't exist yet
+    // Auto-create new departments from Excel in one batch (avoids stale state bug)
     const uniqueDepts = [...new Set(toAdd.map(r => r.dept).filter(Boolean))];
-    uniqueDepts.forEach(d => addDepartment(d));
+    addDepartmentsBatch(uniqueDepts);
 
     toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
