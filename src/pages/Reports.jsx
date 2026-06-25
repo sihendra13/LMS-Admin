@@ -286,7 +286,7 @@ export const Reports = () => {
       return (
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', minWidth: '180px' }}>
           <div style={{ fontWeight: '700', marginBottom: '6px', color: '#0f172a' }}>{label}</div>
-          <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>Tidak ada karyawan di departemen ini</div>
+          <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>Tidak ada karyawan di departemen ini yang mengikuti Training.</div>
         </div>
       );
     }
