@@ -340,7 +340,6 @@ export const LoginPage = ({ onLogin }) => {
         >
           <div style={styles.decorGridBackground}></div>
           <div style={styles.decorCircleLarge}></div>
-          <div style={styles.decorCircleSmall}></div>
 
           <div style={styles.rightColContent}>
             <div style={{
