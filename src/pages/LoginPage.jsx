@@ -116,6 +116,18 @@ export const LoginPage = ({ onLogin }) => {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
+        @keyframes rotate-ring-reverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
+        @keyframes dynamic-float {
+          0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+          20% { transform: translate(15px, -18px) scale(1.02) rotate(2deg); }
+          40% { transform: translate(-12px, 12px) scale(0.97) rotate(-3deg); }
+          60% { transform: translate(18px, 15px) scale(1.03) rotate(3deg); }
+          80% { transform: translate(-15px, -10px) scale(0.98) rotate(-2deg); }
+          100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+        }
       `}</style>
 
       <div style={styles.innerContainer}>
@@ -232,11 +244,19 @@ export const LoginPage = ({ onLogin }) => {
 
         {/* RIGHT COLUMN: Masked Slideshow of Employee Faces */}
         <div style={styles.rightCol}>
+          {/* Abstract background decorative lines and shapes */}
+          <div style={styles.decorGridBackground}></div>
+          <div style={styles.decorCircleLarge}></div>
+          <div style={styles.decorCircleMedium}></div>
+          <div style={styles.decorCircleSmall}></div>
+
           <div style={styles.rightColContent}>
-            {/* Photo Ring & Slideshow Wrapper */}
+            {/* Photo Ring & Slideshow Wrapper (with floating wobble animation) */}
             <div style={styles.photoRingWrapper}>
-              {/* Rotating Decorative dashed Ring */}
+              {/* Outer Rotating dashes Ring */}
               <div style={styles.rotatingRing}></div>
+              {/* Inner Opposite Rotating dashed Ring */}
+              <div style={styles.rotatingRingReverse}></div>
               
               {/* Slideshow container for circular photos */}
               <div style={styles.slideshowContainer}>
@@ -277,8 +297,8 @@ export const LoginPage = ({ onLogin }) => {
               </div>
             </div>
 
-            {/* Caption info (outside loop to prevent text overlapping) */}
-            <div style={{ marginTop: '32px', textAlign: 'center', maxWidth: '320px', padding: '0 16px', minHeight: '120px' }}>
+            {/* Caption info */}
+            <div style={{ marginTop: '36px', textAlign: 'center', maxWidth: '320px', padding: '0 16px', minHeight: '120px', zIndex: 2 }}>
               <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)' }}>
                 {employees[activeEmpIdx].name}
               </div>
@@ -314,11 +334,11 @@ const styles = {
   },
   innerContainer: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: '1.1fr 1fr',
     width: '100%',
-    maxWidth: '860px',
+    maxWidth: '1000px',
     margin: '0 auto',
-    gap: '40px',
+    gap: '100px',
   },
   leftCol: {
     display: 'flex',
@@ -334,12 +354,57 @@ const styles = {
     background: '#ffffff',
     position: 'relative',
     overflow: 'hidden',
+    borderRadius: '24px',
+  },
+  decorGridBackground: {
+    position: 'absolute',
+    inset: 0,
+    background: 'linear-gradient(90deg, #f1f5f9 1px, transparent 1px), linear-gradient(0deg, #f1f5f9 1px, transparent 1px)',
+    backgroundSize: '48px 48px',
+    opacity: 0.5,
+    zIndex: 1,
+  },
+  decorCircleLarge: {
+    position: 'absolute',
+    width: '420px',
+    height: '420px',
+    borderRadius: '50%',
+    border: '1.5px dashed #cbd5e1',
+    bottom: '-120px',
+    right: '-120px',
+    opacity: 0.35,
+    zIndex: 1,
+    animation: 'rotate-ring-reverse 45s linear infinite',
+  },
+  decorCircleMedium: {
+    position: 'absolute',
+    width: '280px',
+    height: '280px',
+    borderRadius: '50%',
+    border: '1px solid #e2e8f0',
+    top: '-80px',
+    left: '-80px',
+    opacity: 0.4,
+    zIndex: 1,
+  },
+  decorCircleSmall: {
+    position: 'absolute',
+    width: '180px',
+    height: '180px',
+    borderRadius: '50%',
+    border: '1px dashed #e2e8f0',
+    top: '30%',
+    right: '-40px',
+    opacity: 0.3,
+    zIndex: 1,
+    animation: 'rotate-ring 30s linear infinite',
   },
   rightColContent: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 2,
   },
   formContainer: {
     width: '100%',
@@ -444,6 +509,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    animation: 'dynamic-float 15s ease-in-out infinite',
   },
   rotatingRing: {
     position: 'absolute',
@@ -452,7 +518,16 @@ const styles = {
     borderRadius: '50%',
     border: '2px dashed var(--accent)',
     opacity: 0.35,
-    animation: 'rotate-ring 24s linear infinite',
+    animation: 'rotate-ring 8s linear infinite',
+  },
+  rotatingRingReverse: {
+    position: 'absolute',
+    width: '258px',
+    height: '258px',
+    borderRadius: '50%',
+    border: '1px dashed var(--accent)',
+    opacity: 0.25,
+    animation: 'rotate-ring-reverse 12s linear infinite',
   },
   slideshowContainer: {
     position: 'relative',
