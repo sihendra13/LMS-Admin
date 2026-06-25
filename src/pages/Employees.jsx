@@ -4,7 +4,7 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments } = useTenant();
+  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartment } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
@@ -132,6 +132,11 @@ export const Employees = () => {
     const validRows = importRows.filter(r => !r.errors.length);
     const remaining = limit - totalCount;
     const toAdd = limit === Infinity ? validRows : validRows.slice(0, remaining);
+
+    // Auto-create new departments from Excel that don't exist yet
+    const uniqueDepts = [...new Set(toAdd.map(r => r.dept).filter(Boolean))];
+    uniqueDepts.forEach(d => addDepartment(d));
+
     toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
     setImportRows([]);
