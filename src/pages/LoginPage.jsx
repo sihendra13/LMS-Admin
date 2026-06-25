@@ -172,7 +172,7 @@ export const LoginPage = ({ onLogin }) => {
       padding: '30px',
       borderRadius: '20px',
       background: '#ffffff',
-      boxShadow: diff === 0 ? '0 30px 60px rgba(15, 23, 42, 0.12)' : '0 20px 45px rgba(15, 23, 42, 0.08)',
+      boxShadow: diff === 0 ? '0 25px 50px rgba(15, 23, 42, 0.08)' : '0 15px 35px rgba(15, 23, 42, 0.05)',
       border: '1.5px solid #f1f5f9',
       transform: config.transform,
       zIndex: config.zIndex,
