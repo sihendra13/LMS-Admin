@@ -369,41 +369,168 @@ export const Reports = () => {
           </div>
 
           {/* SUMMARY INSIGHT */}
-          <div className="card" style={{ marginBottom: '20px', background: 'linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%)', border: '1px solid #dbeafe' }}>
-            <div style={{ padding: '18px 24px' }}>
-              <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
-                📊 Ringkasan {selectedLabel}
+          <div className="card" style={{ 
+            marginBottom: '24px', 
+            background: 'linear-gradient(135deg, #f8faff 0%, #ffffff 100%)', 
+            border: '1.5px solid #bfdbfe',
+            boxShadow: '0 4px 16px rgba(37, 99, 235, 0.05)',
+            borderRadius: '12px'
+          }}>
+            <div style={{ padding: '20px 24px' }}>
+              <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Ringkasan {selectedLabel}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '13px', color: 'var(--text1)', lineHeight: '1.8' }}>
-                {prevPeriodSubs.length > 0
-                  ? complianceChange > 0
-                    ? <span>✅ Aktivitas periode ini <strong>{overallCompliance}%</strong>, naik dari {prevCompliance}% bulan lalu <strong style={{ color: 'var(--green)' }}>(+{complianceChange}%)</strong>.</span>
-                    : complianceChange < 0
-                    ? <span>⚠️ Aktivitas periode ini <strong>{overallCompliance}%</strong>, turun dari {prevCompliance}% bulan lalu <strong style={{ color: 'var(--red)' }}>({complianceChange}%)</strong>.</span>
-                    : <span>📈 Aktivitas periode ini <strong>{overallCompliance}%</strong>, sama dengan bulan lalu.</span>
-                  : <span>📈 Aktivitas kuis periode ini <strong>{overallCompliance}%</strong> dari {totalEmployees} karyawan aktif.</span>
-                }
-                {bestDept && bestDept.tersertifikasiRate > 0 && (
-                  <span>🏆 Departemen <strong>{bestDept.dept}</strong> terbaik — <strong>{bestDept.tersertifikasi}</strong> dari {bestDept.total} karyawan tersertifikasi ({bestDept.tersertifikasiRate}%).</span>
-                )}
-                {worstDept && (
-                  <span>⚠️ Departemen <strong>{worstDept.dept}</strong> perlu perhatian — tersertifikasi hanya <strong style={{ color: 'var(--red)' }}>{worstDept.tersertifikasiRate}%</strong>.</span>
-                )}
-                {totalTidakLulus > 0 && (
-                  <span>🚨 <strong>{totalTidakLulus}</strong> karyawan gagal setelah {MAX_RETAKES}x remedial — perlu intervensi HRD segera.</span>
-                )}
-                {totalRemedial > 0 && (
-                  <span>🔄 <strong>{totalRemedial}</strong> karyawan sedang dalam proses remedial.</span>
-                )}
-                {periodCerts > 0 && (
-                  <span>🎓 <strong>{periodCerts}</strong> sertifikat diterbitkan periode ini.</span>
-                )}
-                {selectedPeriod === currentPeriod && upcomingDeadlines.length > 0 && (
-                  <span>🔔 <strong>{upcomingDeadlines.length}</strong> SOP mendekati deadline 7 hari ke depan: <em>{upcomingDeadlines.map(v => v.title).join(', ')}</em>.</span>
-                )}
-                {periodSubs.length === 0 && (
-                  <span style={{ color: 'var(--text3)' }}>Belum ada aktivitas kuis untuk periode ini.</span>
-                )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text1)', lineHeight: '1.6' }}>
+                {(() => {
+                  const renderRow = (iconColor, svgIcon, content) => (
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <div style={{ 
+                        width: '24px', height: '24px', borderRadius: '6px', 
+                        background: iconColor + '10', color: iconColor, 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        flexShrink: 0, marginTop: '1px' 
+                      }}>
+                        {svgIcon}
+                      </div>
+                      <span style={{ paddingTop: '2px' }}>{content}</span>
+                    </div>
+                  );
+
+                  const rows = [];
+
+                  // 1. Aktivitas / Compliance Row
+                  const arrowIcon = prevPeriodSubs.length > 0 && complianceChange < 0 ? (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" />
+                    </svg>
+                  ) : (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
+                    </svg>
+                  );
+
+                  let compColor = 'var(--accent)';
+                  if (prevPeriodSubs.length > 0) {
+                    compColor = complianceChange > 0 ? 'var(--green)' : complianceChange < 0 ? 'var(--red)' : 'var(--accent)';
+                  }
+
+                  const compText = prevPeriodSubs.length > 0 ? (
+                    complianceChange > 0
+                      ? <span>Aktivitas periode ini <strong>{overallCompliance}%</strong>, naik dari {prevCompliance}% bulan lalu <strong style={{ color: 'var(--green)' }}>(+{complianceChange}%)</strong>.</span>
+                      : complianceChange < 0
+                      ? <span>Aktivitas periode ini <strong>{overallCompliance}%</strong>, turun dari {prevCompliance}% bulan lalu <strong style={{ color: 'var(--red)' }}>({complianceChange}%)</strong>.</span>
+                      : <span>Aktivitas periode ini <strong>{overallCompliance}%</strong>, sama dengan bulan lalu.</span>
+                  ) : (
+                    <span>Aktivitas kuis periode ini <strong>{overallCompliance}%</strong> dari {totalEmployees} karyawan aktif.</span>
+                  );
+
+                  rows.push(renderRow(compColor, arrowIcon, compText));
+
+                  // 2. Best Dept Row
+                  if (bestDept && bestDept.tersertifikasiRate > 0) {
+                    const cupIcon = (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                        <path d="M4 22h16" />
+                        <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
+                        <path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z" />
+                      </svg>
+                    );
+                    rows.push(renderRow('var(--green)', cupIcon, (
+                      <span>Departemen <strong>{bestDept.dept}</strong> terbaik — <strong>{bestDept.tersertifikasi}</strong> dari {bestDept.total} karyawan tersertifikasi ({bestDept.tersertifikasiRate}%).</span>
+                    )));
+                  }
+
+                  // 3. Worst Dept Row
+                  if (worstDept) {
+                    const alertIcon = (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                    );
+                    rows.push(renderRow('var(--amber)', alertIcon, (
+                      <span>Departemen <strong>{worstDept.dept}</strong> perlu perhatian — tersertifikasi hanya <strong style={{ color: 'var(--red)' }}>{worstDept.tersertifikasiRate}%</strong>.</span>
+                    )));
+                  }
+
+                  // 4. Failed/Remedial Row
+                  if (totalTidakLulus > 0) {
+                    const xOctagonIcon = (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
+                        <line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                      </svg>
+                    );
+                    rows.push(renderRow('var(--red)', xOctagonIcon, (
+                      <span><strong>{totalTidakLulus}</strong> karyawan gagal setelah {MAX_RETAKES}x remedial — perlu intervensi HRD segera.</span>
+                    )));
+                  }
+
+                  // 5. Remedial In Progress Row
+                  if (totalRemedial > 0) {
+                    const repeatIcon = (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="17 1 21 5 17 9" />
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                        <polyline points="7 23 3 19 7 15" />
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                      </svg>
+                    );
+                    rows.push(renderRow('#3b82f6', repeatIcon, (
+                      <span><strong>{totalRemedial}</strong> karyawan sedang dalam proses remedial.</span>
+                    )));
+                  }
+
+                  // 6. Certificates Issued Row
+                  if (periodCerts > 0) {
+                    const awardIcon = (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="8" r="7" />
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                      </svg>
+                    );
+                    rows.push(renderRow('var(--green)', awardIcon, (
+                      <span><strong>{periodCerts}</strong> sertifikat diterbitkan periode ini.</span>
+                    )));
+                  }
+
+                  // 7. Upcoming Deadlines Row
+                  if (selectedPeriod === currentPeriod && upcomingDeadlines.length > 0) {
+                    const bellIcon = (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                      </svg>
+                    );
+                    rows.push(renderRow('var(--amber)', bellIcon, (
+                      <span><strong>{upcomingDeadlines.length}</strong> SOP mendekati deadline 7 hari ke depan: <em>{upcomingDeadlines.map(v => v.title).join(', ')}</em>.</span>
+                    )));
+                  }
+
+                  // 8. Empty Activity Row
+                  if (periodSubs.length === 0) {
+                    const infoIcon = (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                      </svg>
+                    );
+                    rows.push(renderRow('var(--text3)', infoIcon, (
+                      <span style={{ color: 'var(--text3)' }}>Belum ada aktivitas kuis untuk periode ini.</span>
+                    )));
+                  }
+
+                  return rows;
+                })()}
               </div>
             </div>
           </div>
