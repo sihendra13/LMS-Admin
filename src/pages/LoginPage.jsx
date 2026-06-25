@@ -34,7 +34,7 @@ export const LoginPage = ({ onLogin }) => {
       achievement: 'Pelatihan HR Kepatuhan · Lulus'
     },
     {
-      url: 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&q=80&w=300&h=300',
+      url: '/fitri-rahayu.jpg',
       name: 'Fitri Rahayu',
       dept: 'HR Specialist',
       quote: '"Materi pelatihan interaktif membuat karyawan kami lebih cepat paham dan produktif."',
