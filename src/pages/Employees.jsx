@@ -1,7 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
+
+const SearchableDeptSelect = ({ value, onChange, departments }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = ['', ...departments].filter(d => {
+    if (d === '') return true;
+    return d.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const label = value === '' ? 'Semua Departemen' : value;
+
+  return (
+    <div ref={ref} style={{ position: 'relative', minWidth: '220px' }}>
+      <button
+        type="button"
+        onClick={() => { setOpen(o => !o); setSearch(''); }}
+        style={{ width: '100%', height: '38px', padding: '0 32px 0 10px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, textAlign: 'left', color: 'var(--text2)', cursor: 'pointer', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+      >
+        {label}
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: '42px', left: 0, zIndex: 100, background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: '280px', maxWidth: '380px' }}>
+          <div style={{ padding: '8px' }}>
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Cari departemen..."
+              style={{ width: '100%', padding: '6px 10px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+          <div style={{ maxHeight: '260px', overflowY: 'auto' }}>
+            {filtered.map(d => (
+              <div
+                key={d}
+                onClick={() => { onChange(d); setOpen(false); setSearch(''); }}
+                style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', background: value === d ? '#eff6ff' : 'transparent', color: value === d ? '#1d4ed8' : 'var(--text2)', fontWeight: value === d ? '600' : '400' }}
+                onMouseEnter={e => { if (value !== d) e.currentTarget.style.background = 'var(--surface2)'; }}
+                onMouseLeave={e => { if (value !== d) e.currentTarget.style.background = 'transparent'; }}
+              >
+                {d === '' ? 'Semua Departemen' : d}
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div style={{ padding: '12px', fontSize: '12px', color: 'var(--text3)', textAlign: 'center' }}>Tidak ditemukan</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const DEPT_COLORS = [
+  { bg: '#dbeafe', text: '#1d4ed8' },
+  { bg: '#dcfce7', text: '#15803d' },
+  { bg: '#fef3c7', text: '#b45309' },
+  { bg: '#ede9fe', text: '#6d28d9' },
+  { bg: '#cffafe', text: '#0e7490' },
+  { bg: '#fce7f3', text: '#9d174d' },
+  { bg: '#fff7ed', text: '#c2410c' },
+  { bg: '#f0fdf4', text: '#166534' },
+];
 
 export const Employees = () => {
   const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch } = useTenant();
@@ -174,14 +245,11 @@ export const Employees = () => {
                 DAFTAR KARYAWAN TERDAFTAR ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
               </h3>
               <div style={{ display: 'flex', height: '38px', alignItems: 'center' }}>
-                <select
+                <SearchableDeptSelect
                   value={deptFilter}
-                  onChange={handleDeptFilterChange}
-                  style={{ fontSize: '12px', height: '38px', padding: '0 32px 0 10px', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text2)', background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center`, appearance: 'none', WebkitAppearance: 'none', minWidth: '180px', cursor: 'pointer' }}
-                >
-                  <option value="">Semua Departemen</option>
-                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
+                  onChange={(val) => { setDeptFilter(val); setSelectedIds(new Set()); setCurrentPage(1); }}
+                  departments={departments}
+                />
               </div>
             </div>
           )}
@@ -281,9 +349,15 @@ export const Employees = () => {
                         )}
                         <td style={{ padding: '14px 20px', fontWeight: '500' }}>{emp.name}</td>
                         <td style={{ padding: '14px 20px' }}>
-                          <span className={`dept-tag dt-${emp.dept.toLowerCase()}`} style={{ display: 'inline-block' }}>
-                            {emp.dept}
-                          </span>
+                          {(() => {
+                            const idx = departments.indexOf(emp.dept);
+                            const c = DEPT_COLORS[(idx >= 0 ? idx : 0) % DEPT_COLORS.length];
+                            return (
+                              <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.03em', background: c.bg, color: c.text, display: 'inline-block' }}>
+                                {emp.dept}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.city}</td>
                         <td style={{ padding: '14px 20px', fontWeight: '600', color: 'var(--accent)', textAlign: 'right' }}>{emp.score} SOP</td>
