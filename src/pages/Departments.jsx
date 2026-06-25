@@ -231,7 +231,7 @@ export const Departments = () => {
                             color: dept.textColor, 
                             fontWeight: '600',
                             display: 'inline-block',
-                            maxWidth: '280px', // larger width allowed on full width tab
+                            maxWidth: '280px',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
@@ -267,7 +267,6 @@ export const Departments = () => {
                 })}
               </tbody>
             </table>
-            {renderPagination(currentPage1, totalPages1, departmentData.length, 'departemen', setCurrentPage1)}
           </div>
         </div>
       ) : (
@@ -278,7 +277,46 @@ export const Departments = () => {
             <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
               Kelola Departemen
             </h3>
+
+            {/* Input & button for add department placed at the top */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <input
+                type="text"
+                value={newDeptName}
+                onChange={e => { setNewDeptName(e.target.value); setDeptError(''); }}
+                placeholder="Nama departemen baru"
+                style={{ flex: 1, padding: '8px 10px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '6px', outline: 'none', color: 'var(--text1)' }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!newDeptName.trim()) return;
+                    const ok = addDepartment(newDeptName);
+                    if (ok) { setNewDeptName(''); setDeptError(''); }
+                    else setDeptError(`"${newDeptName.trim()}" sudah ada.`);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!newDeptName.trim()) return;
+                  const ok = addDepartment(newDeptName);
+                  if (ok) { setNewDeptName(''); setDeptError(''); }
+                  else setDeptError(`"${newDeptName.trim()}" sudah ada.`);
+                }}
+                style={{ padding: '8px 14px', background: 'var(--navy)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                + Tambah
+              </button>
+            </div>
+
+            {deptError && (
+              <div style={{ fontSize: '12px', color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px', marginBottom: '16px' }}>
+                {deptError}
+              </div>
+            )}
             
+            {/* Top Pagination */}
             {renderPagination(currentPage2, totalPages2, departments.length, 'departemen', setCurrentPage2)}
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
@@ -326,45 +364,6 @@ export const Departments = () => {
                   </div>
                 );
               })}
-            </div>
-
-            {renderPagination(currentPage2, totalPages2, departments.length, 'departemen', setCurrentPage2)}
-
-            {deptError && (
-              <div style={{ fontSize: '12px', color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', padding: '8px 12px', marginBottom: '10px' }}>
-                {deptError}
-              </div>
-            )}
-            
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-              <input
-                type="text"
-                value={newDeptName}
-                onChange={e => { setNewDeptName(e.target.value); setDeptError(''); }}
-                placeholder="Nama departemen baru"
-                style={{ flex: 1, padding: '8px 10px', fontSize: '13px', border: '1px solid var(--border)', borderRadius: '6px', outline: 'none', color: 'var(--text1)' }}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (!newDeptName.trim()) return;
-                    const ok = addDepartment(newDeptName);
-                    if (ok) { setNewDeptName(''); setDeptError(''); }
-                    else setDeptError(`"${newDeptName.trim()}" sudah ada.`);
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  if (!newDeptName.trim()) return;
-                  const ok = addDepartment(newDeptName);
-                  if (ok) { setNewDeptName(''); setDeptError(''); }
-                  else setDeptError(`"${newDeptName.trim()}" sudah ada.`);
-                }}
-                style={{ padding: '8px 14px', background: 'var(--navy)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
-              >
-                + Tambah
-              </button>
             </div>
           </div>
 
