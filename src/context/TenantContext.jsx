@@ -108,6 +108,7 @@ export const TenantProvider = ({ children, authUser }) => {
       return {
         id: authUser.id,
         name: authUser.name,
+        email: authUser.email || '',
         role: authUser.role,
         dept: 'HRD',
         avatar: authUser.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),

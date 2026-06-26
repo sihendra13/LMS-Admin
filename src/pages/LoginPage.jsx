@@ -111,11 +111,13 @@ export const LoginPage = ({ onLogin }) => {
       const user = {
         id: profile.id,
         name: profile.name,
+        email: authData.user.email,
         role: profile.role,
         tenant_id: profile.tenant_id,
         avatar: profile.avatar || profile.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
       };
 
+      localStorage.removeItem('axara_lms_db');
       localStorage.setItem('axara_token', authData.session.access_token);
       localStorage.setItem('axara_refresh_token', authData.session.refresh_token);
       localStorage.setItem('axara_user', JSON.stringify(user));
