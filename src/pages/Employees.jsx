@@ -43,6 +43,8 @@ export const Employees = () => {
   const [inviteResult, setInviteResult] = useState(null);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [lastImportedRows, setLastImportedRows] = useState([]);
+  const [inviteSelected, setInviteSelected] = useState(new Set());
+  const [inviteAbort, setInviteAbort] = useState(null);
 
   const [deptFilter, setDeptFilter] = useState('');
 
@@ -183,6 +185,7 @@ export const Employees = () => {
     const withEmail = rows.filter(r => r.email);
     setLastImportedRows(withEmail);
     if (withEmail.length > 0) {
+      setInviteSelected(new Set(withEmail.map((_, i) => i)));
       setShowInviteResult(true);
       setInviteResult(null);
     } else {
@@ -193,22 +196,36 @@ export const Employees = () => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://axara-lms-backend.onrender.com';
 
   const handleBulkInvite = async () => {
+    const selected = lastImportedRows.filter((_, i) => inviteSelected.has(i));
+    if (selected.length === 0) return;
     setInviteLoading(true);
+    const controller = new AbortController();
+    setInviteAbort(controller);
     try {
       const token = localStorage.getItem('axara_token');
       const res = await fetch(`${BACKEND_URL}/api/v1/invitations/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ employees: lastImportedRows.map(r => ({ name: r.name, email: r.email, dept: r.dept, role: 'employee' })) }),
+        body: JSON.stringify({ employees: selected.map(r => ({ name: r.name, email: r.email, dept: r.dept, role: 'employee' })) }),
+        signal: controller.signal,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal mengirim undangan');
       setInviteResult(data);
     } catch (err) {
-      setInviteResult({ error: err.message });
+      if (err.name === 'AbortError') {
+        setInviteResult({ error: 'Pengiriman dibatalkan.' });
+      } else {
+        setInviteResult({ error: err.message });
+      }
     } finally {
       setInviteLoading(false);
+      setInviteAbort(null);
     }
+  };
+
+  const handleCancelInvite = () => {
+    if (inviteAbort) inviteAbort.abort();
   };
 
   const handleProceedWithQuota = () => {
@@ -733,19 +750,33 @@ export const Employees = () => {
 
               {!inviteResult ? (
                 <>
-                  <p style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.6', margin: '0 0 16px' }}>
-                    <strong>{lastImportedRows.length} karyawan</strong> berhasil diimport. Kirim undangan email agar mereka bisa login dan mengakses training?
+                  <p style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.6', margin: '0 0 12px' }}>
+                    <strong>{lastImportedRows.length} karyawan</strong> berhasil diimport. Pilih yang ingin dikirimi undangan email.
                   </p>
-                  <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '12px', maxHeight: '200px', overflowY: 'auto', marginBottom: '16px' }}>
-                    {lastImportedRows.slice(0, 10).map((r, i) => (
-                      <div key={i} style={{ fontSize: '12px', padding: '4px 0', color: 'var(--text2)', display: 'flex', justifyContent: 'space-between' }}>
-                        <span>{r.name}</span>
-                        <span style={{ color: 'var(--text3)' }}>{r.email}</span>
-                      </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={inviteSelected.size === lastImportedRows.length} onChange={(e) => {
+                        if (e.target.checked) setInviteSelected(new Set(lastImportedRows.map((_, i) => i)));
+                        else setInviteSelected(new Set());
+                      }} />
+                      Pilih Semua
+                    </label>
+                    <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '600' }}>{inviteSelected.size} / {lastImportedRows.length} dipilih</span>
+                  </div>
+                  <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '8px 12px', maxHeight: '220px', overflowY: 'auto', marginBottom: '16px', scrollbarWidth: 'thin' }}>
+                    {lastImportedRows.map((r, i) => (
+                      <label key={i} style={{ fontSize: '12px', padding: '5px 0', color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderBottom: i < lastImportedRows.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                        <input type="checkbox" checked={inviteSelected.has(i)} onChange={() => {
+                          setInviteSelected(prev => {
+                            const next = new Set(prev);
+                            next.has(i) ? next.delete(i) : next.add(i);
+                            return next;
+                          });
+                        }} />
+                        <span style={{ flex: 1, fontWeight: '500' }}>{r.name}</span>
+                        <span style={{ color: 'var(--text3)', fontSize: '11px' }}>{r.email}</span>
+                      </label>
                     ))}
-                    {lastImportedRows.length > 10 && (
-                      <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '8px' }}>...dan {lastImportedRows.length - 10} lainnya</div>
-                    )}
                   </div>
                 </>
               ) : inviteResult.error ? (
@@ -775,21 +806,24 @@ export const Employees = () => {
 
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               {!inviteResult ? (
-                <>
-                  <button onClick={() => { setShowInviteResult(false); setLastImportedRows([]); }}
-                    style={{ padding: '10px 20px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
-                    Nanti Saja
+                inviteLoading ? (
+                  <button onClick={handleCancelInvite}
+                    style={{ padding: '10px 20px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#dc2626' }}>
+                    Batalkan Pengiriman
                   </button>
-                  <button onClick={handleBulkInvite} disabled={inviteLoading} className="btn-primary"
-                    style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', opacity: inviteLoading ? 0.7 : 1 }}>
-                    {inviteLoading ? 'Mengirim...' : (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                        Kirim Undangan
-                      </>
-                    )}
-                  </button>
-                </>
+                ) : (
+                  <>
+                    <button onClick={() => { setShowInviteResult(false); setLastImportedRows([]); }}
+                      style={{ padding: '10px 20px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
+                      Nanti Saja
+                    </button>
+                    <button onClick={handleBulkInvite} disabled={inviteSelected.size === 0} className="btn-primary"
+                      style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', opacity: inviteSelected.size === 0 ? 0.5 : 1 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Kirim {inviteSelected.size > 0 ? `(${inviteSelected.size})` : ''}
+                    </button>
+                  </>
+                )
               ) : (
                 <button onClick={() => { setShowInviteResult(false); setLastImportedRows([]); setInviteResult(null); }} className="btn-primary"
                   style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600' }}>
