@@ -210,27 +210,37 @@ export const Employees = () => {
   const handleConfirmImport = () => {
     const validRows = importRows.filter(r => !r.errors.length);
     const remaining = limit - totalCount;
-    const toAdd = limit === Infinity ? validRows : validRows.slice(0, remaining);
+    const canAdd = limit === Infinity ? validRows.length : Math.min(validRows.length, remaining);
 
-    const uniqueDepts = [...new Set(toAdd.map(r => r.dept).filter(Boolean))];
-    addDepartmentsBatch(uniqueDepts);
-
-    toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
-    setShowImport(false);
-    setImportRows([]);
-
-    if (toAdd.length < validRows.length) {
+    if (canAdd < validRows.length) {
       setUpgradeData({
-        added: toAdd.length,
-        skipped: validRows.length - toAdd.length,
+        added: canAdd,
+        skipped: validRows.length - canAdd,
         totalNeeded: validRows.length + totalCount,
       });
       setUpgradeSent(false);
       setUpgradeMsg('');
       setShowUpgrade(true);
     } else {
-      alert(`${toAdd.length} karyawan berhasil didaftarkan!`);
+      doImport(validRows);
     }
+  };
+
+  const doImport = (rows) => {
+    const uniqueDepts = [...new Set(rows.map(r => r.dept).filter(Boolean))];
+    addDepartmentsBatch(uniqueDepts);
+    rows.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
+    setShowImport(false);
+    setImportRows([]);
+    alert(`${rows.length} karyawan berhasil didaftarkan!`);
+  };
+
+  const handleProceedWithQuota = () => {
+    const validRows = importRows.filter(r => !r.errors.length);
+    const remaining = limit - totalCount;
+    const toAdd = validRows.slice(0, remaining);
+    setShowUpgrade(false);
+    doImport(toAdd);
   };
 
   const handleSendUpgradeRequest = async () => {
@@ -622,7 +632,7 @@ export const Employees = () => {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text1)' }}>Upgrade Paket</div>
                       <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
-                        {upgradeData.added} karyawan berhasil didaftarkan, {upgradeData.skipped} belum terdaftar
+                        Data Excel: {upgradeData.added + upgradeData.skipped} karyawan — kuota tersisa {upgradeData.added}
                       </div>
                     </div>
                     <button onClick={() => setShowUpgrade(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -671,7 +681,7 @@ export const Employees = () => {
                     Kirim Permintaan Upgrade
                   </button>
                   <button
-                    onClick={() => setShowUpgrade(false)}
+                    onClick={handleProceedWithQuota}
                     style={{ width: '100%', padding: '12px', fontSize: '13px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '8px', background: '#fff', color: 'var(--text2)', cursor: 'pointer' }}
                   >
                     Lanjut dengan {upgradeData.added} Karyawan (Paket {tenant.plan.toUpperCase()})
