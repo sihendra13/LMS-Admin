@@ -633,10 +633,23 @@ export const Reports = () => {
 
           {/* COMPLIANCE MATRIX TABLE */}
           <div className="card" style={{ marginBottom: '20px' }}>
-            <div className="card-head" style={{ borderBottom: '1px solid var(--border)' }}>
-              <div>
-                <div className="card-title">Status Sertifikasi per Departemen</div>
-                <span style={{ fontSize: '11px', color: 'var(--text3)' }}>Kumulatif semua periode · data terkini per karyawan</span>
+            <div className="card-head" style={{ borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', padding: '12px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <div className="card-title">Status Sertifikasi per Departemen</div>
+                  <span style={{ fontSize: '11px', color: 'var(--text3)' }}>Kumulatif semua periode · data terkini per karyawan</span>
+                </div>
+                {deptsWithoutSOP.length > 0 && (
+                  <>
+                    <div style={{ width: '1px', height: '24px', background: 'var(--border)' }}></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#92400e', background: '#fffbeb', padding: '6px 12px', borderRadius: '6px', border: '1px solid #fde68a' }}>
+                      <span style={{ fontSize: '12px', lineHeight: '1' }}>&#9888;</span>
+                      <span>
+                        <strong>{deptsWithoutSOP.length} departemen</strong> belum memiliki SOP: {deptsWithoutSOP.join(', ')}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="card-body" style={{ overflowX: 'auto' }}>
@@ -682,14 +695,7 @@ export const Reports = () => {
                   )}
                 </tbody>
               </table>
-              {deptsWithoutSOP.length > 0 && (
-                <div style={{ padding: '12px 16px', background: '#fffbeb', borderTop: '1px solid #fde68a', fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <span style={{ fontSize: '14px', lineHeight: '1' }}>&#9888;</span>
-                  <span>
-                    <strong>{deptsWithoutSOP.length} departemen</strong> belum memiliki SOP: {deptsWithoutSOP.join(', ')}
-                  </span>
-                </div>
-              )}
+
             </div>
           </div>
 
