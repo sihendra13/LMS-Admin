@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
+import { supabase } from '../utils/supabase';
 
 const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = false, disabled = false, align = 'left' }) => {
   const [open, setOpen] = useState(false);
@@ -90,6 +91,12 @@ export const Employees = () => {
   const [showImport, setShowImport] = useState(false);
   const [importRows, setImportRows] = useState([]);
   const [importError, setImportError] = useState('');
+
+  // Upgrade request modal
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeData, setUpgradeData] = useState(null);
+  const [upgradeSent, setUpgradeSent] = useState(false);
+  const [upgradeMsg, setUpgradeMsg] = useState('');
 
   const [deptFilter, setDeptFilter] = useState('');
 
@@ -205,30 +212,48 @@ export const Employees = () => {
     const remaining = limit - totalCount;
     const toAdd = limit === Infinity ? validRows : validRows.slice(0, remaining);
 
-    // Auto-create new departments from Excel in one batch (avoids stale state bug)
     const uniqueDepts = [...new Set(toAdd.map(r => r.dept).filter(Boolean))];
     addDepartmentsBatch(uniqueDepts);
 
     toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
     setImportRows([]);
+
     if (toAdd.length < validRows.length) {
-      const skipped = validRows.length - toAdd.length;
-      alert(
-        `✅ ${toAdd.length} karyawan berhasil didaftarkan.\n\n` +
-        `⚠️ ${skipped} karyawan tidak bisa didaftarkan karena melebihi kuota ${limit} karyawan di Paket ${tenant.plan.toUpperCase()}.\n\n` +
-        `Upgrade ke paket yang lebih tinggi untuk mendaftarkan lebih banyak karyawan.`
-      );
+      setUpgradeData({
+        added: toAdd.length,
+        skipped: validRows.length - toAdd.length,
+        totalNeeded: validRows.length + totalCount,
+      });
+      setUpgradeSent(false);
+      setUpgradeMsg('');
+      setShowUpgrade(true);
     } else {
-      alert(`✅ ${toAdd.length} karyawan berhasil didaftarkan!`);
+      alert(`${toAdd.length} karyawan berhasil didaftarkan!`);
     }
+  };
+
+  const handleSendUpgradeRequest = async () => {
+    await supabase.from('upgrade_requests').insert({
+      tenant_name: tenant.name,
+      admin_name: currentUser.name,
+      admin_email: currentUser.email || '',
+      current_plan: tenant.plan,
+      current_limit: limit === Infinity ? 999999 : limit,
+      employee_needed: upgradeData?.totalNeeded || 0,
+      message: upgradeMsg.trim() || null,
+    });
+    setUpgradeSent(true);
   };
 
   const handleAddEmployee = (e) => {
     e.preventDefault();
     if (!name.trim()) return alert('Nama karyawan tidak boleh kosong!');
     if (isFull) {
-      alert(`Kuota karyawan Anda sudah penuh (${totalCount}/${limit} di Paket ${tenant.plan.toUpperCase()}).\n\nUpgrade ke paket yang lebih tinggi untuk mendaftarkan lebih banyak karyawan.`);
+      setUpgradeData({ added: 0, skipped: 1, totalNeeded: totalCount + 1 });
+      setUpgradeSent(false);
+      setUpgradeMsg('');
+      setShowUpgrade(true);
       return;
     }
     addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, score: 0 });
@@ -579,6 +604,95 @@ export const Employees = () => {
                 Tambahkan {Math.min(importRows.filter(r => !r.errors.length).length, limit === Infinity ? Infinity : Math.max(0, limit - totalCount))} Karyawan
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* UPGRADE REQUEST MODAL */}
+      {showUpgrade && upgradeData && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            {!upgradeSent ? (
+              <>
+                <div style={{ padding: '24px 24px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text1)' }}>Upgrade Paket</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
+                        {upgradeData.added} karyawan berhasil didaftarkan, {upgradeData.skipped} belum terdaftar
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '10px', padding: '14px', marginBottom: '20px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: '#92400e', marginBottom: '4px' }}>
+                      File Excel Anda membutuhkan {upgradeData.totalNeeded} slot karyawan
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#a16207' }}>
+                      Paket {tenant.plan.toUpperCase()} saat ini hanya mendukung maksimal {limit} karyawan. Upgrade ke paket Enterprise untuk kapasitas tak terbatas.
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                    {[
+                      { label: 'Nama Admin', value: currentUser.name },
+                      { label: 'Perusahaan', value: tenant.name },
+                      { label: 'Jumlah Karyawan Dibutuhkan', value: `${upgradeData.totalNeeded} karyawan` },
+                      { label: 'Paket Saat Ini', value: `${tenant.plan.toUpperCase()} (maks ${limit})` },
+                    ].map(f => (
+                      <div key={f.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--surface2)', borderRadius: '8px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text3)' }}>{f.label}</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{f.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <textarea
+                    placeholder="Catatan tambahan (opsional)"
+                    value={upgradeMsg}
+                    onChange={e => setUpgradeMsg(e.target.value)}
+                    rows={2}
+                    style={{ width: '100%', padding: '10px 12px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '8px', resize: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                  />
+                </div>
+
+                <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+                  <button
+                    onClick={handleSendUpgradeRequest}
+                    style={{ width: '100%', padding: '10px', fontSize: '13px', fontWeight: '700', border: 'none', borderRadius: '8px', background: '#2563eb', color: '#fff', cursor: 'pointer' }}
+                  >
+                    Kirim Permintaan Upgrade
+                  </button>
+                  <button
+                    onClick={() => setShowUpgrade(false)}
+                    style={{ width: '100%', padding: '10px', fontSize: '13px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '8px', background: '#fff', color: 'var(--text2)', cursor: 'pointer' }}
+                  >
+                    Lanjut dengan {upgradeData.added} Karyawan (Paket {tenant.plan.toUpperCase()})
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px' }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text1)', marginBottom: '8px' }}>
+                  Permintaan Terkirim!
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text3)', marginBottom: '24px', lineHeight: '1.5' }}>
+                  Tim Axara akan menghubungi Anda dalam <strong>1x24 jam</strong> untuk membahas upgrade ke paket Enterprise.
+                </div>
+                <button
+                  onClick={() => setShowUpgrade(false)}
+                  style={{ padding: '10px 32px', fontSize: '13px', fontWeight: '600', border: 'none', borderRadius: '8px', background: 'var(--accent)', color: '#fff', cursor: 'pointer' }}
+                >
+                  Tutup
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
