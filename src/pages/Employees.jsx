@@ -212,14 +212,23 @@ export const Employees = () => {
     toAdd.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
     setImportRows([]);
-    alert(`${toAdd.length} karyawan berhasil ditambahkan!${toAdd.length < validRows.length ? `\n${validRows.length - toAdd.length} baris dilewati karena kuota penuh.` : ''}`);
+    if (toAdd.length < validRows.length) {
+      const skipped = validRows.length - toAdd.length;
+      alert(
+        `✅ ${toAdd.length} karyawan berhasil didaftarkan.\n\n` +
+        `⚠️ ${skipped} karyawan tidak bisa didaftarkan karena melebihi kuota ${limit} karyawan di Paket ${tenant.plan.toUpperCase()}.\n\n` +
+        `Upgrade ke paket yang lebih tinggi untuk mendaftarkan lebih banyak karyawan.`
+      );
+    } else {
+      alert(`✅ ${toAdd.length} karyawan berhasil didaftarkan!`);
+    }
   };
 
   const handleAddEmployee = (e) => {
     e.preventDefault();
     if (!name.trim()) return alert('Nama karyawan tidak boleh kosong!');
     if (isFull) {
-      alert(`Gagal! Batas kuota karyawan untuk Paket ${tenant.plan.toUpperCase()} adalah ${limit} karyawan. Silakan upgrade paket Anda.`);
+      alert(`Kuota karyawan Anda sudah penuh (${totalCount}/${limit} di Paket ${tenant.plan.toUpperCase()}).\n\nUpgrade ke paket yang lebih tinggi untuk mendaftarkan lebih banyak karyawan.`);
       return;
     }
     addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, score: 0 });
@@ -522,8 +531,15 @@ export const Employees = () => {
               <div>
                 <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text1)' }}>Preview Import Karyawan</div>
                 <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>
-                  {importRows.filter(r => !r.errors.length).length} valid · {importRows.filter(r => r.errors.length).length} error
-                  {limit !== Infinity && ` · kuota tersisa ${Math.max(0, limit - totalCount)}`}
+                  {importRows.filter(r => !r.errors.length).length} data valid · {importRows.filter(r => r.errors.length).length} error
+                  {limit !== Infinity && (() => {
+                    const validCount = importRows.filter(r => !r.errors.length).length;
+                    const sisa = Math.max(0, limit - totalCount);
+                    const willAdd = Math.min(validCount, sisa);
+                    return validCount > sisa
+                      ? <span style={{ color: '#dc2626', fontWeight: '600' }}> · Kuota tersisa {sisa} — hanya {willAdd} yang bisa didaftarkan</span>
+                      : ` · kuota tersisa ${sisa}`;
+                  })()}
                 </div>
               </div>
               <button onClick={() => { setShowImport(false); setImportRows([]); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text3)' }}>✕</button>
