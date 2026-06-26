@@ -700,7 +700,8 @@ export const Employees = () => {
                 </div>
                 <button
                   onClick={() => setShowUpgrade(false)}
-                  style={{ padding: '10px 32px', fontSize: '13px', fontWeight: '600', border: 'none', borderRadius: '8px', background: 'var(--accent)', color: '#fff', cursor: 'pointer' }}
+                  className="btn-primary"
+                  style={{ padding: '10px 32px', fontSize: '13px', fontWeight: '600', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                 >
                   Tutup
                 </button>
