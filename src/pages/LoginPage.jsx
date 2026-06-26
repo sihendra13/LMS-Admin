@@ -112,6 +112,7 @@ export const LoginPage = ({ onLogin }) => {
         id: profile.id,
         name: profile.name,
         role: profile.role,
+        tenant_id: profile.tenant_id,
         avatar: profile.avatar || profile.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
       };
 
@@ -748,8 +749,7 @@ const styles = {
     fontSize: '11px',
     color: '#94a3b8',
     fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
+    letterSpacing: '0.03em',
   },
   stackWrapper: {
     position: 'relative',

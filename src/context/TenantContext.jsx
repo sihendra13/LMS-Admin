@@ -84,6 +84,22 @@ export const TenantProvider = ({ children, authUser }) => {
     logo: localStorage.getItem(LOGO_KEY) || storedDB.tenant?.logo || null,
   });
 
+  useEffect(() => {
+    if (!authUser?.tenant_id) return;
+    supabase.from('tenants').select('name, plan, status').eq('id', authUser.tenant_id).single()
+      .then(({ data }) => {
+        if (data) {
+          setTenant(prev => ({
+            ...prev,
+            name: data.name || prev.name,
+            plan: data.plan || prev.plan,
+            status: data.status || prev.status,
+            avatar: (data.name || prev.name).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+          }));
+        }
+      });
+  }, [authUser?.tenant_id]);
+
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'sop' | 'sertifikasi' | 'laporan' | 'karyawan' | 'departemen' | 'upload' | 'notifikasi' | 'pengaturan'
 
   // State for Dynamic Role Access Control
