@@ -7,7 +7,7 @@ import { supabase } from '../utils/supabase';
 const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
 
 export const UploadSOP = () => {
-  const { tenant, addSOP, updateSOP, setActivePage, videos, editingVideoId, setEditingVideoId } = useTenant();
+  const { tenant, addSOP, updateSOP, setActivePage, videos, editingVideoId, setEditingVideoId, departments } = useTenant();
   const editVideo = editingVideoId ? videos.find(v => v.id === editingVideoId) : null;
   const isEditMode = !!editVideo;
 
@@ -998,12 +998,7 @@ export const UploadSOP = () => {
                     <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Departemen Target</label>
                     <select className="form-select" style={{ fontSize: '14px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
                       <option value="Semua">Semua Departemen</option>
-                      <option value="Sales">Sales & Marketing</option>
-                      <option value="HRD">HRD / GA</option>
-                      <option value="Operasional">Operasional & Gudang</option>
-                      <option value="Finance">Finance & Tax</option>
-                      <option value="CS">Customer Service</option>
-                      <option value="IT">IT Support</option>
+                      {departments.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
 
