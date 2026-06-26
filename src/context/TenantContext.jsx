@@ -77,7 +77,7 @@ export const TenantProvider = ({ children, authUser }) => {
   const storedDB = getStoredDB() || {};
 
   const [tenant, setTenant] = useState({
-    name: storedDB.tenant?.name || 'PT Maju Bersama',
+    name: storedDB.tenant?.name || 'Perusahaan Anda',
     plan: (storedDB.tenant?.plan && storedDB.tenant?.plan !== PLANS.STARTER) ? storedDB.tenant?.plan : PLANS.BUSINESS,
     status: storedDB.tenant?.status || 'Aktif',
     avatar: storedDB.tenant?.avatar || 'MB',

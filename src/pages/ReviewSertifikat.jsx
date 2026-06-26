@@ -778,7 +778,7 @@ export const ReviewSertifikat = () => {
                     </div>
                   ) : (
                     <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '16px' }}>
-                      🏢 {tenant?.name || 'PT Maju Bersama'} · Corporate LMS
+                      🏢 {tenant?.name || tenant.name} · Corporate LMS
                     </div>
                   )}
 
@@ -798,7 +798,7 @@ export const ReviewSertifikat = () => {
                     </div>
                     <div style={{ textAlign: 'center', minWidth: '140px' }}>
                       <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '16px', color: '#1e3a5f', marginBottom: '4px' }}>{sub.approvedBy || currentUser.name}</div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>HR Manager, {tenant?.name || 'PT Maju Bersama'}</div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>HR Manager, {tenant?.name || tenant.name}</div>
                     </div>
                   </div>
                 </div>

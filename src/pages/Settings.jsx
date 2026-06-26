@@ -73,7 +73,7 @@ export const Settings = () => {
                 <div>
                   <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '700', display: 'block', textTransform: 'uppercase' }}>Alamat Email</span>
                   <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text2)', display: 'block', marginTop: '6px' }}>
-                    {currentUser.role === 'admin' ? 'andi.s@majubersama.com' : `${currentUser.name.toLowerCase().replace(' ', '.')}@majubersama.com`}
+                    {currentUser.email || `${currentUser.name.toLowerCase().replace(' ', '.')}@perusahaan.com`}
                   </span>
                 </div>
               </div>
@@ -249,7 +249,7 @@ export const Settings = () => {
                   <div style={{ marginBottom: '18px' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '700', display: 'block', textTransform: 'uppercase' }}>Nama Perusahaan (Entitas Billing)</span>
                     <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
-                      PT Maju Bersama Tbk <span style={{ fontSize: '14px' }} title="Terkunci secara hukum">🔒</span>
+                      {tenant.name} <span style={{ fontSize: '14px' }} title="Terkunci secara hukum">🔒</span>
                     </span>
                   </div>
                   

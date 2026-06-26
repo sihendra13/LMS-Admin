@@ -490,7 +490,7 @@ export const Departments = () => {
                   type="email" 
                   className="form-input"
                   style={{ width: '100%', fontSize: '13px', marginTop: '4px' }}
-                  placeholder="Contoh: manager.sales@majubersama.com"
+                  placeholder="Contoh: manager.sales@perusahaan.com"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   required
