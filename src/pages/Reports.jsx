@@ -20,7 +20,7 @@ const STATUS_COLORS = {
 };
 
 export const Reports = () => {
-  const { tenant, quizSubmissions, videos, employees, currentUser, passingScore } = useTenant();
+  const { tenant, quizSubmissions, videos, employees, currentUser, passingScore, departments } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
   const reportRef = useRef(null);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -79,6 +79,8 @@ export const Reports = () => {
   const activeDepts = isSupervisor
     ? [currentUser.dept]
     : [...new Set(videos.filter(v => !v.archived && v.dept !== 'Semua').map(v => v.dept))].sort();
+
+  const deptsWithoutSOP = isSupervisor ? [] : departments.filter(d => !activeDepts.some(ad => ad.toLowerCase() === d.toLowerCase()));
 
   // --- Compliance matrix (KUMULATIF — pernah selesai kapanpun) ---
   const complianceMatrix = activeDepts.map(dept => {
@@ -680,6 +682,14 @@ export const Reports = () => {
                   )}
                 </tbody>
               </table>
+              {deptsWithoutSOP.length > 0 && (
+                <div style={{ padding: '12px 16px', background: '#fffbeb', borderTop: '1px solid #fde68a', fontSize: '12px', color: '#92400e', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <span style={{ fontSize: '14px', lineHeight: '1' }}>&#9888;</span>
+                  <span>
+                    <strong>{deptsWithoutSOP.length} departemen</strong> belum memiliki SOP: {deptsWithoutSOP.join(', ')}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
