@@ -10,6 +10,19 @@ export const Settings = () => {
 
   // Branding/Integration states
   const [logoStatus, setLogoStatus] = useState('idle'); // 'idle' | 'processing' | 'saved' | 'error'
+  const [avatarUrl, setAvatarUrl] = useState(() => localStorage.getItem('axara_avatar') || '');
+
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const url = ev.target.result;
+      setAvatarUrl(url);
+      localStorage.setItem('axara_avatar', url);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="content">
@@ -36,19 +49,33 @@ export const Settings = () => {
             </h3>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-              <div style={{ 
-                width: '64px', 
-                height: '64px', 
-                borderRadius: '50%', 
-                background: 'var(--accent)', 
-                color: '#ffffff', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                fontWeight: '700',
-                fontSize: '24px'
-              }}>
-                {currentUser.avatar}
+              <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => document.getElementById('avatar-input').click()}>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'var(--accent)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: '700',
+                  fontSize: '24px',
+                  overflow: 'hidden',
+                }}>
+                  {avatarUrl ? <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : currentUser.avatar}
+                </div>
+                <div style={{
+                  position: 'absolute', bottom: '-2px', right: '-2px',
+                  width: '24px', height: '24px', borderRadius: '50%',
+                  background: 'var(--navy)', border: '2px solid #fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </div>
+                <input id="avatar-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700', color: 'var(--text1)' }}>{currentUser.name}</h4>
