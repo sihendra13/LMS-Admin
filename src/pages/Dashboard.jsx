@@ -461,8 +461,103 @@ export const Dashboard = () => {
           `Dari ${quizSubmissions.length} total pengerjaan kuis, ${certified.length} sudah disetujui dan sertifikat diterbitkan.`;
       }
 
+      // 32. Evaluasi/profiling performa karyawan individual
+      if (mentionedEmp && /(evaluasi|profil|profile|performa|feedback|bagaimana|gimana|ceritakan|analisis|coaching)/.test(q)) {
+        const empSubs = quizSubmissions.filter(s => s.employeeName === mentionedEmp.name);
+        const lulus = empSubs.filter(s => s.postScore >= passingScore);
+        const remedial = empSubs.filter(s => s.postScore < passingScore);
+        const avgScore = empSubs.length > 0
+          ? Math.round(empSubs.reduce((a,b) => a + b.postScore, 0) / empSubs.length)
+          : 0;
+        const failCount = {};
+        remedial.forEach(s => { failCount[s.videoTitle] = (failCount[s.videoTitle]||0)+1 });
+        const worstSOPs = Object.entries(failCount).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        const bestSOPs = lulus.sort((a,b)=>b.postScore-a.postScore).slice(0,2);
+
+        return {
+          type: 'employee_profile',
+          employee: mentionedEmp,
+          data: {
+            totalKuis: empSubs.length,
+            lulus: lulus.length,
+            remedial: remedial.length,
+            avgScore,
+            worstSOPs,
+            bestSOPs,
+            empSubs,
+            passingScore
+          }
+        };
+      }
+
       return null;
     })();
+
+    if (clientAnswer && typeof clientAnswer === 'object' && clientAnswer.type === 'employee_profile') {
+      const result = clientAnswer;
+      const profilePrompt = `Kamu adalah AXA AI, asisten HRD profesional dari platform LMS Axara.
+Buatkan profil evaluasi performa training yang komprehensif dan naratif untuk karyawan berikut berdasarkan data nyata dari sistem LMS:
+
+DATA KARYAWAN:
+- Nama: ${result.employee.name}
+- Divisi: ${result.employee.dept}
+- Jabatan: ${result.employee.role || 'Karyawan'}
+
+DATA PERFORMA TRAINING:
+- Total kuis dikerjakan: ${result.data.totalKuis}
+- Lulus: ${result.data.lulus}
+- Remedial: ${result.data.remedial}
+- Rata-rata skor: ${result.data.avgScore}%
+- Passing score perusahaan: ${result.data.passingScore}%
+- SOP paling sering gagal: ${result.data.worstSOPs.map(s=>`${s[0]} (${s[1]}x)`).join(', ') || 'tidak ada'}
+- SOP terbaik: ${result.data.bestSOPs.map(s=>`${s.videoTitle} (${s.postScore}%)`).join(', ') || 'belum ada'}
+
+Tulis evaluasi dalam Bahasa Indonesia yang profesional namun mudah dipahami.
+Struktur jawaban:
+1. Paragraf pembuka: ringkasan status performa secara keseluruhan
+2. Analisis kekuatan: SOP yang dikuasai dengan baik
+3. Area yang perlu ditingkatkan: pola kesulitan yang terdeteksi
+4. Rekomendasi konkret: 2-3 langkah tindakan yang bisa dilakukan HRD atau SPV
+5. Penutup: outlook ke depan
+
+Gunakan data nyata, jangan mengarang.
+Maksimal 300 kata, padat dan actionable.`;
+
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: `Kamu adalah AXA AI, asisten LMS Axara milik ${tenant.name}. Paket: ${tenant.plan}. Passing score: ${passingScore}%.` },
+              { role: 'user', content: profilePrompt }
+            ],
+            max_tokens: 800,
+            temperature: 0.5
+          })
+        });
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        setChatMessages(prev => [...prev, {
+          id: Date.now() + 1, sender: 'ai', name: 'AXA',
+          text: data.choices[0].message.content,
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } catch {
+        setChatMessages(prev => [...prev, {
+          id: Date.now() + 1, sender: 'ai', name: 'AXA',
+          text: 'Maaf, gagal membuat evaluasi. Silakan coba lagi.',
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } finally {
+        setIsTyping(false);
+      }
+      return;
+    }
 
     if (clientAnswer) {
       setChatMessages(prev => [...prev, {
