@@ -742,7 +742,7 @@ export const UploadSOP = () => {
       <form onSubmit={handleFormSubmit}>
         
         {/* ROW 1: SINGLE CARD WITH 3 SECTIONS SPLIT INTO 2 COLUMNS SIDE-BY-SIDE */}
-        <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
+        <div className="card" style={{ padding: '24px', marginBottom: '24px', overflow: 'visible' }}>
           {/* SINGLE COLUMN: Media Upload & Video Preview (Dynamic Layout) */}
           <div style={{ marginBottom: '24px' }}>
             
@@ -960,7 +960,7 @@ export const UploadSOP = () => {
             </div>
 
             {/* SECTION 2: DETAIL INFORMASI (Full width under player/dropzone) */}
-            <div className="card" style={{ padding: '24px', border: '1px solid var(--border)', borderRadius: '12px', background: '#ffffff', textAlign: 'left' }}>
+            <div className="card" style={{ padding: '24px', border: '1px solid var(--border)', borderRadius: '12px', background: '#ffffff', textAlign: 'left', overflow: 'visible' }}>
               <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '16px' }}>Detail Informasi</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="form-group" style={{ margin: '0' }}>
