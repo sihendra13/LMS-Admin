@@ -4,6 +4,7 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
 import SearchableDeptSelect from '../components/SearchableDeptSelect';
+import { useToast } from '../components/Toast';
 
 const DEPT_COLORS = [
   { bg: '#eff6ff', text: '#2F7BFF' },
@@ -45,6 +46,8 @@ export const Employees = () => {
   const [lastImportedRows, setLastImportedRows] = useState([]);
   const [inviteSelected, setInviteSelected] = useState(new Set());
   const [inviteAbort, setInviteAbort] = useState(null);
+  const [inviteSearch, setInviteSearch] = useState('');
+  const toast = useToast();
 
   const [deptFilter, setDeptFilter] = useState('');
 
@@ -182,18 +185,20 @@ export const Employees = () => {
     rows.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
     setImportRows([]);
-    const withEmail = rows.filter(r => r.email);
-    setLastImportedRows(withEmail);
-    if (withEmail.length > 0) {
-      setInviteSelected(new Set(withEmail.map((_, i) => i)));
-      setShowInviteResult(true);
-      setInviteResult(null);
-    } else {
-      alert(`${rows.length} karyawan berhasil didaftarkan!`);
-    }
+    toast.success(`${rows.length} karyawan berhasil diimport! Pilih karyawan di tabel untuk kirim undangan email.`);
   };
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://axara-lms-backend.onrender.com';
+
+  const openInviteModal = () => {
+    const emps = employees.filter(e => e.email && selectedIds.has(e.id));
+    if (emps.length === 0) { toast.error('Karyawan yang dipilih tidak memiliki email.'); return; }
+    setLastImportedRows(emps);
+    setInviteSelected(new Set(emps.map((_, i) => i)));
+    setInviteSearch('');
+    setInviteResult(null);
+    setShowInviteResult(true);
+  };
 
   const handleBulkInvite = async () => {
     const selected = lastImportedRows.filter((_, i) => inviteSelected.has(i));
@@ -212,11 +217,14 @@ export const Employees = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal mengirim undangan');
       setInviteResult(data);
+      toast.success(`${data.sent?.length || 0} undangan berhasil dikirim!`);
     } catch (err) {
       if (err.name === 'AbortError') {
         setInviteResult({ error: 'Pengiriman dibatalkan.' });
+        toast.info('Pengiriman undangan dibatalkan.');
       } else {
         setInviteResult({ error: err.message });
+        toast.error(err.message);
       }
     } finally {
       setInviteLoading(false);
@@ -248,7 +256,7 @@ export const Employees = () => {
 
   const handleAddEmployee = (e) => {
     e.preventDefault();
-    if (!name.trim()) return alert('Nama karyawan tidak boleh kosong!');
+    if (!name.trim()) return toast.error('Nama karyawan tidak boleh kosong!');
     if (isFull) {
       setUpgradeData({ added: 0, skipped: 1, totalNeeded: totalCount + 1 });
       setUpgradeSent(false);
@@ -259,7 +267,7 @@ export const Employees = () => {
     addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, score: 0 });
     setName('');
     setEmail('');
-    alert('Karyawan baru berhasil ditambahkan!');
+    toast.success('Karyawan baru berhasil ditambahkan!');
   };
 
   return (
@@ -303,6 +311,13 @@ export const Employees = () => {
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
                   Export XLSX
+                </button>
+                <button onClick={openInviteModal}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #93c5fd', background: '#fff', color: '#1d4ed8', cursor: 'pointer' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  Kirim Undangan ({selectedIds.size})
                 </button>
                 <button onClick={handleBulkDelete}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '12px', fontWeight: '600', borderRadius: '6px', border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', cursor: 'pointer' }}>
@@ -749,36 +764,48 @@ export const Employees = () => {
               </div>
 
               {!inviteResult ? (
-                <>
-                  <p style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.6', margin: '0 0 12px' }}>
-                    <strong>{lastImportedRows.length} karyawan</strong> berhasil diimport. Pilih yang ingin dikirimi undangan email.
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={inviteSelected.size === lastImportedRows.length} onChange={(e) => {
-                        if (e.target.checked) setInviteSelected(new Set(lastImportedRows.map((_, i) => i)));
-                        else setInviteSelected(new Set());
-                      }} />
-                      Pilih Semua
-                    </label>
-                    <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '600' }}>{inviteSelected.size} / {lastImportedRows.length} dipilih</span>
-                  </div>
-                  <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '8px 12px', maxHeight: '220px', overflowY: 'auto', marginBottom: '16px', scrollbarWidth: 'thin' }}>
-                    {lastImportedRows.map((r, i) => (
-                      <label key={i} style={{ fontSize: '12px', padding: '5px 0', color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderBottom: i < lastImportedRows.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                        <input type="checkbox" checked={inviteSelected.has(i)} onChange={() => {
-                          setInviteSelected(prev => {
-                            const next = new Set(prev);
-                            next.has(i) ? next.delete(i) : next.add(i);
-                            return next;
-                          });
+                (() => {
+                  const filtered = lastImportedRows.map((r, i) => ({ ...r, _i: i })).filter(r =>
+                    !inviteSearch || r.name.toLowerCase().includes(inviteSearch.toLowerCase()) || r.email.toLowerCase().includes(inviteSearch.toLowerCase())
+                  );
+                  return <>
+                    <p style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.6', margin: '0 0 12px' }}>
+                      Pilih karyawan yang ingin dikirimi undangan email untuk login dan mengakses training.
+                    </p>
+                    <input
+                      type="text" placeholder="Cari nama atau email..." value={inviteSearch}
+                      onChange={e => setInviteSearch(e.target.value)}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', marginBottom: '10px', boxSizing: 'border-box', outline: 'none' }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={inviteSelected.size === lastImportedRows.length && lastImportedRows.length > 0} onChange={(e) => {
+                          if (e.target.checked) setInviteSelected(new Set(lastImportedRows.map((_, i) => i)));
+                          else setInviteSelected(new Set());
                         }} />
-                        <span style={{ flex: 1, fontWeight: '500' }}>{r.name}</span>
-                        <span style={{ color: 'var(--text3)', fontSize: '11px' }}>{r.email}</span>
+                        Pilih Semua
                       </label>
-                    ))}
-                  </div>
-                </>
+                      <span style={{ fontSize: '11px', color: 'var(--text3)', fontWeight: '600' }}>{inviteSelected.size} / {lastImportedRows.length} dipilih</span>
+                    </div>
+                    <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '8px 12px', maxHeight: '260px', overflowY: 'auto', marginBottom: '16px', scrollbarWidth: 'thin' }}>
+                      {filtered.length === 0 ? (
+                        <div style={{ fontSize: '12px', color: 'var(--text3)', padding: '16px 0', textAlign: 'center' }}>Tidak ditemukan</div>
+                      ) : filtered.map((r) => (
+                        <label key={r._i} style={{ fontSize: '12px', padding: '5px 0', color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}>
+                          <input type="checkbox" checked={inviteSelected.has(r._i)} onChange={() => {
+                            setInviteSelected(prev => {
+                              const next = new Set(prev);
+                              next.has(r._i) ? next.delete(r._i) : next.add(r._i);
+                              return next;
+                            });
+                          }} />
+                          <span style={{ flex: 1, fontWeight: '500' }}>{r.name}</span>
+                          <span style={{ color: 'var(--text3)', fontSize: '11px' }}>{r.email}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </>;
+                })()
               ) : inviteResult.error ? (
                 <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '16px', margin: '0 0 16px', fontSize: '13px', color: '#b91c1c' }}>
                   {inviteResult.error}

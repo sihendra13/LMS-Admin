@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TenantProvider, useTenant } from './context/TenantContext';
+import { ToastProvider } from './components/Toast';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { PlanSwitcher } from './components/PlanSwitcher';
@@ -82,9 +83,11 @@ function App() {
   }
 
   return (
-    <TenantProvider authUser={authUser}>
-      <AppContent onLogout={handleLogout} />
-    </TenantProvider>
+    <ToastProvider>
+      <TenantProvider authUser={authUser}>
+        <AppContent onLogout={handleLogout} />
+      </TenantProvider>
+    </ToastProvider>
   );
 }
 
