@@ -122,7 +122,10 @@ export const LoginPage = ({ onLogin }) => {
 
       onLogin(user);
     } catch (err) {
-      setError(err.message || 'Login gagal. Periksa email dan password.');
+      const msg = err.message?.includes('Invalid login credentials')
+        ? 'Email atau password yang Anda masukkan salah. Silakan coba lagi.'
+        : err.message || 'Login gagal. Periksa email dan password.';
+      setError(msg);
     } finally {
       clearTimeout(slowTimer);
       setLoading(false);
