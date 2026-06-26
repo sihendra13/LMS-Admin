@@ -38,6 +38,12 @@ export const Employees = () => {
   const [upgradeSent, setUpgradeSent] = useState(false);
   const [upgradeMsg, setUpgradeMsg] = useState('');
 
+  // Bulk invite
+  const [showInviteResult, setShowInviteResult] = useState(false);
+  const [inviteResult, setInviteResult] = useState(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [lastImportedRows, setLastImportedRows] = useState([]);
+
   const [deptFilter, setDeptFilter] = useState('');
 
   // --- Pagination ---
@@ -174,7 +180,35 @@ export const Employees = () => {
     rows.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
     setImportRows([]);
-    alert(`${rows.length} karyawan berhasil didaftarkan!`);
+    const withEmail = rows.filter(r => r.email);
+    setLastImportedRows(withEmail);
+    if (withEmail.length > 0) {
+      setShowInviteResult(true);
+      setInviteResult(null);
+    } else {
+      alert(`${rows.length} karyawan berhasil didaftarkan!`);
+    }
+  };
+
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://axara-lms-backend.onrender.com';
+
+  const handleBulkInvite = async () => {
+    setInviteLoading(true);
+    try {
+      const token = localStorage.getItem('axara_token');
+      const res = await fetch(`${BACKEND_URL}/api/v1/invitations/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ employees: lastImportedRows.map(r => ({ name: r.name, email: r.email, dept: r.dept, role: 'employee' })) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mengirim undangan');
+      setInviteResult(data);
+    } catch (err) {
+      setInviteResult({ error: err.message });
+    } finally {
+      setInviteLoading(false);
+    }
   };
 
   const handleProceedWithQuota = () => {
@@ -679,6 +713,89 @@ export const Employees = () => {
                 style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: !editForm.name?.trim() ? 0.5 : 1 }}>
                 Simpan
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BULK INVITE MODAL */}
+      {showInviteResult && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '24px 24px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700' }}>Kirim Undangan Email</h3>
+                </div>
+                <button onClick={() => { setShowInviteResult(false); setLastImportedRows([]); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: 'var(--text3)' }}>×</button>
+              </div>
+
+              {!inviteResult ? (
+                <>
+                  <p style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.6', margin: '0 0 16px' }}>
+                    <strong>{lastImportedRows.length} karyawan</strong> berhasil diimport. Kirim undangan email agar mereka bisa login dan mengakses training?
+                  </p>
+                  <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '12px', maxHeight: '200px', overflowY: 'auto', marginBottom: '16px' }}>
+                    {lastImportedRows.slice(0, 10).map((r, i) => (
+                      <div key={i} style={{ fontSize: '12px', padding: '4px 0', color: 'var(--text2)', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{r.name}</span>
+                        <span style={{ color: 'var(--text3)' }}>{r.email}</span>
+                      </div>
+                    ))}
+                    {lastImportedRows.length > 10 && (
+                      <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '8px' }}>...dan {lastImportedRows.length - 10} lainnya</div>
+                    )}
+                  </div>
+                </>
+              ) : inviteResult.error ? (
+                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '16px', margin: '0 0 16px', fontSize: '13px', color: '#b91c1c' }}>
+                  {inviteResult.error}
+                </div>
+              ) : (
+                <div style={{ margin: '0 0 16px' }}>
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '20px', fontWeight: '800', color: '#16a34a' }}>{inviteResult.sent?.length || 0}</div>
+                      <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: '600' }}>Terkirim</div>
+                    </div>
+                    <div style={{ flex: 1, background: '#fffbeb', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '20px', fontWeight: '800', color: '#f59e0b' }}>{inviteResult.skipped?.length || 0}</div>
+                      <div style={{ fontSize: '11px', color: '#f59e0b', fontWeight: '600' }}>Dilewati</div>
+                    </div>
+                    <div style={{ flex: 1, background: '#fef2f2', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '20px', fontWeight: '800', color: '#ef4444' }}>{inviteResult.failed?.length || 0}</div>
+                      <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: '600' }}>Gagal</div>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.6' }}>{inviteResult.message}</p>
+                </div>
+              )}
+            </div>
+
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              {!inviteResult ? (
+                <>
+                  <button onClick={() => { setShowInviteResult(false); setLastImportedRows([]); }}
+                    style={{ padding: '10px 20px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>
+                    Nanti Saja
+                  </button>
+                  <button onClick={handleBulkInvite} disabled={inviteLoading} className="btn-primary"
+                    style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', opacity: inviteLoading ? 0.7 : 1 }}>
+                    {inviteLoading ? 'Mengirim...' : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        Kirim Undangan
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => { setShowInviteResult(false); setLastImportedRows([]); setInviteResult(null); }} className="btn-primary"
+                  style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600' }}>
+                  Tutup
+                </button>
+              )}
             </div>
           </div>
         </div>
