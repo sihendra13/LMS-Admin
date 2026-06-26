@@ -619,12 +619,15 @@ export const Employees = () => {
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
                     </div>
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text1)' }}>Upgrade Paket</div>
                       <div style={{ fontSize: '12px', color: 'var(--text3)' }}>
                         {upgradeData.added} karyawan berhasil didaftarkan, {upgradeData.skipped} belum terdaftar
                       </div>
                     </div>
+                    <button onClick={() => setShowUpgrade(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
                   </div>
 
                   <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '10px', padding: '14px', marginBottom: '20px' }}>
@@ -662,13 +665,14 @@ export const Employees = () => {
                 <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
                   <button
                     onClick={handleSendUpgradeRequest}
-                    style={{ width: '100%', padding: '10px', fontSize: '13px', fontWeight: '700', border: 'none', borderRadius: '8px', background: '#2563eb', color: '#fff', cursor: 'pointer' }}
+                    className="btn-primary"
+                    style={{ width: '100%', padding: '12px', fontSize: '13px', fontWeight: '700', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                   >
                     Kirim Permintaan Upgrade
                   </button>
                   <button
                     onClick={() => setShowUpgrade(false)}
-                    style={{ width: '100%', padding: '10px', fontSize: '13px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '8px', background: '#fff', color: 'var(--text2)', cursor: 'pointer' }}
+                    style={{ width: '100%', padding: '12px', fontSize: '13px', fontWeight: '600', border: '1px solid var(--border)', borderRadius: '8px', background: '#fff', color: 'var(--text2)', cursor: 'pointer' }}
                   >
                     Lanjut dengan {upgradeData.added} Karyawan (Paket {tenant.plan.toUpperCase()})
                   </button>
