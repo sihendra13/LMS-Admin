@@ -3,6 +3,7 @@ import { supabase } from '../utils/supabase';
 
 export const LoginPage = ({ onLogin }) => {
   const [form, setForm] = useState({ email: '', password: '' });
+  const [regForm, setRegForm] = useState({ name: '', email: '', password: '', confirmPassword: '', company: '' });
   const [loading, setLoading] = useState(false);
   const [slowWarning, setSlowWarning] = useState(false);
   const [error, setError] = useState('');
@@ -10,6 +11,10 @@ export const LoginPage = ({ onLogin }) => {
   const [forgotSuccess, setForgotSuccess] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
+  const [regSuccess, setRegSuccess] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirm, setShowRegConfirm] = useState(false);
 
   // States for Concept 2 Layout
   const [activeEmpIdx, setActiveEmpIdx] = useState(0);
@@ -124,6 +129,35 @@ export const LoginPage = ({ onLogin }) => {
     }
   };
 
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (regForm.password.length < 6) {
+      setError('Password minimal 6 karakter.');
+      return;
+    }
+    if (regForm.password !== regForm.confirmPassword) {
+      setError('Password dan konfirmasi tidak cocok.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: regForm.email,
+        password: regForm.password,
+        options: {
+          data: { name: regForm.name, company: regForm.company, role: 'admin' }
+        }
+      });
+      if (signUpError) throw new Error(signUpError.message);
+      setRegSuccess(true);
+    } catch (err) {
+      setError(err.message || 'Registrasi gagal. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Card styles with 3D tilt calculation
   const getCardStyle = (idx) => {
     let diff = (idx - activeEmpIdx + employees.length) % employees.length;
@@ -217,124 +251,261 @@ export const LoginPage = ({ onLogin }) => {
       `}</style>
 
       <div style={styles.innerContainer}>
-        {/* LEFT COLUMN: Login Form */}
+        {/* LEFT COLUMN: Login / Register Form */}
         <div style={styles.leftCol}>
           <div style={styles.formContainer}>
-            <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
-            <p style={styles.subheading}>Silakan masukkan email corporate dan password Anda</p>
+            {isRegister ? (
+              <>
+                <h2 style={styles.heading}>Daftarkan Perusahaan Anda</h2>
+                <p style={styles.subheading}>Buat akun administrator untuk mulai kelola training karyawan</p>
 
-            {forgotSuccess ? (
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '40px', marginBottom: '16px' }}>📧</div>
-                <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>Email Terkirim!</div>
-                <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>
-                  Link reset password sudah dikirim ke <strong>{form.email}</strong>. Cek inbox atau folder spam Anda.
-                </div>
-                <button onClick={() => { setForgotSuccess(false); setForgotMode(false); }} style={styles.btn}>
-                  Kembali ke Login
-                </button>
-              </div>
-            ) : forgotMode ? (
-              <form onSubmit={handleForgotPassword} style={styles.form}>
-                <div style={styles.field}>
-                  <label style={styles.label}>EMAIL CORPORATE</label>
-                  <input
-                    type="email"
-                    placeholder="email@perusahaan.com"
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    style={styles.input}
-                    required
-                  />
-                </div>
-                {error && <div style={styles.error}>{error}</div>}
-                <button type="submit" style={{ ...styles.btn, opacity: forgotLoading ? 0.7 : 1 }} disabled={forgotLoading}>
-                  {forgotLoading ? 'Mengirim...' : 'Kirim Link Reset Password'}
-                </button>
-                <button type="button" onClick={() => { setForgotMode(false); setError(''); }} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer', textAlign: 'center', marginTop: '4px' }}>
-                  Kembali ke Login
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleSubmit} style={styles.form}>
-                <div style={styles.field}>
-                  <label style={styles.label}>EMAIL CORPORATE</label>
-                  <input
-                    type="email"
-                    placeholder="email@perusahaan.com"
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    style={styles.input}
-                    required
-                  />
-                </div>
-
-                <div style={styles.field}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={styles.label}>PASSWORD</label>
-                    <button type="button" onClick={() => { setForgotMode(true); setError(''); }} style={{ background: 'none', border: 'none', color: '#002D72', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}>
-                      Lupa Password?
-                    </button>
-                  </div>
-                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={form.password}
-                      onChange={e => setForm({ ...form, password: e.target.value })}
-                      onFocus={() => setIsFocused(true)}
-                      onBlur={() => setIsFocused(false)}
-                      style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      style={styles.eyeBtn}
-                    >
-                      {showPassword ? (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                          <line x1="1" y1="1" x2="23" y2="23"></line>
-                        </svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {error && <div style={styles.error}>{error}</div>}
-
-                <button type="submit" className="btn-primary" style={{ padding: '14px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', width: '100%', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: loading ? 0.7 : 1 }} disabled={loading}>
-                  {loading ? 'Memproses Masuk...' : (
-                    <>
+                {regSuccess ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>Registrasi Berhasil!</div>
+                    <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>
+                      Silakan cek email <strong>{regForm.email}</strong> untuk verifikasi akun Anda. Setelah verifikasi, Anda bisa langsung masuk.
+                    </div>
+                    <button onClick={() => { setRegSuccess(false); setIsRegister(false); setError(''); }} className="btn-primary" style={{ padding: '14px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
                       </svg>
-                      Masuk
-                    </>
-                  )}
-                </button>
-                {slowWarning && (
-                  <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginTop: '-8px', lineHeight: '1.5' }}>
-                    Server sedang menyala, mohon tunggu sebentar...
+                      Masuk ke Akun
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleRegister} style={styles.form}>
+                    <div style={styles.field}>
+                      <label style={styles.label}>NAMA LENGKAP</label>
+                      <input
+                        type="text"
+                        placeholder="Nama lengkap Anda"
+                        value={regForm.name}
+                        onChange={e => setRegForm({ ...regForm, name: e.target.value })}
+                        style={styles.input}
+                        required
+                      />
+                    </div>
+
+                    <div style={styles.field}>
+                      <label style={styles.label}>EMAIL CORPORATE</label>
+                      <input
+                        type="email"
+                        placeholder="email@perusahaan.com"
+                        value={regForm.email}
+                        onChange={e => setRegForm({ ...regForm, email: e.target.value })}
+                        style={styles.input}
+                        required
+                      />
+                    </div>
+
+                    <div style={styles.field}>
+                      <label style={styles.label}>NAMA PERUSAHAAN</label>
+                      <input
+                        type="text"
+                        placeholder="PT Perusahaan Anda"
+                        value={regForm.company}
+                        onChange={e => setRegForm({ ...regForm, company: e.target.value })}
+                        style={styles.input}
+                        required
+                      />
+                    </div>
+
+                    <div style={styles.field}>
+                      <label style={styles.label}>PASSWORD</label>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                          type={showRegPassword ? 'text' : 'password'}
+                          placeholder="Minimal 6 karakter"
+                          value={regForm.password}
+                          onChange={e => setRegForm({ ...regForm, password: e.target.value })}
+                          style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
+                          required
+                        />
+                        <button type="button" onClick={() => setShowRegPassword(!showRegPassword)} style={styles.eyeBtn}>
+                          {showRegPassword ? (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                          ) : (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={styles.field}>
+                      <label style={styles.label}>KONFIRMASI PASSWORD</label>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                          type={showRegConfirm ? 'text' : 'password'}
+                          placeholder="Ulangi password"
+                          value={regForm.confirmPassword}
+                          onChange={e => setRegForm({ ...regForm, confirmPassword: e.target.value })}
+                          style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
+                          required
+                        />
+                        <button type="button" onClick={() => setShowRegConfirm(!showRegConfirm)} style={styles.eyeBtn}>
+                          {showRegConfirm ? (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                          ) : (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {error && <div style={styles.error}>{error}</div>}
+
+                    <button type="submit" className="btn-primary" style={{ padding: '14px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', width: '100%', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: loading ? 0.7 : 1 }} disabled={loading}>
+                      {loading ? 'Mendaftarkan...' : (
+                        <>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+                          </svg>
+                          Daftar Sekarang
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {!regSuccess && (
+                  <div style={styles.footer}>
+                    Sudah punya akun?{' '}
+                    <button type="button" onClick={() => { setIsRegister(false); setError(''); }} style={styles.switchLink}
+                      onMouseOver={e => e.currentTarget.style.color = '#2F7BFF'}
+                      onMouseOut={e => e.currentTarget.style.color = '#002D72'}>
+                      Masuk di sini
+                    </button>
                   </div>
                 )}
-              </form>
+              </>
+            ) : (
+              <>
+                <h2 style={styles.heading}>Masuk ke Akun Anda</h2>
+                <p style={styles.subheading}>Silakan masukkan email corporate dan password Anda</p>
+
+                {forgotSuccess ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '40px', marginBottom: '16px' }}>📧</div>
+                    <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>Email Terkirim!</div>
+                    <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>
+                      Link reset password sudah dikirim ke <strong>{form.email}</strong>. Cek inbox atau folder spam Anda.
+                    </div>
+                    <button onClick={() => { setForgotSuccess(false); setForgotMode(false); }} style={styles.btn}>
+                      Kembali ke Login
+                    </button>
+                  </div>
+                ) : forgotMode ? (
+                  <form onSubmit={handleForgotPassword} style={styles.form}>
+                    <div style={styles.field}>
+                      <label style={styles.label}>EMAIL CORPORATE</label>
+                      <input
+                        type="email"
+                        placeholder="email@perusahaan.com"
+                        value={form.email}
+                        onChange={e => setForm({ ...form, email: e.target.value })}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        style={styles.input}
+                        required
+                      />
+                    </div>
+                    {error && <div style={styles.error}>{error}</div>}
+                    <button type="submit" style={{ ...styles.btn, opacity: forgotLoading ? 0.7 : 1 }} disabled={forgotLoading}>
+                      {forgotLoading ? 'Mengirim...' : 'Kirim Link Reset Password'}
+                    </button>
+                    <button type="button" onClick={() => { setForgotMode(false); setError(''); }} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer', textAlign: 'center', marginTop: '4px' }}>
+                      Kembali ke Login
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleSubmit} style={styles.form}>
+                    <div style={styles.field}>
+                      <label style={styles.label}>EMAIL CORPORATE</label>
+                      <input
+                        type="email"
+                        placeholder="email@perusahaan.com"
+                        value={form.email}
+                        onChange={e => setForm({ ...form, email: e.target.value })}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        style={styles.input}
+                        required
+                      />
+                    </div>
+
+                    <div style={styles.field}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label style={styles.label}>PASSWORD</label>
+                        <button type="button" onClick={() => { setForgotMode(true); setError(''); }} style={{ background: 'none', border: 'none', color: '#002D72', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}>
+                          Lupa Password?
+                        </button>
+                      </div>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          value={form.password}
+                          onChange={e => setForm({ ...form, password: e.target.value })}
+                          onFocus={() => setIsFocused(true)}
+                          onBlur={() => setIsFocused(false)}
+                          style={{ ...styles.input, width: '100%', paddingRight: '45px' }}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          style={styles.eyeBtn}
+                        >
+                          {showPassword ? (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                              <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                          ) : (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {error && <div style={styles.error}>{error}</div>}
+
+                    <button type="submit" className="btn-primary" style={{ padding: '14px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', width: '100%', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: loading ? 0.7 : 1 }} disabled={loading}>
+                      {loading ? 'Memproses Masuk...' : (
+                        <>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+                          </svg>
+                          Masuk
+                        </>
+                      )}
+                    </button>
+                    {slowWarning && (
+                      <div style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginTop: '-8px', lineHeight: '1.5' }}>
+                        Server sedang menyala, mohon tunggu sebentar...
+                      </div>
+                    )}
+                  </form>
+                )}
+
+                <div style={styles.footer}>
+                  Belum punya akun?{' '}
+                  <button type="button" onClick={() => { setIsRegister(true); setError(''); }} style={styles.switchLink}
+                    onMouseOver={e => e.currentTarget.style.color = '#2F7BFF'}
+                    onMouseOut={e => e.currentTarget.style.color = '#002D72'}>
+                    Daftar sekarang
+                  </button>
+                </div>
+              </>
             )}
 
-            <div style={styles.footer}>
-              Belum memiliki akses? Silakan hubungi Administrator HRD perusahaan Anda untuk pendaftaran akun baru.
-            </div>
-            <div style={styles.platformBranding}>Powered by Axara</div>
+            <div style={styles.platformBranding}>Powered by myAxara</div>
           </div>
         </div>
 
@@ -557,6 +728,17 @@ const styles = {
     color: '#94a3b8',
     lineHeight: '1.6',
     textAlign: 'center',
+  },
+  switchLink: {
+    background: 'none',
+    border: 'none',
+    color: '#002D72',
+    fontSize: '12px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    padding: 0,
+    textDecoration: 'underline',
+    transition: 'color 0.2s',
   },
   platformBranding: {
     marginTop: '24px',
