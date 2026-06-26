@@ -198,7 +198,22 @@ export const Employees = () => {
           });
         if (!rows.length) { setImportError('File kosong atau format tidak sesuai template.'); return; }
         setImportRows(rows);
-        setShowImport(true);
+
+        const validCount = rows.filter(r => !r.errors.length).length;
+        const remaining = limit === Infinity ? Infinity : limit - totalCount;
+
+        if (remaining !== Infinity && validCount > remaining) {
+          setUpgradeData({
+            added: remaining,
+            skipped: validCount - remaining,
+            totalNeeded: validCount + totalCount,
+          });
+          setUpgradeSent(false);
+          setUpgradeMsg('');
+          setShowUpgrade(true);
+        } else {
+          setShowImport(true);
+        }
       } catch {
         setImportError('Gagal membaca file. Pastikan format .xlsx sesuai template.');
       }
@@ -209,21 +224,8 @@ export const Employees = () => {
 
   const handleConfirmImport = () => {
     const validRows = importRows.filter(r => !r.errors.length);
-    const remaining = limit - totalCount;
-    const canAdd = limit === Infinity ? validRows.length : Math.min(validRows.length, remaining);
-
-    if (canAdd < validRows.length) {
-      setUpgradeData({
-        added: canAdd,
-        skipped: validRows.length - canAdd,
-        totalNeeded: validRows.length + totalCount,
-      });
-      setUpgradeSent(false);
-      setUpgradeMsg('');
-      setShowUpgrade(true);
-    } else {
-      doImport(validRows);
-    }
+    const remaining = limit === Infinity ? validRows.length : Math.min(validRows.length, limit - totalCount);
+    doImport(validRows.slice(0, remaining));
   };
 
   const doImport = (rows) => {
@@ -236,11 +238,8 @@ export const Employees = () => {
   };
 
   const handleProceedWithQuota = () => {
-    const validRows = importRows.filter(r => !r.errors.length);
-    const remaining = limit - totalCount;
-    const toAdd = validRows.slice(0, remaining);
     setShowUpgrade(false);
-    doImport(toAdd);
+    setShowImport(true);
   };
 
   const handleSendUpgradeRequest = async () => {
