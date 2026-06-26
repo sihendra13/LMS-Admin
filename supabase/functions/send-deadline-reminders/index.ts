@@ -134,6 +134,18 @@ Deno.serve(async (_req) => {
           !approvedSet.has(`${emp.name}::${sop.title}`)
       );
 
+      const targetEmails = targets.map((emp) => emp.email);
+
+      // Push notification untuk semua target karyawan sekaligus
+      if (targetEmails.length > 0) {
+        await supabase.from('push_queue').insert({
+          title: daysLeft === 1 ? '⏰ Hari Ini Terakhir!' : `⏰ Deadline ${daysLeft} Hari Lagi`,
+          body: `SOP "${sop.title}" harus diselesaikan ${daysLeft === 1 ? 'hari ini' : `dalam ${daysLeft} hari`}.`,
+          page: 'sop',
+          target_emails: targetEmails,
+        });
+      }
+
       for (const emp of targets) {
         const subject = `[Axara LMS] Deadline SOP "${sop.title}" — ${daysLeft === 1 ? 'Hari ini!' : `${daysLeft} hari lagi`}`;
         const html = buildEmailHtml(emp.name, sop.title, daysLeft, deadline);
