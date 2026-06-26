@@ -23,7 +23,6 @@ export const Sidebar = ({ onLogout }) => {
             <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '150px', maxHeight: '28px', objectFit: 'contain' }} />
           ) : (
             <>
-              <span style={{ fontSize: '15px', flexShrink: 0 }}>🏢</span>
               <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tenant.name}</div>
             </>
           )}
