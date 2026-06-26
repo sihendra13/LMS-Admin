@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import { useTenant } from '../context/TenantContext';
 import { canUploadSOP, canUploadPPT, getPPTLimit, hasDeadlineReminder } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
+import SearchableDeptSelect from '../components/SearchableDeptSelect';
 
 const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
 
@@ -996,10 +997,11 @@ export const UploadSOP = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group" style={{ margin: '0' }}>
                     <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: '700', letterSpacing: '0.05em' }}>Departemen Target</label>
-                    <select className="form-select" style={{ fontSize: '14px' }} value={dept} onChange={(e) => setDept(e.target.value)}>
-                      <option value="Semua">Semua Departemen</option>
-                      {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                    <SearchableDeptSelect
+                      value={dept}
+                      onChange={setDept}
+                      departments={['Semua', ...departments]}
+                    />
                   </div>
 
                   <div className="form-group" style={{ margin: '0' }}>
