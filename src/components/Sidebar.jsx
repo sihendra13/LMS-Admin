@@ -22,7 +22,7 @@ export const Sidebar = ({ onLogout }) => {
           {tenant.logo && tenant.plan === 'enterprise' ? (
             <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '180px', maxHeight: '40px', objectFit: 'contain' }} />
           ) : (
-            <img src="/myaxara-logo.svg" alt="myAxara" style={{ width: '100%', maxWidth: '160px', height: 'auto', maxHeight: '38px', objectFit: 'contain' }} />
+            <img src="/myaxara-logo.svg" alt="myAxara" style={{ maxWidth: '180px', maxHeight: '40px', objectFit: 'contain' }} />
           )}
         </div>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', padding: '12px 20px', fontWeight: '600' }}>
