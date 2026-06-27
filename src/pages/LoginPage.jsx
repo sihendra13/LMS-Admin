@@ -512,7 +512,11 @@ export const LoginPage = ({ onLogin }) => {
               </>
             )}
 
-            <div style={styles.platformBranding}>Powered by myAxara</div>
+            <div style={styles.platformBranding}>
+              <span style={styles.brandingLine} />
+              <span style={styles.brandingText}>Powered by myAxara</span>
+              <span style={styles.brandingLine} />
+            </div>
           </div>
         </div>
 
@@ -748,14 +752,22 @@ const styles = {
     transition: 'color 0.2s',
   },
   platformBranding: {
-    marginTop: '24px',
-    borderTop: '1px solid #e2e8f0',
-    paddingTop: '16px',
-    textAlign: 'center',
+    marginTop: '28px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  brandingLine: {
+    flex: 1,
+    height: '1px',
+    background: '#e2e8f0',
+  },
+  brandingText: {
     fontSize: '11px',
     color: '#94a3b8',
     fontWeight: '600',
     letterSpacing: '0.03em',
+    whiteSpace: 'nowrap',
   },
   stackWrapper: {
     position: 'relative',
