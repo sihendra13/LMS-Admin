@@ -109,8 +109,8 @@ export const Sidebar = ({ onLogout }) => {
             Keluar
           </button>
         )}
-        <div style={{ textAlign: 'center', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
-          Axara LMS Platform
+        <div style={{ textAlign: 'left', fontSize: '11px', fontWeight: '600', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em', paddingLeft: '4px' }}>
+          myAxara LMS Platform
         </div>
       </div>
     </aside>
