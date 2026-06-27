@@ -19,7 +19,7 @@ export const Sidebar = ({ onLogout }) => {
           cursor: 'pointer', height: '68px', overflow: 'hidden', padding: '0 20px',
           width: '100%', boxSizing: 'border-box', borderRight: '1px solid #e2e8f0'
         }} onClick={() => setActivePage('dashboard')}>
-          {tenant.logo && tenant.plan === 'enterprise' ? (
+          {tenant.logo && tenant.plan === PLANS.ENTERPRISE ? (
             <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '180px', maxHeight: '40px', objectFit: 'contain' }} />
           ) : (
             <img src="/myaxara-logo.svg" alt="myAxara" style={{ maxWidth: '180px', maxHeight: '40px', objectFit: 'contain' }} />

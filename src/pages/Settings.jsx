@@ -149,14 +149,14 @@ export const Settings = () => {
                     marginBottom: '14px',
                     overflow: 'hidden',
                   }}>
-                    {tenant.plan === 'enterprise' && tenant.logo ? (
+                    {tenant.plan === PLANS.ENTERPRISE && tenant.logo ? (
                       <img src={tenant.logo} alt="Logo Perusahaan" style={{ maxWidth: '240px', maxHeight: '64px', objectFit: 'contain' }} />
                     ) : (
                       <img src="/myaxara-logo.svg" alt="myAxara" style={{ maxWidth: '200px', height: 'auto', maxHeight: '50px', objectFit: 'contain' }} />
                     )}
                   </div>
 
-                  {tenant.plan === 'enterprise' ? (
+                  {tenant.plan === PLANS.ENTERPRISE ? (
                     <>
                       {/* BUTTONS - Enterprise only */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -182,7 +182,7 @@ export const Settings = () => {
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                       </svg>
                       <span style={{ fontSize: '12px', color: '#b45309', fontWeight: '600' }}>
-                        Custom logo tersedia di paket Enterprise. <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => changePlan('enterprise')}>Upgrade sekarang</span>
+                        Custom logo tersedia di paket Enterprise. <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => changePlan(PLANS.ENTERPRISE)}>Upgrade sekarang</span>
                       </span>
                     </div>
                   )}
