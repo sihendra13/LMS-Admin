@@ -150,9 +150,7 @@ export const Settings = () => {
                     {tenant.plan === 'enterprise' && tenant.logo ? (
                       <img src={tenant.logo} alt="Logo Perusahaan" style={{ maxWidth: '240px', maxHeight: '64px', objectFit: 'contain' }} />
                     ) : (
-                      <span style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>
-                        my<span style={{ color: '#2F7BFF' }}>A</span>xara
-                      </span>
+                      <img src="/myaxara-logo.svg" alt="myAxara" style={{ maxWidth: '200px', height: 'auto', maxHeight: '50px', objectFit: 'contain' }} />
                     )}
                   </div>
 

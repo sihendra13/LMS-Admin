@@ -16,15 +16,13 @@ export const Sidebar = ({ onLogout }) => {
       <div style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{
           background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', height: '64px', overflow: 'hidden', padding: '0 16px',
+          cursor: 'pointer', height: '68px', overflow: 'hidden', padding: '0 20px',
           width: '100%', boxSizing: 'border-box', borderRight: '1px solid #e2e8f0'
         }} onClick={() => setActivePage('dashboard')}>
           {tenant.logo && tenant.plan === 'enterprise' ? (
-            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '170px', maxHeight: '36px', objectFit: 'contain' }} />
+            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '180px', maxHeight: '40px', objectFit: 'contain' }} />
           ) : (
-            <span style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center' }}>
-              my<span style={{ color: '#2F7BFF' }}>A</span>xara
-            </span>
+            <img src="/myaxara-logo.svg" alt="myAxara" style={{ width: '100%', maxWidth: '160px', height: 'auto', maxHeight: '38px', objectFit: 'contain' }} />
           )}
         </div>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', padding: '12px 20px', fontWeight: '600' }}>
