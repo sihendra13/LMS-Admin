@@ -282,17 +282,11 @@ export const Settings = () => {
                       )}
                     </div>
                     <input id="company-logo-cert-input" type="file" accept="image/*" style={{ display: 'none' }}
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files[0];
                         if (!file) return;
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          if (reader.result) {
-                            updateCompanyLogo(reader.result);
-                            toast.success('Logo perusahaan berhasil disimpan!');
-                          }
-                        };
-                        reader.readAsDataURL(file);
+                        await updateCompanyLogo(file);
+                        toast.success('Logo perusahaan berhasil disimpan!');
                       }}
                     />
                     <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '6px' }}>Format: JPG, PNG · Rasio landscape direkomendasikan</div>

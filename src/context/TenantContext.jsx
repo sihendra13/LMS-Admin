@@ -64,7 +64,7 @@ export const TenantProvider = ({ children, authUser }) => {
   // Local storage synchronization key
   const DB_KEY = 'axara_lms_db';
   const LOGO_KEY = 'axara_lms_logo';
-  const COMPANY_LOGO_KEY = 'axara_company_logo';
+
 
   const getStoredDB = () => {
     try {
@@ -87,7 +87,7 @@ export const TenantProvider = ({ children, authUser }) => {
 
   useEffect(() => {
     if (!authUser?.tenant_id) return;
-    supabase.from('tenants').select('name, plan, status').eq('id', authUser.tenant_id).single()
+    supabase.from('tenants').select('name, plan, status, company_logo').eq('id', authUser.tenant_id).single()
       .then(({ data, error }) => {
         if (error) {
           console.warn('Gagal fetch tenant:', error.message);
@@ -101,6 +101,7 @@ export const TenantProvider = ({ children, authUser }) => {
             status: data.status || prev.status,
             avatar: (data.name || prev.name).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
           }));
+          if (data.company_logo) setCompanyLogo(data.company_logo);
         }
       })
       .catch(() => {});
@@ -383,15 +384,25 @@ export const TenantProvider = ({ children, authUser }) => {
     setTenant(prev => ({ ...prev, logo: logoBase64 }));
   };
 
-  const [companyLogo, setCompanyLogo] = useState(() => localStorage.getItem(COMPANY_LOGO_KEY) || null);
+  const [companyLogo, setCompanyLogo] = useState(null);
 
-  const updateCompanyLogo = (logoBase64) => {
-    if (logoBase64) {
-      try { localStorage.setItem(COMPANY_LOGO_KEY, logoBase64); } catch { /* quota full */ }
+  const updateCompanyLogo = async (file) => {
+    if (!authUser?.tenant_id) return;
+    if (file) {
+      const ext = file.name?.split('.').pop() || 'png';
+      const path = `logos/${authUser.tenant_id}/company-logo.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('public-assets')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) { console.warn('Upload gagal:', uploadError.message); return; }
+      const { data: urlData } = supabase.storage.from('public-assets').getPublicUrl(path);
+      const logoUrl = urlData.publicUrl + '?t=' + Date.now();
+      await supabase.from('tenants').update({ company_logo: logoUrl }).eq('id', authUser.tenant_id);
+      setCompanyLogo(logoUrl);
     } else {
-      localStorage.removeItem(COMPANY_LOGO_KEY);
+      await supabase.from('tenants').update({ company_logo: null }).eq('id', authUser.tenant_id);
+      setCompanyLogo(null);
     }
-    setCompanyLogo(logoBase64);
   };
 
   const addSOP = async (newVideo) => {
