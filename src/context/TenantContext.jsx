@@ -87,7 +87,11 @@ export const TenantProvider = ({ children, authUser }) => {
   useEffect(() => {
     if (!authUser?.tenant_id) return;
     supabase.from('tenants').select('name, plan, status').eq('id', authUser.tenant_id).single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn('Gagal fetch tenant:', error.message);
+          return;
+        }
         if (data) {
           setTenant(prev => ({
             ...prev,
@@ -97,7 +101,8 @@ export const TenantProvider = ({ children, authUser }) => {
             avatar: (data.name || prev.name).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
           }));
         }
-      });
+      })
+      .catch(() => {});
   }, [authUser?.tenant_id]);
 
   const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' | 'sop' | 'sertifikasi' | 'laporan' | 'karyawan' | 'departemen' | 'upload' | 'notifikasi' | 'pengaturan'

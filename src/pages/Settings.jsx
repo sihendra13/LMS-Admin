@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
+import { useToast } from '../components/Toast';
 
 export const Settings = () => {
   const { tenant, currentUser, changePlan, updateTenantLogo } = useTenant();
+  const toast = useToast();
   
   const isHRDAdmin = currentUser.role === 'admin';
 
@@ -312,7 +314,7 @@ export const Settings = () => {
                         e.currentTarget.style.background = 'var(--navy)';
                         e.currentTarget.style.transform = 'translateY(0)';
                       }}
-                      onClick={() => alert('Hubungi tim Axara untuk upgrade ke Enterprise dan aktifkan HRIS Integration.')}
+                      onClick={() => toast.info('Hubungi tim Axara untuk upgrade ke Enterprise dan aktifkan HRIS Integration.')}
                     >
                       Hubungi Axara untuk Upgrade
                     </button>

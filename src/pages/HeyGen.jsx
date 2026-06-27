@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { PLANS, hasHeyGenIntegration } from '../utils/featureGates';
+import { useToast } from '../components/Toast';
 
 export const HeyGen = () => {
+  const toast = useToast();
   const { tenant } = useTenant();
   const [script, setScript] = useState('');
   const [avatar, setAvatar] = useState('Sarah - Corporate Presenter');
@@ -25,8 +27,8 @@ export const HeyGen = () => {
 
   const handleGenerate = (e) => {
     e.preventDefault();
-    if (!script.trim()) return alert('Naskah/Script tidak boleh kosong!');
-    alert(`Naskah dikirim ke API HeyGen! Video SOP dengan Avatar "${avatar}" sedang diproduksi oleh AI Axara.`);
+    if (!script.trim()) return toast.error('Naskah/Script tidak boleh kosong!');
+    toast.success(`Naskah dikirim ke HeyGen! Video SOP dengan Avatar "${avatar}" sedang diproduksi.`);
     setScript('');
   };
 

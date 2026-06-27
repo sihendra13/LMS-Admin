@@ -4,11 +4,13 @@ import { useTenant } from '../context/TenantContext';
 import { canUploadSOP, canUploadPPT, getPPTLimit, hasDeadlineReminder } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
 import SearchableDeptSelect from '../components/SearchableDeptSelect';
+import { useToast } from '../components/Toast';
 
 const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
 
 export const UploadSOP = () => {
   const { tenant, addSOP, updateSOP, setActivePage, videos, editingVideoId, setEditingVideoId, departments } = useTenant();
+  const toast = useToast();
   const editVideo = editingVideoId ? videos.find(v => v.id === editingVideoId) : null;
   const isEditMode = !!editVideo;
 
@@ -37,7 +39,7 @@ export const UploadSOP = () => {
     if (!file || !file.type.startsWith('video/')) return;
     const MAX_VIDEO_MB = 50;
     if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
-      alert(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah ${MAX_VIDEO_MB}MB.\nUkuran file Anda: ${(file.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
+      toast.error(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah ${MAX_VIDEO_MB}MB.\nUkuran file Anda: ${(file.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
       return;
     }
     setVideoFile(file);
@@ -59,7 +61,7 @@ export const UploadSOP = () => {
   const selectPptFile = async (file) => {
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
-    if (ext !== 'pptx') return alert('Hanya file .pptx yang didukung.');
+    if (ext !== 'pptx') return toast.error('Hanya file .pptx yang didukung.');
     setPptFile(file);
     setPreviewSlideImages(null);
     try {
@@ -201,7 +203,7 @@ export const UploadSOP = () => {
       setRecordingSeconds(0);
       recordingTimerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
     } catch {
-      alert('Tidak bisa mengakses mikrofon. Pastikan izin mikrofon sudah diberikan di browser.');
+      toast.error('Tidak bisa mengakses mikrofon. Pastikan izin mikrofon sudah diberikan di browser.');
     }
   };
 
@@ -292,12 +294,12 @@ export const UploadSOP = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!title.trim()) return alert('Judul SOP tidak boleh kosong!');
+    if (!title.trim()) return toast.error('Judul SOP tidak boleh kosong!');
     if (contentType === 'video') {
       const filledTriggers = videoTriggerQuizzes.filter(q => q.question.trim() !== '');
       for (let i = 1; i < filledTriggers.length; i++) {
         if (toSecs(filledTriggers[i]) <= toSecs(filledTriggers[i - 1])) {
-          return alert(`Kuis Pemicu Waktu #${i + 1}: waktu pemicu harus lebih besar dari kuis pemicu sebelumnya. Kuis harus muncul secara kronologis.`);
+          return toast.error(`Kuis Pemicu Waktu #${i + 1}: waktu pemicu harus lebih besar dari kuis pemicu sebelumnya. Kuis harus muncul secara kronologis.`);
         }
       }
     }
@@ -305,7 +307,7 @@ export const UploadSOP = () => {
       const filledTriggers = triggerQuizzes.filter(q => q.question.trim() !== '');
       for (let i = 1; i < filledTriggers.length; i++) {
         if (Number(filledTriggers[i].triggerSlide) <= Number(filledTriggers[i - 1].triggerSlide)) {
-          return alert(`Kuis Pemicu #${i + 1}: nomor slide harus lebih besar dari kuis pemicu sebelumnya (slide ${filledTriggers[i - 1].triggerSlide}). Kuis harus muncul secara berurutan.`);
+          return toast.error(`Kuis Pemicu #${i + 1}: nomor slide harus lebih besar dari kuis pemicu sebelumnya (slide ${filledTriggers[i - 1].triggerSlide}). Kuis harus muncul secara berurutan.`);
         }
       }
     }
@@ -347,7 +349,7 @@ export const UploadSOP = () => {
             const errData = await resp.json().catch(() => ({}));
             setUploading(false);
             setUploadProgress(0);
-            return alert(`Gagal konversi PPT: ${errData.error || resp.statusText}`);
+            return toast.error(`Gagal konversi PPT: ${errData.error || resp.statusText}`);
           }
           const result = await resp.json();
           slideImages = result.slideUrls;
@@ -359,7 +361,7 @@ export const UploadSOP = () => {
           clearInterval(progressInterval);
           setUploading(false);
           setUploadProgress(0);
-          return alert(`Koneksi ke server gagal: ${err.message}`);
+          return toast.error(`Koneksi ke server gagal: ${err.message}`);
         }
       }
 
@@ -379,7 +381,7 @@ export const UploadSOP = () => {
             const ext = s.audioFile.name.split('.').pop();
             const path = `narasi/${sopId}/slide-${i + 1}.${ext}`;
             const { error } = await supabase.storage.from('narasi').upload(path, s.audioFile, { upsert: true });
-            if (error) return alert(`Gagal upload audio slide ${i + 1}: ${error.message}`);
+            if (error) return toast.error(`Gagal upload audio slide ${i + 1}: ${error.message}`);
             const { data: urlData } = supabase.storage.from('narasi').getPublicUrl(path);
             latestSlideNarasi[i] = { ...latestSlideNarasi[i], audioUrl: urlData.publicUrl };
             setUploadProgress(Math.round((i + 1) / latestSlideNarasi.length * 90));
@@ -408,7 +410,7 @@ export const UploadSOP = () => {
           const ext = s.audioFile.name.split('.').pop();
           const path = `narasi/${sopId}/slide-${i + 1}.${ext}`;
           const { error } = await supabase.storage.from('narasi').upload(path, s.audioFile, { upsert: true });
-          if (error) { setUploading(false); return alert(`Gagal upload audio slide ${i + 1}: ${error.message}`); }
+          if (error) { setUploading(false); return toast.error(`Gagal upload audio slide ${i + 1}: ${error.message}`); }
           const { data: urlData } = supabase.storage.from('narasi').getPublicUrl(path);
           latestSlideNarasi[i] = { ...latestSlideNarasi[i], audioUrl: urlData.publicUrl };
           setUploadProgress(Math.round((i + 1) / latestSlideNarasi.length * 90));
@@ -441,9 +443,9 @@ export const UploadSOP = () => {
         const isOverSize = error.message?.toLowerCase().includes('maximum allowed size') || error.message?.toLowerCase().includes('too large') || error.statusCode === '413';
         setTimeout(() => {
           if (isOverSize) {
-            alert(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah 50MB.\nUkuran file Anda: ${(videoFile.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
+            toast.error(`File video terlalu besar!\n\nMaksimal ukuran file yang bisa diupload adalah 50MB.\nUkuran file Anda: ${(videoFile.size / 1024 / 1024).toFixed(1)} MB\n\nHarap kompres video terlebih dahulu sebelum mengupload.`);
           } else {
-            alert(`Gagal upload video: ${error.message}`);
+            toast.error(`Gagal upload video: ${error.message}`);
           }
         }, 100);
         return;
@@ -710,7 +712,7 @@ export const UploadSOP = () => {
           type="button"
           onClick={() => {
             if (!canUploadPPT(tenant.plan)) {
-              return alert('Fitur upload PPT hanya tersedia untuk paket Business dan Enterprise. Hubungi tim Axara untuk upgrade.');
+              return toast.error('Fitur upload PPT hanya tersedia untuk paket Business dan Enterprise. Hubungi tim Axara untuk upgrade.');
             }
             setContentType('ppt'); setVideoFile(null); setPreviewUrl(null);
           }}

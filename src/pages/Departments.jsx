@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
+import { useToast } from '../components/Toast';
 
 export const Departments = () => {
+  const toast = useToast();
   const {
     tenant,
     employees,
@@ -70,7 +72,7 @@ export const Departments = () => {
 
   const handleInviteSubmit = (e) => {
     e.preventDefault();
-    if (!emailInput.trim()) return alert('Email tidak boleh kosong!');
+    if (!emailInput.trim()) return toast.error('Email tidak boleh kosong!');
     inviteSupervisor(emailInput, deptInput);
     setEmailInput('');
     setIsModalOpen(false);
@@ -427,7 +429,7 @@ export const Departments = () => {
                           className="view-cert-btn"
                           title="Kirim Ulang Undangan"
                           style={{ padding: '4px' }}
-                          onClick={() => alert(`Undangan email dikirim ulang ke ${invite.email}`)}
+                          onClick={() => toast.info(`Undangan dikirim ulang ke ${invite.email}`)}
                         >
                           🔄
                         </button>
