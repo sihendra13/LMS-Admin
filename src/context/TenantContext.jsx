@@ -121,7 +121,7 @@ export const TenantProvider = ({ children, authUser }) => {
         avatar: authUser.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
       };
     }
-    return storedDB.currentUser || { id: 1, name: 'Andi Saputra', role: 'admin', dept: 'HRD', avatar: 'AS' };
+    return storedDB.currentUser || { id: 1, name: 'HRD Admin', role: 'admin', dept: 'HRD', avatar: 'HA' };
   });
 
   const [supervisors, setSupervisors] = useState(storedDB.supervisors || [
@@ -692,7 +692,8 @@ export const TenantProvider = ({ children, authUser }) => {
       importDBString,
       updateTenantLogo,
       companyLogo,
-      updateCompanyLogo
+      updateCompanyLogo,
+      authUser
     }}>
       {children}
     </TenantContext.Provider>

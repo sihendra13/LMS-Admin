@@ -3,7 +3,9 @@ import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
 
 export const PlanSwitcher = () => {
-  const { tenant, changePlan, currentUser, setCurrentUser, setActivePage } = useTenant();
+  const { tenant, changePlan, currentUser, setCurrentUser, setActivePage, authUser } = useTenant();
+  const adminName = authUser?.name || 'HRD Admin';
+  const adminAvatar = adminName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   // Draggable states
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -89,9 +91,9 @@ export const PlanSwitcher = () => {
           <button
             className={`plan-btn ${currentUser.role === 'admin' ? 'active' : ''}`}
             style={{ textAlign: 'left', width: '100%' }}
-            onClick={() => handleUserChange({ id: 1, name: 'Andi Saputra', role: 'admin', dept: 'HRD', avatar: 'AS' })}
+            onClick={() => handleUserChange({ id: authUser?.id || 1, name: adminName, role: 'admin', dept: 'HRD', avatar: adminAvatar })}
           >
-            👤 Andi S (HRD Admin)
+            👤 {adminName} (HRD Admin)
           </button>
           <button
             className={`plan-btn ${currentUser.role === 'supervisor' && currentUser.dept === 'Sales' ? 'active' : ''}`}
