@@ -260,6 +260,7 @@ export const LoginPage = ({ onLogin }) => {
         {/* LEFT COLUMN: Login / Register Form */}
         <div style={styles.leftCol}>
           <div style={styles.formContainer}>
+            <img src="/myaxara-logo.svg" alt="myAxara" style={{ maxWidth: '160px', height: 'auto', marginBottom: '28px' }} />
             {isRegister ? (
               <>
                 <h2 style={styles.heading}>Daftarkan Perusahaan Anda</h2>
