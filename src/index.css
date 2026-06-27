@@ -164,7 +164,7 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 0 28px;
-  height: 60px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: space-between;

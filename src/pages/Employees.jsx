@@ -50,6 +50,7 @@ export const Employees = () => {
   const toast = useToast();
 
   const [deptFilter, setDeptFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // --- Pagination ---
   const PAGE_SIZE = 20;
@@ -58,11 +59,18 @@ export const Employees = () => {
   // --- Bulk Actions state ---
   const [selectedIds, setSelectedIds] = useState(new Set());
 
-  const displayEmployees = isSupervisor
-    ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
-    : deptFilter
-      ? employees.filter(e => e.dept.toLowerCase() === deptFilter.toLowerCase())
-      : employees;
+  const displayEmployees = (() => {
+    let list = isSupervisor
+      ? employees.filter(e => e.dept.toLowerCase() === currentUser.dept.toLowerCase())
+      : deptFilter
+        ? employees.filter(e => e.dept.toLowerCase() === deptFilter.toLowerCase())
+        : employees;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(e => e.name.toLowerCase().includes(q) || (e.email && e.email.toLowerCase().includes(q)));
+    }
+    return list;
+  })();
 
   const limit      = getEmployeeLimit(tenant.plan);
   const totalCount = employees.length;
