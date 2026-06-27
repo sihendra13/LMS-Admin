@@ -16,15 +16,15 @@ export const Sidebar = ({ onLogout }) => {
       <div style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{
           background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: '8px', cursor: 'pointer', height: '60px', overflow: 'hidden', padding: '0 20px',
+          cursor: 'pointer', height: '64px', overflow: 'hidden', padding: '0 16px',
           width: '100%', boxSizing: 'border-box', borderRight: '1px solid #e2e8f0'
         }} onClick={() => setActivePage('dashboard')}>
-          {tenant.logo ? (
-            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '150px', maxHeight: '28px', objectFit: 'contain' }} />
+          {tenant.logo && tenant.plan === 'enterprise' ? (
+            <img src={tenant.logo} alt={tenant.name} style={{ maxWidth: '170px', maxHeight: '36px', objectFit: 'contain' }} />
           ) : (
-            <>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tenant.name}</div>
-            </>
+            <span style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center' }}>
+              my<span style={{ color: '#2F7BFF' }}>A</span>xara
+            </span>
           )}
         </div>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', padding: '12px 20px', fontWeight: '600' }}>

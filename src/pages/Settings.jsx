@@ -129,7 +129,7 @@ export const Settings = () => {
                 </h3>
 
                 {/* LOGO UPLOAD AREA */}
-                <div style={{ marginBottom: '24px', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                <div style={{ marginBottom: '24px', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)', position: 'relative' }}>
                   <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', color: 'var(--text2)', marginBottom: '14px', letterSpacing: '0.05em' }}>
                     LOGO PERUSAHAAN (WHITE-LABEL BRANDING)
                   </label>
@@ -147,74 +147,45 @@ export const Settings = () => {
                     marginBottom: '14px',
                     overflow: 'hidden',
                   }}>
-                    {tenant.logo ? (
+                    {tenant.plan === 'enterprise' && tenant.logo ? (
                       <img src={tenant.logo} alt="Logo Perusahaan" style={{ maxWidth: '240px', maxHeight: '64px', objectFit: 'contain' }} />
                     ) : (
-                      <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 6px' }}>
-                          <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                        </svg>
-                        <span style={{ fontSize: '11px' }}>Belum ada logo</span>
+                      <span style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>
+                        my<span style={{ color: '#2F7BFF' }}>A</span>xara
+                      </span>
+                    )}
+                  </div>
+
+                  {tenant.plan === 'enterprise' ? (
+                    <>
+                      {/* BUTTONS - Enterprise only */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        <button type="button" className="btn-sec"
+                          style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', background: '#ffffff', color: 'var(--text2)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                          onClick={() => document.getElementById('company-logo-input').click()}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          {tenant.logo ? 'Ganti Logo' : 'Pilih File Gambar'}
+                        </button>
+                        {tenant.logo && logoStatus === 'idle' && (
+                          <button type="button"
+                            style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #fee2e2', background: '#fff5f5', color: '#ef4444', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            onClick={() => updateTenantLogo(null)}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            Hapus Logo
+                          </button>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  {/* BUTTONS */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      className="btn-sec"
-                      style={{
-                        padding: '7px 14px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        border: '1px solid var(--border)',
-                        background: '#ffffff',
-                        color: 'var(--text2)',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                      }}
-                      onClick={() => document.getElementById('company-logo-input').click()}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '8px' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                       </svg>
-                      {tenant.logo ? 'Ganti Logo' : 'Pilih File Gambar'}
-                    </button>
-
-                    {tenant.logo && logoStatus === 'idle' && (
-                      <button
-                        type="button"
-                        style={{
-                          padding: '7px 14px',
-                          borderRadius: '6px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          border: '1px solid #fee2e2',
-                          background: '#fff5f5',
-                          color: '#ef4444',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                        }}
-                        onClick={() => { updateTenantLogo(null); }}
-                      >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                        Hapus Logo
-                      </button>
-                    )}
-                  </div>
+                      <span style={{ fontSize: '12px', color: '#b45309', fontWeight: '600' }}>
+                        Custom logo tersedia di paket Enterprise. <span style={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={() => changePlan('enterprise')}>Upgrade sekarang</span>
+                      </span>
+                    </div>
+                  )}
 
                     <input
                       id="company-logo-input"
