@@ -64,6 +64,7 @@ export const TenantProvider = ({ children, authUser }) => {
   // Local storage synchronization key
   const DB_KEY = 'axara_lms_db';
   const LOGO_KEY = 'axara_lms_logo';
+  const COMPANY_LOGO_KEY = 'axara_company_logo';
 
   const getStoredDB = () => {
     try {
@@ -382,6 +383,17 @@ export const TenantProvider = ({ children, authUser }) => {
     setTenant(prev => ({ ...prev, logo: logoBase64 }));
   };
 
+  const [companyLogo, setCompanyLogo] = useState(() => localStorage.getItem(COMPANY_LOGO_KEY) || null);
+
+  const updateCompanyLogo = (logoBase64) => {
+    if (logoBase64) {
+      try { localStorage.setItem(COMPANY_LOGO_KEY, logoBase64); } catch { /* quota full */ }
+    } else {
+      localStorage.removeItem(COMPANY_LOGO_KEY);
+    }
+    setCompanyLogo(logoBase64);
+  };
+
   const addSOP = async (newVideo) => {
     setVideos(prev => [newVideo, ...prev]); // optimistic update
     await supabase.from('sop_videos').insert(toDbRow(newVideo))
@@ -667,7 +679,9 @@ export const TenantProvider = ({ children, authUser }) => {
       deleteDepartment,
       exportDBString,
       importDBString,
-      updateTenantLogo
+      updateTenantLogo,
+      companyLogo,
+      updateCompanyLogo
     }}>
       {children}
     </TenantContext.Provider>
