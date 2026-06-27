@@ -303,8 +303,14 @@ export const Employees = () => {
                   <input
                     type="text" placeholder="Cari nama atau email..." value={searchQuery}
                     onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                    style={{ width: '100%', height: '38px', padding: '0 12px 0 36px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', outline: 'none', boxSizing: 'border-box', color: 'var(--text1)', background: '#fff' }}
+                    style={{ width: '100%', height: '38px', padding: '0 34px 0 36px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', outline: 'none', boxSizing: 'border-box', color: 'var(--text1)', background: '#fff' }}
                   />
+                  {searchQuery && (
+                    <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }}
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  )}
                 </div>
                 <SearchableDeptSelect
                   value={deptFilter}
