@@ -295,15 +295,15 @@ export const Employees = () => {
               <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', margin: '0', letterSpacing: '0.05em', lineHeight: '1.2', height: '16px', display: 'flex', alignItems: 'center' }}>
                 DAFTAR KARYAWAN TERDAFTAR ({displayEmployees.length} / {limit === Infinity ? '∞' : limit})
               </h3>
-              <div style={{ display: 'flex', height: '38px', alignItems: 'center', gap: '10px' }}>
-                <div style={{ position: 'relative', flex: 1, maxWidth: '280px' }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px', gap: '10px', alignItems: 'center' }}>
+                <div style={{ position: 'relative' }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                   </svg>
                   <input
                     type="text" placeholder="Cari nama atau email..." value={searchQuery}
                     onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                    style={{ width: '100%', height: '38px', padding: '0 10px 0 34px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', outline: 'none', boxSizing: 'border-box', color: 'var(--text1)' }}
+                    style={{ width: '100%', height: '38px', padding: '0 12px 0 36px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', outline: 'none', boxSizing: 'border-box', color: 'var(--text1)', background: '#fff' }}
                   />
                 </div>
                 <SearchableDeptSelect
