@@ -193,7 +193,15 @@ export const Employees = () => {
     rows.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
     setShowImport(false);
     setImportRows([]);
-    toast.success(`${rows.length} karyawan berhasil diimport! Pilih karyawan di tabel untuk kirim undangan email.`);
+    toast.success(`${rows.length} karyawan berhasil diimport!`);
+    const withEmail = rows.filter(r => r.email);
+    if (withEmail.length > 0) {
+      setLastImportedRows(withEmail);
+      setInviteSelected(new Set(withEmail.map((_, i) => i)));
+      setInviteSearch('');
+      setInviteResult(null);
+      setShowInviteResult(true);
+    }
   };
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://axara-lms-backend.onrender.com';
