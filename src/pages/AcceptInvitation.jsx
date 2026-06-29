@@ -12,7 +12,7 @@ export const AcceptInvitation = ({ token, onAccepted }) => {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/v1/invitations/${token}`)
+    fetch(`${BACKEND_URL}/api/v1/invitations/${token}/validate`)
       .then(res => res.json().then(data => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
         if (!ok) throw new Error(data.error || 'Link tidak valid');

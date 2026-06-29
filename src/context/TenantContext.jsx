@@ -500,7 +500,8 @@ export const TenantProvider = ({ children, authUser }) => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://axara-lms-backend.onrender.com';
 
   const inviteSupervisor = async (email, deptName) => {
-    const token = localStorage.getItem('axara_token');
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token || localStorage.getItem('axara_token');
     const res = await fetch(`${BACKEND_URL}/api/v1/invitations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
