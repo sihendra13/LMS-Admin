@@ -32,7 +32,6 @@ export const Departments = () => {
   const [emailInput, setEmailInput] = useState('');
   const [deptInput, setDeptInput] = useState(departments[0] || 'Sales');
   const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteResult, setInviteResult] = useState(null);
 
   // Local state for dept management
   const [newDeptName, setNewDeptName] = useState('');
@@ -78,9 +77,17 @@ export const Departments = () => {
     setInviteLoading(true);
     try {
       const result = await inviteSupervisor(emailInput, deptInput);
-      setInviteResult(result);
       setEmailInput('');
-      toast.success('Undangan berhasil dibuat!');
+      setIsModalOpen(false);
+      if (result.invitationLink) {
+        navigator.clipboard.writeText(result.invitationLink).catch(() => {});
+        toast.success('Undangan berhasil! Link disalin ke clipboard.');
+        setTimeout(() => {
+          window.open(`https://wa.me/?text=${encodeURIComponent(result.whatsappMessage)}`, '_blank');
+        }, 500);
+      } else {
+        toast.success('Undangan berhasil dibuat!');
+      }
     } catch (err) {
       toast.error(err.message || 'Gagal membuat undangan');
     } finally {
@@ -90,7 +97,6 @@ export const Departments = () => {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setInviteResult(null);
   };
 
   // Block page access for non-admin
@@ -484,9 +490,10 @@ export const Departments = () => {
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 9999
-        }} onClick={closeModal}>
-          
+        }}>
+
           <div className="card" style={{
+            position: 'relative',
             width: '420px',
             background: '#ffffff',
             padding: '24px',
@@ -494,55 +501,20 @@ export const Departments = () => {
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
             margin: '20px'
           }} onClick={(e) => e.stopPropagation()}>
-            
+            <button
+              onClick={closeModal}
+              style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', fontSize: '20px', color: 'var(--text3)', cursor: 'pointer', padding: '4px 8px', lineHeight: 1 }}
+            >
+              ✕
+            </button>
+
             <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px', color: 'var(--text1)' }}>
-              {inviteResult ? 'Undangan Berhasil Dibuat' : 'Undang Supervisor Divisi'}
+              Undang Supervisor Divisi
             </h3>
 
-            {inviteResult ? (
-              <div style={{ textAlign: 'left' }}>
-                <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '16px' }}>
-                  Bagikan link berikut ke supervisor via WhatsApp atau salin link-nya.
-                </p>
-                <div style={{ background: 'var(--bg2)', borderRadius: '8px', padding: '12px', marginBottom: '16px', wordBreak: 'break-all', fontSize: '12px', color: 'var(--text2)', border: '1px solid var(--border)' }}>
-                  {inviteResult.invitationLink}
-                </div>
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    className="form-input"
-                    style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }}
-                    onClick={() => {
-                      navigator.clipboard.writeText(inviteResult.invitationLink);
-                      toast.success('Link disalin!');
-                    }}
-                  >
-                    Salin Link
-                  </button>
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(inviteResult.whatsappMessage)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary"
-                    style={{ padding: '8px 20px', color: '#ffffff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    Kirim via WhatsApp
-                  </a>
-                  <button
-                    type="button"
-                    className="form-input"
-                    style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }}
-                    onClick={closeModal}
-                  >
-                    Tutup
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '20px' }}>
-                  Supervisor yang diundang akan menerima hak akses dashboard terbatas untuk mengelola divisi mereka.
-                </p>
+            <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '20px' }}>
+              Supervisor yang diundang akan menerima hak akses dashboard terbatas untuk mengelola divisi mereka.
+            </p>
                 <form onSubmit={handleInviteSubmit}>
                   <div className="form-group" style={{ marginBottom: '14px', textAlign: 'left' }}>
                     <label className="form-label" style={{ fontSize: '11px', fontWeight: '600' }}>EMAIL SUPERVISOR</label>
@@ -589,8 +561,6 @@ export const Departments = () => {
                     </button>
                   </div>
                 </form>
-              </>
-            )}
 
           </div>
         </div>
