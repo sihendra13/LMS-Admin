@@ -62,10 +62,12 @@ export const AcceptInvitation = ({ token, onAccepted }) => {
   const cardStyle = {
     background: '#fff',
     borderRadius: '16px',
-    padding: '40px',
-    maxWidth: '420px',
+    padding: '48px',
     width: '100%',
+    maxWidth: '480px',
+    minWidth: '340px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+    boxSizing: 'border-box',
   };
 
   if (loading) {
