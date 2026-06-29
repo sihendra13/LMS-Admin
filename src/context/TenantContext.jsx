@@ -497,9 +497,20 @@ export const TenantProvider = ({ children, authUser }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const inviteSupervisor = (email, deptName) => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://axara-lms-backend.onrender.com';
+
+  const inviteSupervisor = async (email, deptName) => {
+    const token = localStorage.getItem('axara_token');
+    const res = await fetch(`${BACKEND_URL}/api/v1/invitations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ email, role: 'supervisor', name: deptName }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gagal membuat undangan');
+
     const newInvite = {
-      id: Date.now(),
+      id: data.invitation?.id || Date.now(),
       email,
       dept: deptName,
       status: 'Pending',
@@ -507,7 +518,6 @@ export const TenantProvider = ({ children, authUser }) => {
     };
     setInvitations(prev => [newInvite, ...prev]);
 
-    // Add activity
     const newAct = {
       id: Date.now(),
       text: `Undangan supervisor untuk divisi <strong>${deptName}</strong> dikirim ke <strong>${email}</strong>`,
@@ -515,6 +525,8 @@ export const TenantProvider = ({ children, authUser }) => {
       type: 'purple'
     };
     setActivities(prev => [newAct, ...prev]);
+
+    return data;
   };
 
   const revokeSupervisor = (id, type = 'supervisor') => {

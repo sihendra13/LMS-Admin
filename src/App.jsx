@@ -18,6 +18,7 @@ import { Departments } from './pages/Departments';
 import { QuizGrading } from './pages/QuizGrading';
 import { Settings } from './pages/Settings';
 import { ReviewSertifikat } from './pages/ReviewSertifikat';
+import { AcceptInvitation } from './pages/AcceptInvitation';
 
 
 const AppContent = ({ onLogout }) => {
@@ -77,6 +78,21 @@ function App() {
     localStorage.removeItem('axara_user');
     setAuthUser(null);
   };
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const inviteToken = urlParams.get('token');
+  const isAcceptPage = window.location.pathname === '/accept-invitation' && inviteToken;
+
+  if (isAcceptPage) {
+    return (
+      <ToastProvider>
+        <AcceptInvitation token={inviteToken} onAccepted={(user) => {
+          window.history.replaceState({}, '', '/');
+          setAuthUser(user);
+        }} />
+      </ToastProvider>
+    );
+  }
 
   if (!authUser) {
     return <LoginPage onLogin={handleLogin} />;

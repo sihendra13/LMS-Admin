@@ -31,6 +31,8 @@ export const Departments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [deptInput, setDeptInput] = useState(departments[0] || 'Sales');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteResult, setInviteResult] = useState(null);
 
   // Local state for dept management
   const [newDeptName, setNewDeptName] = useState('');
@@ -70,12 +72,25 @@ export const Departments = () => {
     return { ...meta, modules, progress };
   });
 
-  const handleInviteSubmit = (e) => {
+  const handleInviteSubmit = async (e) => {
     e.preventDefault();
     if (!emailInput.trim()) return toast.error('Email tidak boleh kosong!');
-    inviteSupervisor(emailInput, deptInput);
-    setEmailInput('');
+    setInviteLoading(true);
+    try {
+      const result = await inviteSupervisor(emailInput, deptInput);
+      setInviteResult(result);
+      setEmailInput('');
+      toast.success('Undangan berhasil dibuat!');
+    } catch (err) {
+      toast.error(err.message || 'Gagal membuat undangan');
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const closeModal = () => {
     setIsModalOpen(false);
+    setInviteResult(null);
   };
 
   // Block page access for non-admin
@@ -469,7 +484,7 @@ export const Departments = () => {
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 9999
-        }} onClick={() => setIsModalOpen(false)}>
+        }} onClick={closeModal}>
           
           <div className="card" style={{
             width: '420px',
@@ -480,55 +495,102 @@ export const Departments = () => {
             margin: '20px'
           }} onClick={(e) => e.stopPropagation()}>
             
-            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px', color: 'var(--text1)' }}>Undang Supervisor Divisi</h3>
-            <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '20px' }}>
-              Supervisor yang diundang akan menerima hak akses dashboard terbatas untuk mengelola divisi mereka.
-            </p>
+            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px', color: 'var(--text1)' }}>
+              {inviteResult ? 'Undangan Berhasil Dibuat' : 'Undang Supervisor Divisi'}
+            </h3>
 
-            <form onSubmit={handleInviteSubmit}>
-              <div className="form-group" style={{ marginBottom: '14px', textAlign: 'left' }}>
-                <label className="form-label" style={{ fontSize: '11px', fontWeight: '600' }}>EMAIL SUPERVISOR</label>
-                <input 
-                  type="email" 
-                  className="form-input"
-                  style={{ width: '100%', fontSize: '13px', marginTop: '4px' }}
-                  placeholder="Contoh: manager.sales@perusahaan.com"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  required
-                />
+            {inviteResult ? (
+              <div style={{ textAlign: 'left' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '16px' }}>
+                  Bagikan link berikut ke supervisor via WhatsApp atau salin link-nya.
+                </p>
+                <div style={{ background: 'var(--bg2)', borderRadius: '8px', padding: '12px', marginBottom: '16px', wordBreak: 'break-all', fontSize: '12px', color: 'var(--text2)', border: '1px solid var(--border)' }}>
+                  {inviteResult.invitationLink}
+                </div>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    className="form-input"
+                    style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteResult.invitationLink);
+                      toast.success('Link disalin!');
+                    }}
+                  >
+                    Salin Link
+                  </button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(inviteResult.whatsappMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary"
+                    style={{ padding: '8px 20px', color: '#ffffff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    Kirim via WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    className="form-input"
+                    style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }}
+                    onClick={closeModal}
+                  >
+                    Tutup
+                  </button>
+                </div>
               </div>
-
-              <div className="form-group" style={{ marginBottom: '24px', textAlign: 'left' }}>
-                <label className="form-label" style={{ fontSize: '11px', fontWeight: '600' }}>DEPARTEMEN YANG DIPIMPIN</label>
-                <select
-                  className="form-select"
-                  style={{ width: '100%', fontSize: '13px', marginTop: '4px', padding: '8px 12px' }}
-                  value={deptInput}
-                  onChange={(e) => setDeptInput(e.target.value)}
-                >
-                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="form-input"
-                  style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }}
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ padding: '8px 20px', color: '#ffffff', cursor: 'pointer' }}
-                >
-                  Kirim Undangan
-                </button>
-              </div>
-            </form>
+            ) : (
+              <>
+                <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '20px' }}>
+                  Supervisor yang diundang akan menerima hak akses dashboard terbatas untuk mengelola divisi mereka.
+                </p>
+                <form onSubmit={handleInviteSubmit}>
+                  <div className="form-group" style={{ marginBottom: '14px', textAlign: 'left' }}>
+                    <label className="form-label" style={{ fontSize: '11px', fontWeight: '600' }}>EMAIL SUPERVISOR</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      style={{ width: '100%', fontSize: '13px', marginTop: '4px' }}
+                      placeholder="Contoh: manager.sales@perusahaan.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      required
+                      disabled={inviteLoading}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '24px', textAlign: 'left' }}>
+                    <label className="form-label" style={{ fontSize: '11px', fontWeight: '600' }}>DEPARTEMEN YANG DIPIMPIN</label>
+                    <select
+                      className="form-select"
+                      style={{ width: '100%', fontSize: '13px', marginTop: '4px', padding: '8px 12px' }}
+                      value={deptInput}
+                      onChange={(e) => setDeptInput(e.target.value)}
+                      disabled={inviteLoading}
+                    >
+                      {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
+                      className="form-input"
+                      style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }}
+                      onClick={closeModal}
+                      disabled={inviteLoading}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-primary"
+                      style={{ padding: '8px 20px', color: '#ffffff', cursor: 'pointer', opacity: inviteLoading ? 0.7 : 1 }}
+                      disabled={inviteLoading}
+                    >
+                      {inviteLoading ? 'Mengirim...' : 'Kirim Undangan'}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
 
           </div>
         </div>
