@@ -505,7 +505,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const res = await fetch(`${BACKEND_URL}/api/v1/invitations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ email, role: 'supervisor' }),
+      body: JSON.stringify({ email, role: 'supervisor', dept: deptName }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gagal membuat undangan');

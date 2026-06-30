@@ -115,7 +115,8 @@ export const AcceptInvitation = ({ token, onAccepted }) => {
           <div style={{ fontSize: '36px', marginBottom: '8px' }}>🎉</div>
           <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', marginBottom: '4px' }}>Anda Diundang!</h2>
           <p style={{ fontSize: '13px', color: '#64748b' }}>
-            Sebagai <strong style={{ color: '#2F7BFF' }}>{invitation.role}</strong> di <strong>{invitation.company}</strong>
+            Sebagai <strong style={{ color: '#2F7BFF' }}>{invitation.role}</strong>
+            {invitation.dept && <> divisi <strong style={{ color: '#2F7BFF' }}>{invitation.dept}</strong></>} di <strong>{invitation.company}</strong>
           </p>
         </div>
 
