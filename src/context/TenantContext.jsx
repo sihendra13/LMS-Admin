@@ -407,12 +407,41 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const addSOP = async (newVideo) => {
     setVideos(prev => [newVideo, ...prev]); // optimistic update
+    let saved = false;
     try {
       const { error } = await supabase.from('sop_videos').insert(toDbRow(newVideo));
       if (error) throw error;
+      saved = true;
     } catch (err) {
       console.error('Gagal simpan SOP:', err?.message);
     }
+
+    // Kirim push notification ke karyawan terkait (best-effort, tidak boleh ganggu flow upload)
+    if (saved) {
+      try {
+        const targetEmails = employees
+          .filter(e => newVideo.dept === 'Semua' || e.dept === newVideo.dept)
+          .map(e => e.email)
+          .filter(Boolean);
+        if (targetEmails.length > 0) {
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token || localStorage.getItem('axara_token');
+          fetch(`${BACKEND_URL}/api/v1/notifications/push`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+              emails: targetEmails,
+              title: 'SOP Baru Ditugaskan 📚',
+              body: `SOP baru "${newVideo.title}" wajib Anda pelajari.`,
+              url: '/',
+            }),
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.error('Gagal kirim push notification:', err?.message);
+      }
+    }
+
     const newAct = {
       id: Date.now(),
       text: `SOP baru <strong>${newVideo.title}</strong> diunggah dengan ${newVideo.preQuizzes?.length || 0} soal Pre-Test & ${newVideo.postQuizzes?.length || 0} soal Post-Test`,
