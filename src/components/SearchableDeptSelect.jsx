@@ -39,7 +39,7 @@ const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = fa
               style={{ width: '100%', padding: '6px 10px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
-          <div style={{ maxHeight: '200px', overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}>
+          <div style={{ maxHeight: '240px', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#94a3b8 #f1f5f9' }}>
             {filtered.map(d => (
               <div
                 key={d}
