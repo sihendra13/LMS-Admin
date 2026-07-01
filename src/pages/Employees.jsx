@@ -223,7 +223,8 @@ export const Employees = () => {
     const controller = new AbortController();
     setInviteAbort(controller);
     try {
-      const token = localStorage.getItem('axara_token');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || localStorage.getItem('axara_token');
       const res = await fetch(`${BACKEND_URL}/api/v1/invitations/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
