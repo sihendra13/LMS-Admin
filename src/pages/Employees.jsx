@@ -543,7 +543,7 @@ export const Employees = () => {
             </div>
           )}
 
-          <div className="card" style={{ padding: '20px', opacity: isSupervisor ? 0.6 : 1 }}>
+          <div className="card" style={{ padding: '20px', overflow: 'visible', opacity: isSupervisor ? 0.6 : 1 }}>
             {isSupervisor ? (
               <div style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--text2)' }}>
                 <div style={{ fontWeight: '600', fontSize: '13px' }}>🔒 Hanya HRD Admin yang dapat mendaftarkan karyawan.</div>
