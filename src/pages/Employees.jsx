@@ -234,7 +234,14 @@ export const Employees = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal mengirim undangan');
       setInviteResult(data);
-      toast.success(`${data.sent?.length || 0} undangan berhasil dikirim!`);
+      const sentCount = data.sent?.length || 0;
+      if (sentCount > 0) {
+        toast.success(`${sentCount} undangan berhasil dikirim!`);
+      } else if (data.failed?.length > 0) {
+        toast.error('Undangan gagal dikirim. Coba lagi.');
+      } else {
+        toast.info('Semua karyawan sudah memiliki akun (dilewati).');
+      }
     } catch (err) {
       if (err.name === 'AbortError') {
         setInviteResult({ error: 'Pengiriman dibatalkan.' });
