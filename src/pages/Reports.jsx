@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
+import CustomSelect from '../components/CustomSelect';
+import SearchableDeptSelect from '../components/SearchableDeptSelect';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, CartesianGrid, Legend,
@@ -350,20 +352,24 @@ export const Reports = () => {
         <div>
 
           {/* FILTER BAR */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', zIndex: 10, position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '220px' }}>
               <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: '600' }}>PERIODE</span>
-              <select value={selectedPeriod} onChange={handlePeriodChange} className="form-select" style={selectStyle}>
-                {periodOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
+              <CustomSelect
+                value={selectedPeriod}
+                onChange={(val) => handlePeriodChange({ target: { value: val } })}
+                options={periodOptions}
+              />
             </div>
             {!isSupervisor && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '240px' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text3)', fontWeight: '600' }}>DEPARTEMEN</span>
-                <select value={deptFilter} onChange={handleDeptChange} className="form-select" style={selectStyle}>
-                  <option value="">Semua</option>
-                  {activeDepts.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
+                <SearchableDeptSelect
+                  value={deptFilter}
+                  onChange={(val) => handleDeptChange({ target: { value: val } })}
+                  departments={activeDepts}
+                  showAllOption={true}
+                />
               </div>
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
