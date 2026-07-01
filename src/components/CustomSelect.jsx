@@ -23,7 +23,7 @@ const CustomSelect = ({ value, onChange, options, disabled = false, align = 'lef
         {label}
       </button>
       {open && !disabled && (
-        <div className="custom-scrollbar" style={{ position: 'absolute', top: '42px', [align === 'right' ? 'right' : 'left']: 0, zIndex: 200, background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: '100%', maxHeight: '240px', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#94a3b8 #f1f5f9' }}>
+        <div className="custom-scrollbar" style={{ position: 'absolute', top: '42px', [align === 'right' ? 'right' : 'left']: 0, zIndex: 200, background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: '100%', maxHeight: '160px', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#94a3b8 #f1f5f9' }}>
           {options.map(o => (
             <div
               key={o.value}
