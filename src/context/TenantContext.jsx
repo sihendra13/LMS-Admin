@@ -174,7 +174,13 @@ export const TenantProvider = ({ children, authUser }) => {
           if (row.key === 'passing_score') setPassingScore(Number(row.value));
           if (row.key === 'validity_months') setValidityMonths(Number(row.value));
           if (row.key === 'departments_list') {
-            try { setDepartments(JSON.parse(row.value)); } catch {}
+            try {
+              const saved = JSON.parse(row.value);
+              setDepartments(prev => {
+                const merged = [...new Set([...prev, ...saved])];
+                return merged;
+              });
+            } catch {}
           }
         });
       });
