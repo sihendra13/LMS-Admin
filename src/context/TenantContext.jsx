@@ -534,10 +534,14 @@ export const TenantProvider = ({ children, authUser }) => {
     }
   };
 
-  const deleteEmployee = (id) => {
+  const deleteEmployee = async (id) => {
     const emp = employees.find(e => e.id === id);
     setEmployees(prev => prev.filter(e => e.id !== id));
-    if (emp?.email) supabase.from('employees').delete().eq('email', emp.email);
+    if (emp?.email) {
+      await supabase.from('employees').delete().eq('email', emp.email);
+    } else {
+      await supabase.from('employees').delete().eq('id', id);
+    }
     const newAct = { id: Date.now(), text: `Karyawan <strong>${emp?.name}</strong> dihapus dari sistem`, time: 'Baru saja', type: 'amber' };
     setActivities(prev => [newAct, ...prev]);
   };
