@@ -599,6 +599,7 @@ export const TenantProvider = ({ children }) => {
         dept: newEmp.dept,
         city: newEmp.city || '',
         status: 'Aktif',
+        deleted_at: null
       }, { onConflict: 'email' });
     }
   };
