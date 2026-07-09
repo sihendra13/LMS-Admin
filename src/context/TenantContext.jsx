@@ -124,14 +124,8 @@ export const TenantProvider = ({ children, authUser }) => {
     return storedDB.currentUser || { id: 1, name: 'HRD Admin', role: 'admin', dept: 'HRD', avatar: 'HA' };
   });
 
-  const [supervisors, setSupervisors] = useState(storedDB.supervisors || [
-    { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', dept: 'Sales', status: 'Aktif' },
-    { id: 2, name: 'Budi Pratama', email: 'budi.p@majubersama.com', dept: 'Finance', status: 'Aktif' }
-  ]);
-
-  const [invitations, setInvitations] = useState(storedDB.invitations || [
-    { id: 1, email: 'hendra.f@majubersama.com', dept: 'Operasional', status: 'Pending', date: 'Hari ini' }
-  ]);
+  const [supervisors, setSupervisors] = useState([]);
+  const [invitations, setInvitations] = useState([]);
 
   const [pendingEssays, setPendingEssays] = useState(storedDB.pendingEssays || [
     { 
@@ -324,8 +318,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const db = {
       tenant,
       currentUser,
-      supervisors,
-      invitations,
+      // supervisors & invitations tidak disimpan — selalu fetch fresh dari Supabase
       employees,
       pendingEssays,
       activities,
