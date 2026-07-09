@@ -208,8 +208,20 @@ export const TenantProvider = ({ children, authUser }) => {
             } catch {}
           }
         });
+        
+        // Load per-tenant settings to override defaults
+        if (authUser?.tenant_id) {
+          supabase.from('tenant_settings').select('passing_score, validity_months').eq('tenant_id', authUser.tenant_id).single()
+            .then(({ data: tenantData }) => {
+              if (tenantData) {
+                if (tenantData.passing_score != null) setPassingScore(tenantData.passing_score);
+                if (tenantData.validity_months != null) setValidityMonths(tenantData.validity_months);
+              }
+            })
+            .catch(() => {}); // ignore error if row doesn't exist yet
+        }
       });
-  }, []);
+  }, [authUser?.tenant_id]);
 
   const updatePassingScore = async (val) => {
     setPassingScore(val);

@@ -28,6 +28,7 @@ export const UploadSOP = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [isDraftSuccess, setIsDraftSuccess] = useState(false);
   const fileInputRef = useRef(null);
   const pptInputRef = useRef(null);
   const uploadIntervalRef = useRef(null);
@@ -687,6 +688,7 @@ export const UploadSOP = () => {
       }
       await updateSOP(editVideo.id, updatedFields);
       setSaving(false);
+      setIsDraftSuccess(isDraftSubmit);
       setUploadSuccess(true);
       setTimeout(() => {
         setEditingVideoId(null);
@@ -725,6 +727,7 @@ export const UploadSOP = () => {
     };
 
     await addSOP(newVideo);
+    setIsDraftSuccess(isDraftSubmit);
     setUploadSuccess(true);
     setTimeout(() => setActivePage('sop'), 2200);
   };
@@ -2235,7 +2238,7 @@ export const UploadSOP = () => {
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-          <span>{isEditMode ? 'Perubahan berhasil disimpan!' : 'SOP berhasil diterbitkan! Mengalihkan ke halaman video...'}</span>
+          <span>{isDraftSuccess ? 'Draf materi ujian ini berhasil disimpan!' : isEditMode ? 'Perubahan berhasil disimpan!' : 'SOP berhasil diterbitkan! Mengalihkan ke halaman video...'}</span>
         </div>
       )}
 

@@ -111,12 +111,37 @@ export const SOPManager = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="video-actions">
-                    <button className="btn-sec" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => openEdit(video)}>
-                      Lanjutkan Edit
+                  <div className="video-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '16px', flexShrink: 0 }}>
+                    <button
+                      type="button"
+                      onClick={() => openEdit(video)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
+                        border: '1px solid var(--border)', background: '#ffffff', color: 'var(--text2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                      </svg>
+                      Edit
                     </button>
                     {currentUser.role === 'admin' && (
-                      <button className="btn-sec" style={{ padding: '6px 12px', fontSize: '12px', color: '#ef4444', borderColor: '#fca5a5' }} onClick={() => setDeleteConfirm({ isOpen: true, video })}>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirm({ isOpen: true, video })}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '6px',
+                          padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
+                          border: '1px solid #fecaca', background: '#fff5f5', color: '#ef4444',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
                         Hapus
                       </button>
                     )}
