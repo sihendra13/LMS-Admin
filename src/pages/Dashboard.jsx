@@ -994,8 +994,8 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
 
         {/* SIDE COLUMN */}
         <div className="side-col" style={{ position: 'sticky', top: '80px', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* AXA ASSISTANT CARD */}
-          <div className="card axa-card-glow" style={{ overflow: 'visible' }}>
+          {/* AXA ASSISTANT CARD — only for HRD Admin */}
+          {!isSupervisor && <div className="card axa-card-glow" style={{ overflow: 'visible' }}>
             <div className="card-head" style={{ borderBottom: '1px solid var(--border)', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
@@ -1244,7 +1244,7 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
                 </svg>
               </button>
             </form>
-          </div>
+          </div>}
 
           {/* COMPLETION PER DEPT / PROG DIVISI */}
           <div className="card">

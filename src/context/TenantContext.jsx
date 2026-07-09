@@ -117,7 +117,7 @@ export const TenantProvider = ({ children, authUser }) => {
         name: authUser.name,
         email: authUser.email || '',
         role: authUser.role,
-        dept: 'HRD',
+        dept: authUser.dept || 'HRD',
         avatar: authUser.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
       };
     }
@@ -165,6 +165,35 @@ export const TenantProvider = ({ children, authUser }) => {
   // Sync passingScore, validityMonths, & departments dari Supabase on mount
   const DEFAULT_DEPTS = ['Sales', 'HRD', 'Operasional', 'Finance', 'CS', 'IT'];
   const [departments, setDepartments] = useState(DEFAULT_DEPTS);
+
+  // Fetch supervisors & pending invitations dari Supabase
+  useEffect(() => {
+    if (!authUser?.tenant_id) return;
+    supabase
+      .from('users')
+      .select('id, name, email, dept, role')
+      .eq('tenant_id', authUser.tenant_id)
+      .eq('role', 'supervisor')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setSupervisors(data.map(u => ({ id: u.id, name: u.name, email: u.email, dept: u.dept, status: 'Aktif' })));
+        }
+      });
+    supabase
+      .from('supervisor_invitations')
+      .select('id, email, dept, status, created_at')
+      .eq('tenant_id', authUser.tenant_id)
+      .is('accepted_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setInvitations(data.map(inv => ({
+            id: inv.id, email: inv.email, dept: inv.dept, status: 'Pending',
+            date: new Date(inv.created_at).toLocaleDateString('id-ID'),
+          })));
+        }
+      });
+  }, [authUser?.tenant_id]);
 
   useEffect(() => {
     supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months', 'departments_list'])
