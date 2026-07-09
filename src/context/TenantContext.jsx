@@ -225,20 +225,34 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const updatePassingScore = async (val) => {
     setPassingScore(val);
-    await supabase.from('tenant_settings').upsert({
-      tenant_id: authUser?.tenant_id,
-      passing_score: val,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'tenant_id' });
+    
+    // Update global app_settings as fallback for demo
+    await supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'passing_score');
+    
+    // Update tenant_settings
+    if (authUser?.tenant_id) {
+      await supabase.from('tenant_settings').upsert({
+        tenant_id: authUser.tenant_id,
+        passing_score: val,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'tenant_id' }).catch(() => {});
+    }
   };
 
   const updateValidityMonths = async (val) => {
     setValidityMonths(val);
-    await supabase.from('tenant_settings').upsert({
-      tenant_id: authUser?.tenant_id,
-      validity_months: val,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'tenant_id' });
+    
+    // Update global app_settings as fallback for demo
+    await supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'validity_months');
+    
+    // Update tenant_settings
+    if (authUser?.tenant_id) {
+      await supabase.from('tenant_settings').upsert({
+        tenant_id: authUser.tenant_id,
+        validity_months: val,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'tenant_id' }).catch(() => {});
+    }
   };
 
   const saveDepartments = (next) => {
