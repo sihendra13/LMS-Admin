@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import JSZip from 'jszip';
+import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
 import { canUploadSOP, canUploadPPT, getPPTLimit, hasDeadlineReminder } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
@@ -288,6 +289,97 @@ export const UploadSOP = () => {
   };
   const removeTriggerQuiz = (index) => {
     setTriggerQuizzes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDownloadTemplate = () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['Tipe Kuis (Pre-Test / Post-Test / Pemicu)', 'Waktu / Slide Pemicu (contoh Video: 01:30, contoh PPT: 3)', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Kunci Jawaban (A/B/C/D)'],
+      ['Pre-Test', '', 'Apa kepanjangan dari K3?', 'Kesehatan, Keselamatan Kerja', 'Kesejahteraan Karyawan', 'Kebersihan Kantor', 'Kekuatan Kerja', 'A'],
+      ['Post-Test', '', 'Alat pelindung diri utama adalah?', 'Helm', 'Sepatu Safety', 'Kacamata', 'Semua Benar', 'D'],
+      ['Pemicu', '01:30', 'Apa yang harus dilakukan jika terjadi kebakaran?', 'Lari', 'Gunakan APAR', 'Sembunyi', 'Diam', 'B'],
+      ['Pemicu', '3', 'Siapa yang bertanggung jawab atas APAR?', 'Satpam', 'Semua Karyawan', 'Tim K3', 'HRD', 'C']
+    ]);
+    // Set column widths
+    ws['!cols'] = [{ wch: 35 }, { wch: 45 }, { wch: 40 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template Kuis SOP');
+    XLSX.writeFile(wb, 'Template_Kuis_SOP.xlsx');
+  };
+
+  const handleImportFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const wb = XLSX.read(ev.target.result, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const rows = raw.slice(1).filter(r => r[0] && String(r[0]).trim());
+        
+        if (!rows.length) {
+          toast.error('File kosong atau format tidak sesuai template.');
+          return;
+        }
+
+        const newPre = [];
+        const newPost = [];
+        const newVideoTrigger = [];
+        const newTrigger = [];
+
+        for (let r of rows) {
+          const tipe = String(r[0] || '').trim().toLowerCase();
+          const pemicuRaw = String(r[1] || '').trim();
+          const question = String(r[2] || '').trim();
+          const opsiA = String(r[3] || '').trim();
+          const opsiB = String(r[4] || '').trim();
+          const opsiC = String(r[5] || '').trim();
+          const opsiD = String(r[6] || '').trim();
+          const answerRaw = String(r[7] || '').trim().toUpperCase();
+          const answer = ['A', 'B', 'C', 'D'].includes(answerRaw) ? answerRaw : 'A';
+          const options = [opsiA, opsiB, opsiC, opsiD];
+
+          if (!question) continue;
+
+          if (tipe.includes('pre')) {
+            newPre.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
+          } else if (tipe.includes('post')) {
+            newPost.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
+          } else if (tipe.includes('pemicu')) {
+            if (contentType === 'video') {
+              // Harus format MM:SS
+              if (pemicuRaw && !pemicuRaw.includes(':')) {
+                toast.error('Format waktu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
+                return;
+              }
+              const parts = pemicuRaw.split(':');
+              const min = parts[0] || '0';
+              const sec = parts[1] || '0';
+              newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
+            } else if (contentType === 'ppt') {
+              // Harus angka tanpa :
+              if (pemicuRaw && pemicuRaw.includes(':')) {
+                toast.error('Format pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
+                return;
+              }
+              const slideNum = pemicuRaw.replace(/\\D/g, '') || '2';
+              newTrigger.push({ question, type: 'multiple', options, answer, triggerSlide: slideNum });
+            }
+          }
+        }
+
+        if (newPre.length) setPreQuestions(newPre);
+        if (newPost.length) setPostQuestions(newPost);
+        if (contentType === 'video' && newVideoTrigger.length) setVideoTriggerQuizzes(newVideoTrigger);
+        if (contentType === 'ppt' && newTrigger.length) setTriggerQuizzes(newTrigger);
+
+        toast.success('Kuis berhasil diimpor dari Excel!');
+      } catch (err) {
+        toast.error('Gagal membaca file. Pastikan format .xlsx sesuai template.');
+      }
+    };
+    reader.readAsBinaryString(file);
+    e.target.value = '';
   };
 
   const toSecs = (q) => Number(q.triggerMin || 0) * 60 + Number(q.triggerSec || 0);
@@ -1028,12 +1120,34 @@ export const UploadSOP = () => {
 
         {/* ROW 2: STEP 3 (Full Width Underneath) - SIDE BY SIDE PRE-TEST AND POST-TEST LAYOUT */}
         <div style={{ marginBottom: '24px' }}>
-          <div className="step-header" style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <div className="step-title" style={{ fontSize: '15px' }}>Konfigurasi Ujian</div>
-            <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>
-              {contentType === 'ppt'
-                ? 'Kuis Pre-Test muncul sebelum presentasi dimulai. Kuis Post-Test muncul setelah karyawan menekan tombol Selesai.'
-                : 'Buat parameter kuis yang muncul di tengah video (Pre-Test) dan evaluasi akhir setelah selesai menonton (Post-Test).'}
+          <div className="step-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <div className="step-title" style={{ fontSize: '15px' }}>Konfigurasi Ujian</div>
+              <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '2px' }}>
+                {contentType === 'ppt'
+                  ? 'Kuis Pre-Test muncul sebelum presentasi dimulai. Kuis Post-Test muncul setelah karyawan menekan tombol Selesai.'
+                  : 'Buat parameter kuis yang muncul di tengah video (Pre-Test) dan evaluasi akhir setelah selesai menonton (Post-Test).'}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button type="button" onClick={handleDownloadTemplate}
+                style={{ fontSize: '12px', padding: '8px 12px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text2)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', height: '38px', boxSizing: 'border-box' }}
+                onMouseOver={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = 'var(--text3)'; }}
+                onMouseOut={e => { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Template Excel
+              </button>
+              <label style={{ fontSize: '12px', padding: '8px 12px', background: 'var(--navy)', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#fff', fontWeight: '600', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', height: '38px', boxSizing: 'border-box' }}
+                onMouseOver={e => e.currentTarget.style.background = 'var(--accent)'}
+                onMouseOut={e => e.currentTarget.style.background = 'var(--navy)'}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import Excel
+                <input type="file" accept=".xlsx,.xls" onChange={handleImportFile} style={{ display: 'none' }} />
+              </label>
             </div>
           </div>
 
