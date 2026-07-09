@@ -26,6 +26,7 @@ const toDbRow = (v) => ({
   narasi_mode: v.narasiMode || null,
   slide_narasi: v.slideNarasi || null,
   archived: v.archived || false,
+  is_draft: v.isDraft || false,
 });
 
 // Convert Supabase snake_case row → camelCase video object
@@ -50,6 +51,7 @@ const fromDbRow = (row) => ({
   narasiMode: row.narasi_mode || null,
   slideNarasi: row.slide_narasi || null,
   archived: row.archived || false,
+  isDraft: row.is_draft || false,
 });
 
 export const useTenant = () => {

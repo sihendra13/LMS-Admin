@@ -14,8 +14,9 @@ export const SOPManager = () => {
     setActivePage('upload');
   };
 
-  const activeVideos = videos.filter(v => !v.archived);
+  const activeVideos = videos.filter(v => !v.archived && !v.isDraft);
   const archivedVideos = videos.filter(v => v.archived);
+  const draftVideos = videos.filter(v => v.isDraft && !v.archived);
 
   return (
     <div className="content">
@@ -71,12 +72,59 @@ export const SOPManager = () => {
         }}>
           Arsip ({archivedVideos.length})
         </button>
+        <button onClick={() => setActiveTab('draft')} style={{
+          padding: '10px 16px', fontSize: '13px', fontWeight: '600', border: 'none', background: 'none',
+          cursor: 'pointer', borderBottom: '2px solid transparent', marginBottom: '-2px', transition: 'all 0.15s',
+          color: activeTab === 'draft' ? 'var(--accent)' : 'var(--text3)',
+          borderBottomColor: activeTab === 'draft' ? 'var(--accent)' : 'transparent',
+        }}>
+          Draf ({draftVideos.length})
+        </button>
       </div>
 
       {/* TABS CONTENT */}
       <div className="card">
         <div className="card-body">
-          {activeTab === 'active' ? (
+          {activeTab === 'draft' ? (
+            draftVideos.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text3)' }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>📝</div>
+                <p style={{ fontSize: '13px' }}>Belum ada video draf.</p>
+              </div>
+            ) : (
+              draftVideos.map((video) => (
+                <div key={video.id} className="video-item" style={{ padding: '18px 20px' }}>
+                  <div className="thumb" style={{ background: video.color, width: '100px', height: '60px', opacity: 0.7 }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" width="24" height="24">
+                      <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                    </svg>
+                    <div className="play-over" style={{ background: 'rgba(0,0,0,0.6)' }}>
+                      <span style={{ color: 'white', fontSize: '10px', fontWeight: 'bold' }}>DRAF</span>
+                    </div>
+                  </div>
+                  <div className="video-info">
+                    <div className="video-title" style={{ fontSize: '15px', fontWeight: '600' }}>{video.title}</div>
+                    <div className="video-meta" style={{ marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span className={`dept-tag ${video.tagClass}`}>{video.dept}</span>
+                        <span style={{ color: '#64748b', fontSize: '12px' }}>Belum dipublikasikan</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="video-actions">
+                    <button className="btn-sec" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => openEdit(video)}>
+                      Lanjutkan Edit
+                    </button>
+                    {currentUser.role === 'admin' && (
+                      <button className="btn-sec" style={{ padding: '6px 12px', fontSize: '12px', color: '#ef4444', borderColor: '#fca5a5' }} onClick={() => setDeleteConfirm({ isOpen: true, video })}>
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )
+          ) : activeTab === 'active' ? (
             activeVideos.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text3)' }}>
                 <div style={{ fontSize: '32px', marginBottom: '12px' }}>📂</div>

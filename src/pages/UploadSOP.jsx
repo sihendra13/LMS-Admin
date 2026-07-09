@@ -406,7 +406,7 @@ export const UploadSOP = () => {
     setShowPublishConfirm(true);
   };
 
-  const handleConfirmPublish = async () => {
+  const handleConfirmPublish = async (isDraftSubmit = false) => {
     setShowPublishConfirm(false);
     let videoUrl = null;
     let filePath = null;
@@ -676,6 +676,7 @@ export const UploadSOP = () => {
         slideNarasi: contentType === 'ppt' && narasiMode !== 'none'
           ? latestSlideNarasi.map(s => ({ teks: s.teks || '', audioUrl: s.audioUrl || null }))
           : null,
+        isDraft: isDraftSubmit,
       };
       // Kalau ada file baru diunggah
       if (videoUrl) updatedFields.videoUrl = videoUrl;
@@ -720,6 +721,7 @@ export const UploadSOP = () => {
             audioUrl: s.audioUrl || null,
           }))
         : null,
+      isDraft: isDraftSubmit,
     };
 
     await addSOP(newVideo);
@@ -2182,7 +2184,26 @@ export const UploadSOP = () => {
           <button type="button" className="form-input" style={{ cursor: 'pointer', padding: '8px 18px', margin: 0 }} onClick={() => setActivePage('sop')}>
             Batal
           </button>
-          <button
+          
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              type="button"
+              className="btn-sec"
+              style={{
+                padding: '10px 24px',
+                borderRadius: '8px',
+                fontWeight: '600',
+                border: '1px solid var(--border)',
+                cursor: uploading ? 'not-allowed' : 'pointer',
+                background: '#fff',
+                color: 'var(--text2)'
+              }}
+              disabled={uploading}
+              onClick={() => handleConfirmPublish(true)}
+            >
+              Simpan Draft
+            </button>
+            <button
             type="submit"
             className="btn-primary"
             style={{
@@ -2196,6 +2217,7 @@ export const UploadSOP = () => {
           >
             {uploading ? `Mengupload ${contentType === 'ppt' ? 'PPT' : 'Video'}... ${uploadProgress}%` : isEditMode ? 'Simpan Perubahan' : 'Terbitkan Materi & Ujian'}
           </button>
+          </div>
         </div>
       </form>
 
