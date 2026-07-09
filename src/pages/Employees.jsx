@@ -867,6 +867,11 @@ export const Employees = () => {
                     </div>
                   </div>
                   <p style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: '1.6' }}>{inviteResult.message}</p>
+                  {(inviteResult.skipped?.length > 0) && (
+                    <div style={{ marginTop: '12px', padding: '12px', background: '#eff6ff', borderRadius: '8px', borderLeft: '4px solid #3b82f6', fontSize: '12px', color: '#1e3a8a', lineHeight: '1.5' }}>
+                      <strong>Info:</strong> Status <strong>"Dilewati"</strong> berarti karyawan tersebut sudah memiliki akun & password yang terdaftar sebelumnya. Mereka bisa langsung login tanpa perlu undangan lagi.
+                    </div>
+                  )}
                 </div>
               )}
             </div>
