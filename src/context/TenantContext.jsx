@@ -235,7 +235,7 @@ export const TenantProvider = ({ children, authUser }) => {
         tenant_id: authUser.tenant_id,
         passing_score: val,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'tenant_id' }).catch(() => {});
+      }, { onConflict: 'tenant_id' });
     }
   };
 
@@ -251,7 +251,7 @@ export const TenantProvider = ({ children, authUser }) => {
         tenant_id: authUser.tenant_id,
         validity_months: val,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'tenant_id' }).catch(() => {});
+      }, { onConflict: 'tenant_id' });
     }
   };
 
