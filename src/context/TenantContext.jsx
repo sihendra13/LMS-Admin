@@ -209,14 +209,22 @@ export const TenantProvider = ({ children, authUser }) => {
       });
   }, []);
 
-  const updatePassingScore = (val) => {
+  const updatePassingScore = async (val) => {
     setPassingScore(val);
-    supabase.from('app_settings').update({ value: String(val), updated_at: new Date().toISOString() }).eq('key', 'passing_score');
+    await supabase.from('tenant_settings').upsert({
+      tenant_id: authUser?.tenant_id,
+      passing_score: val,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'tenant_id' });
   };
 
-  const updateValidityMonths = (val) => {
+  const updateValidityMonths = async (val) => {
     setValidityMonths(val);
-    supabase.from('app_settings').update({ value: String(val), updated_at: new Date().toISOString() }).eq('key', 'validity_months');
+    await supabase.from('tenant_settings').upsert({
+      tenant_id: authUser?.tenant_id,
+      validity_months: val,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'tenant_id' });
   };
 
   const saveDepartments = (next) => {
