@@ -7,6 +7,9 @@ export const PlanSwitcher = () => {
   const adminName = authUser?.name || 'HRD Admin';
   const adminAvatar = adminName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
+  // Sembunyikan widget simulasi untuk user SPV — ini hanya untuk demo ke klien
+  if (authUser?.role === 'supervisor') return null;
+
   // Draggable states
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const isDragging = useRef(false);
