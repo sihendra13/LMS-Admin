@@ -226,8 +226,8 @@ export const TenantProvider = ({ children, authUser }) => {
   const updatePassingScore = async (val) => {
     setPassingScore(val);
     
-    // Update global app_settings as fallback for demo (don't await to avoid blocking)
-    supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'passing_score').catch(() => {});
+    // Update global app_settings as fallback for demo
+    await supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'passing_score');
     
     // Update tenant_settings
     if (authUser?.tenant_id) {
@@ -242,8 +242,8 @@ export const TenantProvider = ({ children, authUser }) => {
   const updateValidityMonths = async (val) => {
     setValidityMonths(val);
     
-    // Update global app_settings as fallback for demo (don't await to avoid blocking)
-    supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'validity_months').catch(() => {});
+    // Update global app_settings as fallback for demo
+    await supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'validity_months');
     
     // Update tenant_settings
     if (authUser?.tenant_id) {
