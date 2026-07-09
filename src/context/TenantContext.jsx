@@ -257,7 +257,7 @@ export const TenantProvider = ({ children, authUser }) => {
   // Sync employees: fetch from Supabase on mount, seed defaults jika Supabase kosong
   useEffect(() => {
     const syncEmployees = async () => {
-      const { data } = await supabase.from('employees').select('*').order('created_at', { ascending: true });
+      const { data } = await supabase.from('employees').select('*').is('deleted_at', null).order('created_at', { ascending: true });
       if (!data) return;
 
       if (data.length === 0) {
@@ -560,11 +560,11 @@ export const TenantProvider = ({ children, authUser }) => {
     const emp = employees.find(e => e.id === id);
     setEmployees(prev => prev.filter(e => e.id !== id));
     if (emp?.email) {
-      await supabase.from('employees').delete().eq('email', emp.email);
+      await supabase.from('employees').update({ deleted_at: new Date().toISOString() }).eq('email', emp.email);
     } else {
-      await supabase.from('employees').delete().eq('id', id);
+      await supabase.from('employees').update({ deleted_at: new Date().toISOString() }).eq('id', id);
     }
-    const newAct = { id: Date.now(), text: `Karyawan <strong>${emp?.name}</strong> dihapus dari sistem`, time: 'Baru saja', type: 'amber' };
+    const newAct = { id: Date.now(), text: `Karyawan <strong>${emp?.name}</strong> dihapus (dinonaktifkan)`, time: 'Baru saja', type: 'amber' };
     setActivities(prev => [newAct, ...prev]);
   };
 
