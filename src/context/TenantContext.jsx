@@ -583,6 +583,7 @@ export const TenantProvider = ({ children, authUser }) => {
     // Sync to Supabase for email reminders
     if (newEmp.email) {
       await supabase.from('employees').upsert({
+        tenant_id: authUser?.tenant_id,
         name: newEmp.name,
         email: newEmp.email,
         dept: newEmp.dept,
