@@ -62,11 +62,21 @@ export const useTenant = () => {
   return context;
 };
 
-export const TenantProvider = ({ children, authUser }) => {
+export const TenantProvider = ({ children }) => {
   // Local storage synchronization key
   const DB_KEY = 'axara_lms_db';
   const LOGO_KEY = 'axara_lms_logo';
 
+  const [authUser, setAuthUser] = useState(() => {
+    const saved = localStorage.getItem('axara_auth_user');
+    return saved ? JSON.parse(saved) : {
+      id: 'usr_arifin',
+      name: 'Mohamad Arifin',
+      role: 'admin',
+      tenant_id: '11111111-1111-1111-1111-111111111111',
+      avatar: 'MA'
+    };
+  });
 
   const getStoredDB = () => {
     try {
