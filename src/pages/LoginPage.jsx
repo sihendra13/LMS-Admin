@@ -103,7 +103,7 @@ export const LoginPage = ({ onLogin }) => {
 
       const { data: profile, error: profileError } = await supabase
         .from('users')
-        .select('id, name, role, avatar, tenant_id')
+        .select('id, name, role, avatar, tenant_id, dept')
         .eq('id', authData.user.id)
         .single();
       if (profileError) throw new Error('Gagal mengambil profil pengguna.');
@@ -113,6 +113,7 @@ export const LoginPage = ({ onLogin }) => {
         name: profile.name,
         email: authData.user.email,
         role: profile.role,
+        dept: profile.dept,
         tenant_id: profile.tenant_id,
         avatar: profile.avatar || profile.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
       };
