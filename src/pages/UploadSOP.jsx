@@ -293,17 +293,32 @@ export const UploadSOP = () => {
   };
 
   const handleDownloadTemplate = () => {
-    const ws = XLSX.utils.aoa_to_sheet([
-      ['Tipe Kuis (Pre-Test / Post-Test / Pemicu)', 'Waktu / Slide Pemicu (contoh Video: 01:30, contoh PPT: 3)', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Kunci Jawaban (A/B/C/D)'],
-      ['Pre-Test', '', 'Apa kepanjangan dari K3?', 'Kesehatan, Keselamatan Kerja', 'Kesejahteraan Karyawan', 'Kebersihan Kantor', 'Kekuatan Kerja', 'A'],
-      ['Post-Test', '', 'Alat pelindung diri utama adalah?', 'Helm', 'Sepatu Safety', 'Kacamata', 'Semua Benar', 'D'],
-      ['Pemicu', '01:30', 'Apa yang harus dilakukan jika terjadi kebakaran?', 'Lari', 'Gunakan APAR', 'Sembunyi', 'Diam', 'B'],
-      ['Pemicu', '3', 'Siapa yang bertanggung jawab atas APAR?', 'Satpam', 'Semua Karyawan', 'Tim K3', 'HRD', 'C']
+    // Sheet 1: Pre-Test
+    const wsPre = XLSX.utils.aoa_to_sheet([
+      ['No', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar (A/B/C/D)'],
+      ['1', 'Apa kepanjangan dari K3?', 'Kesehatan, Keselamatan Kerja', 'Kesejahteraan Karyawan', 'Kebersihan Kantor', 'Kekuatan Kerja', 'A']
     ]);
-    // Set column widths
-    ws['!cols'] = [{ wch: 35 }, { wch: 45 }, { wch: 40 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
+    wsPre['!cols'] = [{ wch: 5 }, { wch: 50 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
+
+    // Sheet 2: Kuis Pemicu
+    const wsMid = XLSX.utils.aoa_to_sheet([
+      ['No', 'Waktu / Slide Pemicu (contoh Video: 01:30, PPT: 3)', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar (A/B/C/D)'],
+      ['1', '01:30', 'Apa yang harus dilakukan jika terjadi kebakaran?', 'Lari', 'Gunakan APAR', 'Sembunyi', 'Diam', 'B'],
+      ['2', '3', 'Siapa yang bertanggung jawab atas APAR?', 'Satpam', 'Semua Karyawan', 'Tim K3', 'HRD', 'C']
+    ]);
+    wsMid['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 50 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
+
+    // Sheet 3: Post-Test
+    const wsPost = XLSX.utils.aoa_to_sheet([
+      ['No', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar (A/B/C/D)'],
+      ['1', 'Alat pelindung diri utama adalah?', 'Helm', 'Sepatu Safety', 'Kacamata', 'Semua Benar', 'D']
+    ]);
+    wsPost['!cols'] = [{ wch: 5 }, { wch: 50 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
+
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Template Kuis SOP');
+    XLSX.utils.book_append_sheet(wb, wsPre, 'Pre-Test');
+    XLSX.utils.book_append_sheet(wb, wsMid, 'Kuis Pemicu');
+    XLSX.utils.book_append_sheet(wb, wsPost, 'Post-Test');
     XLSX.writeFile(wb, 'Template_Kuis_SOP.xlsx');
   };
 
@@ -314,43 +329,55 @@ export const UploadSOP = () => {
     reader.onload = (ev) => {
       try {
         const wb = XLSX.read(ev.target.result, { type: 'binary' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        const rows = raw.slice(1).filter(r => r[0] && String(r[0]).trim());
         
-        if (!rows.length) {
-          toast.error('File kosong atau format tidak sesuai template.');
-          return;
-        }
-
         const newPre = [];
         const newPost = [];
         const newVideoTrigger = [];
         const newTrigger = [];
 
-        for (let r of rows) {
-          const tipe = String(r[0] || '').trim().toLowerCase();
-          const pemicuRaw = String(r[1] || '').trim();
-          const question = String(r[2] || '').trim();
-          const opsiA = String(r[3] || '').trim();
-          const opsiB = String(r[4] || '').trim();
-          const opsiC = String(r[5] || '').trim();
-          const opsiD = String(r[6] || '').trim();
-          const answerRaw = String(r[7] || '').trim().toUpperCase();
-          const answer = ['A', 'B', 'C', 'D'].includes(answerRaw) ? answerRaw : 'A';
-          const options = [opsiA, opsiB, opsiC, opsiD];
+        // Helper function to parse standard question rows (without trigger time)
+        const parseStandardSheet = (sheetName, targetArray) => {
+          const ws = wb.Sheets[sheetName];
+          if (!ws) return;
+          const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          const rows = raw.slice(1).filter(r => r[1] && String(r[1]).trim());
+          for (let r of rows) {
+            const question = String(r[1] || '').trim();
+            if (!question) continue;
+            const opsiA = String(r[2] || '').trim();
+            const opsiB = String(r[3] || '').trim();
+            const opsiC = String(r[4] || '').trim();
+            const opsiD = String(r[5] || '').trim();
+            const answerRaw = String(r[6] || '').trim().toUpperCase();
+            const answer = ['A', 'B', 'C', 'D'].includes(answerRaw) ? answerRaw : 'A';
+            const options = [opsiA, opsiB, opsiC, opsiD];
+            targetArray.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
+          }
+        };
 
-          if (!question) continue;
+        // Helper function to parse trigger questions
+        const parseTriggerSheet = () => {
+          const ws = wb.Sheets['Kuis Pemicu'];
+          if (!ws) return;
+          let hasFormatError = false;
+          const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          const rows = raw.slice(1).filter(r => r[2] && String(r[2]).trim());
+          for (let r of rows) {
+            const pemicuRaw = String(r[1] || '').trim();
+            const question = String(r[2] || '').trim();
+            if (!question) continue;
+            const opsiA = String(r[3] || '').trim();
+            const opsiB = String(r[4] || '').trim();
+            const opsiC = String(r[5] || '').trim();
+            const opsiD = String(r[6] || '').trim();
+            const answerRaw = String(r[7] || '').trim().toUpperCase();
+            const answer = ['A', 'B', 'C', 'D'].includes(answerRaw) ? answerRaw : 'A';
+            const options = [opsiA, opsiB, opsiC, opsiD];
 
-          if (tipe.includes('pre')) {
-            newPre.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
-          } else if (tipe.includes('post')) {
-            newPost.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
-          } else if (tipe.includes('pemicu')) {
             if (contentType === 'video') {
-              // Harus format MM:SS
               if (pemicuRaw && !pemicuRaw.includes(':')) {
                 toast.error('Format waktu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
+                hasFormatError = true;
                 return;
               }
               const parts = pemicuRaw.split(':');
@@ -358,19 +385,69 @@ export const UploadSOP = () => {
               const sec = parts[1] || '0';
               newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
             } else if (contentType === 'ppt') {
-              // Harus angka tanpa :
               if (pemicuRaw && pemicuRaw.includes(':')) {
                 toast.error('Format pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
+                hasFormatError = true;
                 return;
               }
-              const slideNum = pemicuRaw.replace(/\\D/g, '') || '2';
+              const slideNum = pemicuRaw.replace(/\D/g, '') || '2';
               newTrigger.push({ question, type: 'multiple', options, answer, triggerSlide: slideNum });
             }
           }
+          return hasFormatError;
+        };
+
+        const oldFormatSheet = wb.Sheets['Template Kuis SOP'];
+        if (oldFormatSheet) {
+          const raw = XLSX.utils.sheet_to_json(oldFormatSheet, { header: 1 });
+          const rows = raw.slice(1).filter(r => r[0] && String(r[0]).trim());
+          for (let r of rows) {
+            const tipe = String(r[0] || '').trim().toLowerCase();
+            const pemicuRaw = String(r[1] || '').trim();
+            const question = String(r[2] || '').trim();
+            const opsiA = String(r[3] || '').trim();
+            const opsiB = String(r[4] || '').trim();
+            const opsiC = String(r[5] || '').trim();
+            const opsiD = String(r[6] || '').trim();
+            const answerRaw = String(r[7] || '').trim().toUpperCase();
+            const answer = ['A', 'B', 'C', 'D'].includes(answerRaw) ? answerRaw : 'A';
+            const options = [opsiA, opsiB, opsiC, opsiD];
+
+            if (!question) continue;
+
+            if (tipe.includes('pre')) {
+              newPre.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
+            } else if (tipe.includes('post')) {
+              newPost.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
+            } else if (tipe.includes('pemicu')) {
+              if (contentType === 'video') {
+                if (pemicuRaw && !pemicuRaw.includes(':')) {
+                  toast.error('Format waktu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
+                  return;
+                }
+                const parts = pemicuRaw.split(':');
+                const min = parts[0] || '0';
+                const sec = parts[1] || '0';
+                newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
+              } else if (contentType === 'ppt') {
+                if (pemicuRaw && pemicuRaw.includes(':')) {
+                  toast.error('Format pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
+                  return;
+                }
+                const slideNum = pemicuRaw.replace(/\D/g, '') || '2';
+                newTrigger.push({ question, type: 'multiple', options, answer, triggerSlide: slideNum });
+              }
+            }
+          }
+        } else {
+          parseStandardSheet('Pre-Test', newPre);
+          const hasError = parseTriggerSheet();
+          if (hasError) return;
+          parseStandardSheet('Post-Test', newPost);
         }
 
         if (newPre.length === 0 && newPost.length === 0 && newVideoTrigger.length === 0 && newTrigger.length === 0) {
-          toast.error('Gagal mengimpor. Format kolom tidak sesuai template!');
+          toast.error('Gagal mengimpor. Pastikan Anda mengisi soal di sheet Pre-Test, Kuis Pemicu, atau Post-Test.');
           return;
         }
 
@@ -381,6 +458,7 @@ export const UploadSOP = () => {
 
         toast.success('Kuis berhasil diimpor dari Excel!');
       } catch (err) {
+        console.error(err);
         toast.error('Gagal membaca file. Pastikan format .xlsx sesuai template.');
       }
     };
