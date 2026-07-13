@@ -369,6 +369,11 @@ export const UploadSOP = () => {
           }
         }
 
+        if (newPre.length === 0 && newPost.length === 0 && newVideoTrigger.length === 0 && newTrigger.length === 0) {
+          toast.error('Gagal mengimpor. Format kolom tidak sesuai template!');
+          return;
+        }
+
         if (newPre.length) setPreQuestions(newPre);
         if (newPost.length) setPostQuestions(newPost);
         if (contentType === 'video' && newVideoTrigger.length) setVideoTriggerQuizzes(newVideoTrigger);
