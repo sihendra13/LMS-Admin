@@ -2272,23 +2272,25 @@ export const UploadSOP = () => {
           </button>
           
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              type="button"
-              className="btn-sec"
-              style={{
-                padding: '10px 24px',
-                borderRadius: '8px',
-                fontWeight: '600',
-                border: '1px solid var(--border)',
-                cursor: uploading ? 'not-allowed' : 'pointer',
-                background: '#fff',
-                color: 'var(--text2)'
-              }}
-              disabled={uploading}
-              onClick={() => handleConfirmPublish(true)}
-            >
-              Simpan Draft
-            </button>
+            {(!isEditMode || editVideo?.isDraft) && (
+              <button
+                type="button"
+                className="btn-sec"
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  border: '1px solid var(--border)',
+                  cursor: uploading ? 'not-allowed' : 'pointer',
+                  background: '#fff',
+                  color: 'var(--text2)'
+                }}
+                disabled={uploading}
+                onClick={() => handleConfirmPublish(true)}
+              >
+                {isEditMode && editVideo?.isDraft ? 'Simpan Perubahan' : 'Simpan Draft'}
+              </button>
+            )}
             <button
             type="submit"
             className="btn-primary"
@@ -2301,7 +2303,7 @@ export const UploadSOP = () => {
             }}
             disabled={uploading}
           >
-            {uploading ? `Mengupload ${contentType === 'ppt' ? 'PPT' : 'Video'}... ${uploadProgress}%` : isEditMode ? 'Simpan Perubahan' : 'Terbitkan Materi & Ujian'}
+            {uploading ? `Mengupload ${contentType === 'ppt' ? 'PPT' : 'Video'}... ${uploadProgress}%` : (isEditMode && editVideo?.isDraft) ? 'Terbitkan Materi & Ujian' : isEditMode ? 'Simpan Perubahan' : 'Terbitkan Materi & Ujian'}
           </button>
           </div>
         </div>
