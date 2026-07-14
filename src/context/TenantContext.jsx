@@ -523,8 +523,22 @@ export const TenantProvider = ({ children, authUser }) => {
     } catch (err) {
       console.error('Gagal hapus SOP:', err?.message);
     }
-    if (video?.filePath) {
-      supabase.storage.from('videos').remove([video.filePath]);
+    // Hapus file video
+    if (video?.videoUrl) {
+      const oldPath = video.videoUrl.split('/videos/')[1];
+      if (oldPath) supabase.storage.from('videos').remove([oldPath]);
+    }
+    
+    // Hapus file slide PPT
+    if (video?.slideImages?.length) {
+      const oldPaths = video.slideImages.map(url => url.split('/ppt/')[1]).filter(Boolean);
+      if (oldPaths.length > 0) supabase.storage.from('ppt').remove(oldPaths);
+    }
+    
+    // Hapus file narasi audio
+    if (video?.slideNarasi?.length) {
+      const oldAudioPaths = video.slideNarasi.map(s => s.audioUrl?.split('/narasi/')[1]).filter(Boolean);
+      if (oldAudioPaths.length > 0) supabase.storage.from('narasi').remove(oldAudioPaths);
     }
     const newAct = { id: Date.now(), text: `SOP <strong>${video?.title}</strong> dihapus permanen`, time: 'Baru saja', type: 'amber' };
     setActivities(prev => [newAct, ...prev]);
