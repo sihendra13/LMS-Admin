@@ -2323,7 +2323,7 @@ export const UploadSOP = () => {
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-          <span>{isDraftSuccess ? 'Draf materi ujian ini berhasil disimpan!' : isEditMode ? 'Perubahan berhasil disimpan!' : 'SOP berhasil diterbitkan! Mengalihkan ke halaman video...'}</span>
+          <span>{isDraftSuccess ? 'Draf materi ujian ini berhasil disimpan!' : (isEditMode && !editVideo?.isDraft) ? 'Perubahan berhasil disimpan!' : 'SOP berhasil diterbitkan! Mengalihkan ke halaman video...'}</span>
         </div>
       )}
 
@@ -2568,8 +2568,8 @@ export const UploadSOP = () => {
                      </svg>
                    </div>
                    <div>
-                     <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>{isEditMode ? 'Konfirmasi Simpan Perubahan' : 'Konfirmasi Terbitkan SOP'}</h3>
-                     <p style={{ fontSize: '12px', color: 'var(--text3)', margin: 0 }}>{isEditMode ? 'Tinjau kembali perubahan sebelum disimpan' : 'Tinjau kembali sebelum menerbitkan'}</p>
+                     <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text1)', margin: 0 }}>{(isEditMode && !editVideo?.isDraft) ? 'Konfirmasi Simpan Perubahan' : 'Konfirmasi Terbitkan SOP'}</h3>
+                     <p style={{ fontSize: '12px', color: 'var(--text3)', margin: 0 }}>{(isEditMode && !editVideo?.isDraft) ? 'Tinjau kembali perubahan sebelum disimpan' : 'Tinjau kembali sebelum menerbitkan'}</p>
                    </div>
                  </div>
                </div>
@@ -2773,7 +2773,7 @@ export const UploadSOP = () => {
                   style={{ padding: '10px 24px', fontWeight: '700', fontSize: '13px', borderRadius: '8px', cursor: 'pointer' }}
                   onClick={() => handleConfirmPublish(false)}
                 >
-                  {isEditMode ? 'Simpan Perubahan' : 'Terbitkan Sekarang'}
+                  {(isEditMode && !editVideo?.isDraft) ? 'Simpan Perubahan' : 'Terbitkan Sekarang'}
                 </button>
               </div>
             </div>

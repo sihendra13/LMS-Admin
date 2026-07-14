@@ -3,7 +3,7 @@ import { useTenant } from '../context/TenantContext';
 import { PLANS, canUploadSOP } from '../utils/featureGates';
 
 export const Sidebar = ({ onLogout }) => {
-  const { tenant, activePage, setActivePage, videos, currentUser, quizSubmissions } = useTenant();
+  const { tenant, activePage, setActivePage, videos, currentUser, quizSubmissions, setEditingVideoId } = useTenant();
 
   const getNavItemClass = (page) => `nav-item ${activePage === page ? 'active' : ''}`;
   const planLabel = tenant.plan.charAt(0).toUpperCase() + tenant.plan.slice(1);
@@ -81,7 +81,7 @@ export const Sidebar = ({ onLogout }) => {
               <span className="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
               Departemen
             </a>
-            <a className={getNavItemClass('upload')} href="#upload" onClick={(e) => { e.preventDefault(); setActivePage('upload'); }}>
+            <a className={getNavItemClass('upload')} href="#upload" onClick={(e) => { e.preventDefault(); setEditingVideoId(null); setActivePage('upload'); }}>
               <span className="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
               Upload Training & SOP {!canUploadSOP(tenant.plan) && '🔒'}
             </a>
