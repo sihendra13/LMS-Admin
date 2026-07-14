@@ -2769,7 +2769,7 @@ export const UploadSOP = () => {
                   type="button"
                   className="btn-primary"
                   style={{ padding: '10px 24px', fontWeight: '700', fontSize: '13px', borderRadius: '8px', cursor: 'pointer' }}
-                  onClick={handleConfirmPublish}
+                  onClick={() => handleConfirmPublish(false)}
                 >
                   {isEditMode ? 'Simpan Perubahan' : 'Terbitkan Sekarang'}
                 </button>
