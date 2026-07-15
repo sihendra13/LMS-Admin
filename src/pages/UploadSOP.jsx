@@ -458,7 +458,7 @@ export const UploadSOP = () => {
         if (contentType === 'video' && newVideoTrigger.length) setVideoTriggerQuizzes(newVideoTrigger);
         if (contentType === 'ppt' && newTrigger.length) setTriggerQuizzes(newTrigger);
 
-        toast.success('Kuis berhasil diimpor! Jika ada kesalahan, cukup upload file yang benar untuk menimpa soal sebelumnya.', { duration: 5000 });
+        toast.success('Kuis pertanyaan berhasil di impor! Jika ada kesalahan file yang diupload, cukup upload file yang benar untuk menimpa soal sebelumnya', { duration: 8000 });
       } catch (err) {
         console.error(err);
         toast.error('Gagal membaca file. Pastikan format .xlsx sesuai template.');
