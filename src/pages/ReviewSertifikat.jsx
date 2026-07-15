@@ -341,10 +341,10 @@ export const ReviewSertifikat = () => {
                     </button>
                 ))}
               </div>
-              {isPending && (
-                <span style={{ fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' }}>
+              {isPending && enableSpvRole && (
+                <div style={{ fontSize: '11px', fontStyle: 'italic', color: 'var(--text3)', marginTop: '4px', textAlign: 'right' }}>
                   {sub.certStatus === 'remedial' ? 'Karyawan sedang mengerjakan ulang' : 'Menunggu review supervisor'}
-                </span>
+                </div>
               )}
               {escalated && (
                 <span style={{ fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' }}>
@@ -377,7 +377,7 @@ export const ReviewSertifikat = () => {
   // ── stats ────────────────────────────────────────────────────────────
   const stats = isHRD ? [
     { label: 'Siap Diterbitkan', value: readySubs.length,      color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
-    { label: 'Dalam Proses',     value: inProgressSubs.length, color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
+    { label: enableSpvRole ? 'Dalam Proses' : 'Sedang Remedial', value: inProgressSubs.length, color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
     { label: 'Diterbitkan',      value: approvedSubs.length,   color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
     { label: 'Ditolak',          value: rejectedSubs.length,   color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
   ] : [
@@ -389,7 +389,7 @@ export const ReviewSertifikat = () => {
   // ── tabs ─────────────────────────────────────────────────────────────
   const tabs = isHRD ? [
     { key: 'ready',       label: `Siap Diterbitkan (${readySubs.length})` },
-    { key: 'in_progress', label: `Dalam Proses (${inProgressSubs.length})` },
+    { key: 'in_progress', label: `${enableSpvRole ? 'Dalam Proses' : 'Sedang Remedial'} (${inProgressSubs.length})` },
     { key: 'approved',    label: `Diterbitkan (${approvedSubs.length})` },
     { key: 'rejected',    label: `Ditolak (${rejectedSubs.length})` },
   ] : [

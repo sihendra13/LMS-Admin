@@ -242,7 +242,10 @@ export const TenantProvider = ({ children, authUser }) => {
     setValidityMonths(val);
     
     // Update global app_settings as fallback for demo
-    await supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'validity_months');
+    await supabase.from('app_settings').upsert(
+      { key: 'validity_months', value: val.toString(), updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
     
     // Update tenant_settings
     if (authUser?.tenant_id) {
