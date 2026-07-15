@@ -838,7 +838,8 @@ export const TenantProvider = ({ children, authUser }) => {
       updateTenantLogo,
       companyLogo,
       updateCompanyLogo,
-      authUser
+      authUser,
+      enableSpvRole: false // Feature flag for SPV role
     }}>
       {children}
     </TenantContext.Provider>

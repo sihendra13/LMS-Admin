@@ -3,7 +3,7 @@ import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
 
 export const PlanSwitcher = () => {
-  const { tenant, changePlan, currentUser, setCurrentUser, setActivePage, authUser } = useTenant();
+  const { tenant, changePlan, currentUser, setCurrentUser, setActivePage, authUser, enableSpvRole } = useTenant();
   const adminName = authUser?.name || 'HRD Admin';
   const adminAvatar = adminName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
@@ -88,32 +88,34 @@ export const PlanSwitcher = () => {
         </div>
       </div>
 
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }}>
-        <div className="plan-switcher-title" style={{ marginBottom: '4px' }}>Simulasi Peran Login</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <button
-            className={`plan-btn ${currentUser.role === 'admin' ? 'active' : ''}`}
-            style={{ textAlign: 'left', width: '100%' }}
-            onClick={() => handleUserChange({ id: authUser?.id || 1, name: adminName, role: 'admin', dept: 'HRD', avatar: adminAvatar })}
-          >
-            👤 {adminName} (HRD Admin)
-          </button>
-          <button
-            className={`plan-btn ${currentUser.role === 'supervisor' && currentUser.dept === 'Sales' ? 'active' : ''}`}
-            style={{ textAlign: 'left', width: '100%' }}
-            onClick={() => handleUserChange({ id: 2, name: 'Rini Wulandari', role: 'supervisor', dept: 'Sales', avatar: 'RW' })}
-          >
-            👤 Rini W (Lead Sales)
-          </button>
-          <button
-            className={`plan-btn ${currentUser.role === 'supervisor' && currentUser.dept === 'Finance' ? 'active' : ''}`}
-            style={{ textAlign: 'left', width: '100%' }}
-            onClick={() => handleUserChange({ id: 3, name: 'Budi Pratama', role: 'supervisor', dept: 'Finance', avatar: 'BP' })}
-          >
-            👤 Budi P (Lead Finance)
-          </button>
+      {enableSpvRole && (
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }}>
+          <div className="plan-switcher-title" style={{ marginBottom: '4px' }}>Simulasi Peran Login</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <button
+              className={`plan-btn ${currentUser.role === 'admin' ? 'active' : ''}`}
+              style={{ textAlign: 'left', width: '100%' }}
+              onClick={() => handleUserChange({ id: authUser?.id || 1, name: adminName, role: 'admin', dept: 'HRD', avatar: adminAvatar })}
+            >
+              👤 {adminName} (HRD Admin)
+            </button>
+            <button
+              className={`plan-btn ${currentUser.role === 'supervisor' && currentUser.dept === 'Sales' ? 'active' : ''}`}
+              style={{ textAlign: 'left', width: '100%' }}
+              onClick={() => handleUserChange({ id: 2, name: 'Rini Wulandari', role: 'supervisor', dept: 'Sales', avatar: 'RW' })}
+            >
+              👤 Rini W (Lead Sales)
+            </button>
+            <button
+              className={`plan-btn ${currentUser.role === 'supervisor' && currentUser.dept === 'Finance' ? 'active' : ''}`}
+              style={{ textAlign: 'left', width: '100%' }}
+              onClick={() => handleUserChange({ id: 3, name: 'Budi Pratama', role: 'supervisor', dept: 'Finance', avatar: 'BP' })}
+            >
+              👤 Budi P (Lead Finance)
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

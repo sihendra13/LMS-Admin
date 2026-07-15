@@ -3,12 +3,12 @@ import { useTenant } from '../context/TenantContext';
 import { PLANS, canUploadSOP } from '../utils/featureGates';
 
 export const Sidebar = ({ onLogout }) => {
-  const { tenant, activePage, setActivePage, videos, currentUser, quizSubmissions, setEditingVideoId } = useTenant();
+  const { tenant, activePage, setActivePage, videos, currentUser, quizSubmissions, setEditingVideoId, enableSpvRole } = useTenant();
 
   const getNavItemClass = (page) => `nav-item ${activePage === page ? 'active' : ''}`;
   const planLabel = tenant.plan.charAt(0).toUpperCase() + tenant.plan.slice(1);
   const isHRDAdmin = currentUser.role === 'admin';
-  const pendingCertCount = quizSubmissions.filter(s => s.certStatus === 'supervisor_ok').length;
+  const pendingCertCount = quizSubmissions.filter(s => enableSpvRole ? s.certStatus === 'supervisor_ok' : (!s.certStatus || s.certStatus === 'pending')).length;
 
   return (
     <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>

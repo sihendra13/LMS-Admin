@@ -17,6 +17,7 @@ export const Departments = () => {
     departments,
     addDepartment,
     deleteDepartment,
+    enableSpvRole,
   } = useTenant();
 
   // Tab State
@@ -153,18 +154,20 @@ export const Departments = () => {
             Konfigurasi divisi perusahaan, pantau tingkat kepatuhan pelatihan, dan kelola hak akses Supervisor Divisi.
           </p>
         </div>
-        <button 
-          type="button" 
-          className="btn-primary"
-          style={{ padding: '10px 20px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-          onClick={() => setIsModalOpen(true)}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ffffff' }}>
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Undang Supervisor
-        </button>
+        {enableSpvRole && (
+          <button 
+            type="button" 
+            className="btn-primary"
+            style={{ padding: '10px 20px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            onClick={() => setIsModalOpen(true)}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ffffff' }}>
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Undang Supervisor
+          </button>
+        )}
       </div>
 
       {/* STATS OVERVIEW */}
@@ -179,26 +182,30 @@ export const Departments = () => {
           <div className="stat-value">{departmentData.length}</div>
           <div className="stat-change info">Divisi Aktif</div>
         </div>
-        <div className="stat-card green">
-          <div className="stat-icon green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            </svg>
-          </div>
-          <div className="stat-label">Supervisor Aktif</div>
-          <div className="stat-value">{supervisors.length}</div>
-          <div className="stat-change up">Memantau Divisi</div>
-        </div>
-        <div className="stat-card amber">
-          <div className="stat-icon amber">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <div className="stat-label">Undangan Pending</div>
-          <div className="stat-value">{invitations.length}</div>
-          <div className="stat-change up">Menunggu Registrasi</div>
-        </div>
+        {enableSpvRole && (
+          <>
+            <div className="stat-card green">
+              <div className="stat-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div className="stat-label">Supervisor Aktif</div>
+              <div className="stat-value">{supervisors.length}</div>
+              <div className="stat-change up">Memantau Divisi</div>
+            </div>
+            <div className="stat-card amber">
+              <div className="stat-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div className="stat-label">Undangan Pending</div>
+              <div className="stat-value">{invitations.length}</div>
+              <div className="stat-change up">Menunggu Registrasi</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* TAB SYSTEM MENU */}
@@ -213,7 +220,7 @@ export const Departments = () => {
           className={`segment-btn ${activeTab === 'pengaturan' ? 'active' : ''}`}
           onClick={() => setActiveTab('pengaturan')}
         >
-          ⚙️ Pengaturan & Hak Akses
+          {enableSpvRole ? '⚙️ Pengaturan & Hak Akses' : '⚙️ Kelola Departemen'}
         </button>
       </div>
 
@@ -231,7 +238,7 @@ export const Departments = () => {
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
                   <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Departemen</th>
-                  <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Supervisor / Lead</th>
+                  {enableSpvRole && <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Supervisor / Lead</th>}
                   <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Karyawan</th>
                   <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Video Wajib</th>
                   <th style={{ padding: '12px 20px', fontWeight: '600', color: 'var(--text2)' }}>Avg. Progress</th>
@@ -266,15 +273,17 @@ export const Departments = () => {
                           {dept.name}
                         </span>
                       </td>
-                      <td style={{ padding: '16px 20px', fontWeight: '500', color: 'var(--text1)' }}>
-                        {activeSup ? (
-                          <span>👤 {activeSup.name}</span>
-                        ) : pendingSup ? (
-                          <span style={{ color: 'var(--text3)', fontStyle: 'italic' }}>✉️ Pending ({pendingSup.email})</span>
-                        ) : (
-                          <span style={{ color: 'var(--red)', fontSize: '12px' }}>⚠️ Belum ada Lead</span>
-                        )}
-                      </td>
+                      {enableSpvRole && (
+                        <td style={{ padding: '16px 20px', fontWeight: '500', color: 'var(--text1)' }}>
+                          {activeSup ? (
+                            <span>👤 {activeSup.name}</span>
+                          ) : pendingSup ? (
+                            <span style={{ color: 'var(--text3)', fontStyle: 'italic' }}>✉️ Pending ({pendingSup.email})</span>
+                          ) : (
+                            <span style={{ color: 'var(--red)', fontSize: '12px' }}>⚠️ Belum ada Lead</span>
+                          )}
+                        </td>
+                      )}
                       <td style={{ padding: '16px 20px', color: 'var(--text2)' }}>{deptEmployeesCount} Karyawan</td>
                       <td style={{ padding: '16px 20px', color: 'var(--text2)' }}>{dept.modules} Modul</td>
                       <td style={{ padding: '16px 20px' }}>
@@ -294,7 +303,7 @@ export const Departments = () => {
         </div>
       ) : (
         /* TAB 2: PENGATURAN & HAK AKSES (GRID VIEW) */
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: enableSpvRole ? '1.2fr 1fr' : '1fr', gap: '24px', alignItems: 'start' }}>
           {/* LEFT COLUMN: KELOLA DEPARTEMEN */}
           <div className="card" style={{ padding: '20px' }}>
             <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
@@ -391,88 +400,90 @@ export const Departments = () => {
           </div>
 
           {/* RIGHT COLUMN: SUPERVISOR & INVITATION LISTS */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* ACTIVE SUPERVISORS */}
-            <div className="card" style={{ padding: '20px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
-                👤 Akun Supervisor Aktif
-              </h3>
+          {enableSpvRole && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* ACTIVE SUPERVISORS */}
+              <div className="card" style={{ padding: '20px' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
+                  👤 Akun Supervisor Aktif
+                </h3>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {supervisors.length === 0 ? (
-                  <div style={{ fontSize: '12px', color: 'var(--text3)', textAlign: 'center', padding: '10px 0' }}>Tidak ada supervisor aktif.</div>
-                ) : (
-                  supervisors.map(sup => (
-                    <div key={sup.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{sup.name}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>{sup.email} · Divisi: <strong>{sup.dept}</strong></div>
-                      </div>
-                      <button
-                        type="button"
-                        title="Cabut Akses"
-                        className="delete-question-btn"
-                        onClick={() => {
-                          if (confirm(`Cabut akses supervisor ${sup.name}?`)) {
-                            revokeSupervisor(sup.id, 'supervisor');
-                          }
-                        }}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '15px', height: '15px' }}>
-                          <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* PENDING INVITATIONS */}
-            <div className="card" style={{ padding: '20px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
-                ✉️ Undangan Pending
-              </h3>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {invitations.length === 0 ? (
-                  <div style={{ fontSize: '12px', color: 'var(--text3)', textAlign: 'center', padding: '10px 0' }}>Tidak ada undangan pending.</div>
-                ) : (
-                  invitations.map(invite => (
-                    <div key={invite.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fffbeb', padding: '10px 14px', borderRadius: '8px', border: '1px solid #fef3c7' }}>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text1)' }}>{invite.email}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>Divisi: <strong>{invite.dept}</strong> · {invite.date}</div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {supervisors.length === 0 ? (
+                    <div style={{ fontSize: '12px', color: 'var(--text3)', textAlign: 'center', padding: '10px 0' }}>Tidak ada supervisor aktif.</div>
+                  ) : (
+                    supervisors.map(sup => (
+                      <div key={sup.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text1)' }}>{sup.name}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>{sup.email} · Divisi: <strong>{sup.dept}</strong></div>
+                        </div>
                         <button
                           type="button"
-                          className="view-cert-btn"
-                          title="Kirim Ulang Undangan"
-                          style={{ padding: '4px' }}
-                          onClick={() => toast.info(`Undangan dikirim ulang ke ${invite.email}`)}
-                        >
-                          🔄
-                        </button>
-                        <button
-                          type="button"
+                          title="Cabut Akses"
                           className="delete-question-btn"
-                          title="Batalkan Undangan"
-                          style={{ padding: '4px' }}
-                          onClick={() => revokeSupervisor(invite.id, 'invite')}
+                          onClick={() => {
+                            if (confirm(`Cabut akses supervisor ${sup.name}?`)) {
+                              revokeSupervisor(sup.id, 'supervisor');
+                            }
+                          }}
                         >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '15px', height: '15px' }}>
+                            <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                           </svg>
                         </button>
                       </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* PENDING INVITATIONS */}
+              <div className="card" style={{ padding: '20px' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '16px' }}>
+                  ✉️ Undangan Pending
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {invitations.length === 0 ? (
+                    <div style={{ fontSize: '12px', color: 'var(--text3)', textAlign: 'center', padding: '10px 0' }}>Tidak ada undangan pending.</div>
+                  ) : (
+                    invitations.map(invite => (
+                      <div key={invite.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fffbeb', padding: '10px 14px', borderRadius: '8px', border: '1px solid #fef3c7' }}>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text1)' }}>{invite.email}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>Divisi: <strong>{invite.dept}</strong> · {invite.date}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            className="view-cert-btn"
+                            title="Kirim Ulang Undangan"
+                            style={{ padding: '4px' }}
+                            onClick={() => toast.info(`Undangan dikirim ulang ke ${invite.email}`)}
+                          >
+                            🔄
+                          </button>
+                          <button
+                            type="button"
+                            className="delete-question-btn"
+                            title="Batalkan Undangan"
+                            style={{ padding: '4px' }}
+                            onClick={() => revokeSupervisor(invite.id, 'invite')}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

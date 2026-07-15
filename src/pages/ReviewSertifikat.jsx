@@ -10,7 +10,7 @@ const STATUS_META = {
 };
 
 export const ReviewSertifikat = () => {
-  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES } = useTenant();
+  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES, enableSpvRole } = useTenant();
   const isHRD = currentUser.role === 'admin';
 
   const [activeTab, setActiveTab] = useState(isHRD ? 'ready' : 'need_review');
@@ -33,8 +33,8 @@ export const ReviewSertifikat = () => {
   const forMe = (sub) => isHRD || !sub.dept || sub.dept?.toLowerCase() === myDept?.toLowerCase();
 
   // HRD tabs
-  const readySubs      = latestSubmissions.filter(s => s.certStatus === 'supervisor_ok');
-  const inProgressSubs = latestSubmissions.filter(s => !s.certStatus || s.certStatus === 'pending' || s.certStatus === 'remedial');
+  const readySubs      = latestSubmissions.filter(s => enableSpvRole ? s.certStatus === 'supervisor_ok' : (!s.certStatus || s.certStatus === 'pending'));
+  const inProgressSubs = latestSubmissions.filter(s => enableSpvRole ? (!s.certStatus || s.certStatus === 'pending' || s.certStatus === 'remedial') : s.certStatus === 'remedial');
   const approvedSubs   = latestSubmissions.filter(s => s.certStatus === 'approved');
   const rejectedSubs   = latestSubmissions.filter(s => s.certStatus === 'rejected');
 
@@ -73,9 +73,16 @@ export const ReviewSertifikat = () => {
   // ── sub-components ───────────────────────────────────────────────────
   const StatusBadge = ({ certStatus, escalated = false }) => {
     const m = STATUS_META[certStatus] || STATUS_META.pending;
-    const escalatedMeta = { label: '⚠️ Eskalasi ke HRD', color: '#92400e', bg: '#fffbeb', border: '#fde68a' };
-    const label = escalated ? escalatedMeta.label : (!isHRD && (certStatus === 'pending' || !certStatus)) ? 'Belum Direview' : m.label;
-    const meta  = escalated ? escalatedMeta : m;
+    let label = m.label;
+    if (!enableSpvRole && (!certStatus || certStatus === 'pending')) {
+      label = 'Menunggu HRD';
+    } else if (escalated) {
+      label = '⚠️ Eskalasi ke HRD';
+    } else if (!isHRD && (!certStatus || certStatus === 'pending')) {
+      label = 'Belum Direview';
+    }
+    
+    const meta = escalated ? { label: '⚠️ Eskalasi ke HRD', color: '#92400e', bg: '#fffbeb', border: '#fde68a' } : m;
     
     const icon = certStatus === 'approved' && (
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginRight: '4px' }}>
@@ -426,7 +433,7 @@ export const ReviewSertifikat = () => {
               </div>
               <div className="stat-label">Siap Diterbitkan</div>
               <div className="stat-value">{readySubs.length}</div>
-              <div className="stat-change info">Rekomendasi Supervisor</div>
+              <div className="stat-change info">{enableSpvRole ? 'Rekomendasi Supervisor' : 'Menunggu Review HRD'}</div>
             </div>
             {/* HRD Card 2 */}
             <div className="stat-card amber">
