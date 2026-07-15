@@ -375,12 +375,13 @@ export const UploadSOP = () => {
             const options = [opsiA, opsiB, opsiC, opsiD];
 
             if (contentType === 'video') {
-              if (pemicuRaw && !pemicuRaw.includes(':')) {
+              if (pemicuRaw && !pemicuRaw.includes(':') && !pemicuRaw.includes('.')) {
                 toast.error('Format waktu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
                 hasFormatError = true;
-                return;
+                return true;
               }
-              const parts = pemicuRaw.split(':');
+              const normalizedPemicu = pemicuRaw.replace('.', ':');
+              const parts = normalizedPemicu.split(':');
               const min = parts[0] || '0';
               const sec = parts[1] || '0';
               newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
@@ -421,11 +422,12 @@ export const UploadSOP = () => {
               newPost.push({ question, type: 'multiple', options, answer, triggerMin: '0', triggerSec: '0' });
             } else if (tipe.includes('pemicu')) {
               if (contentType === 'video') {
-                if (pemicuRaw && !pemicuRaw.includes(':')) {
+                if (pemicuRaw && !pemicuRaw.includes(':') && !pemicuRaw.includes('.')) {
                   toast.error('Format waktu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
                   return;
                 }
-                const parts = pemicuRaw.split(':');
+                const normalizedPemicu = pemicuRaw.replace('.', ':');
+                const parts = normalizedPemicu.split(':');
                 const min = parts[0] || '0';
                 const sec = parts[1] || '0';
                 newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
