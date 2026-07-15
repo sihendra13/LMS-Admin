@@ -273,7 +273,7 @@ export const ReviewSertifikat = () => {
               💬 {sub.supervisorName}: {sub.supervisorNote}
             </div>
           )}
-          {isHRD && (!sub.certStatus || sub.certStatus === 'pending') && daysSince(sub.date) >= 3 && (
+          {isHRD && enableSpvRole && (!sub.certStatus || sub.certStatus === 'pending') && daysSince(sub.date) >= 3 && (
             <div style={{ marginTop: '5px', fontSize: '11px', color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               ⚠️ Supervisor tidak merespons ({daysSince(sub.date)} hari)
             </div>
