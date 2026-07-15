@@ -386,10 +386,10 @@ export const UploadSOP = () => {
               const sec = parts[1] || '0';
               newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
             } else if (contentType === 'ppt') {
-              if (pemicuRaw && pemicuRaw.includes(':')) {
+              if (pemicuRaw && (pemicuRaw.includes(':') || pemicuRaw.includes('.'))) {
                 toast.error('Format pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
                 hasFormatError = true;
-                return;
+                return true;
               }
               const slideNum = pemicuRaw.replace(/\D/g, '') || '2';
               newTrigger.push({ question, type: 'multiple', options, answer, triggerSlide: slideNum });
@@ -432,7 +432,7 @@ export const UploadSOP = () => {
                 const sec = parts[1] || '0';
                 newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
               } else if (contentType === 'ppt') {
-                if (pemicuRaw && pemicuRaw.includes(':')) {
+                if (pemicuRaw && (pemicuRaw.includes(':') || pemicuRaw.includes('.'))) {
                   toast.error('Format pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
                   return;
                 }
