@@ -376,7 +376,7 @@ export const UploadSOP = () => {
 
             if (contentType === 'video') {
               if (pemicuRaw && !pemicuRaw.includes(':') && !pemicuRaw.includes('.')) {
-                toast.error('Format waktu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
+                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
                 hasFormatError = true;
                 return true;
               }
@@ -387,7 +387,7 @@ export const UploadSOP = () => {
               newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
             } else if (contentType === 'ppt') {
               if (pemicuRaw && (pemicuRaw.includes(':') || pemicuRaw.includes('.'))) {
-                toast.error('Format pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
+                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
                 hasFormatError = true;
                 return true;
               }
@@ -423,7 +423,7 @@ export const UploadSOP = () => {
             } else if (tipe.includes('pemicu')) {
               if (contentType === 'video') {
                 if (pemicuRaw && !pemicuRaw.includes(':') && !pemicuRaw.includes('.')) {
-                  toast.error('Format waktu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
+                  toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
                   return;
                 }
                 const normalizedPemicu = pemicuRaw.replace('.', ':');
@@ -433,7 +433,7 @@ export const UploadSOP = () => {
                 newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
               } else if (contentType === 'ppt') {
                 if (pemicuRaw && (pemicuRaw.includes(':') || pemicuRaw.includes('.'))) {
-                  toast.error('Format pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
+                  toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
                   return;
                 }
                 const slideNum = pemicuRaw.replace(/\D/g, '') || '2';
