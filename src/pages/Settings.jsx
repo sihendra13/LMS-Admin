@@ -237,62 +237,7 @@ export const Settings = () => {
               </div>
 
               {/* COMPANY LOGO FOR CERTIFICATES */}
-              {tenant.plan !== PLANS.ENTERPRISE && (
-                <div className="card" style={{ padding: '24px' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text2)' }}>
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    Logo Perusahaan (Sertifikat)
-                  </h3>
-                  <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '16px', lineHeight: '1.5' }}>
-                    Logo ini akan tampil di sertifikat karyawan. Upload logo perusahaan Anda.
-                  </p>
-                  <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                    <div style={{
-                      width: '100%', height: '80px', background: '#ffffff', borderRadius: '10px',
-                      border: '1px solid var(--border)', display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', marginBottom: '14px', overflow: 'hidden',
-                    }}>
-                      {companyLogo ? (
-                        <img src={companyLogo} alt="Logo Perusahaan" style={{ maxWidth: '200px', maxHeight: '56px', objectFit: 'contain' }} />
-                      ) : (
-                        <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 4px' }}>
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                          </svg>
-                          <span style={{ fontSize: '11px' }}>Belum ada logo</span>
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <button type="button"
-                        style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', background: '#ffffff', color: 'var(--text2)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
-                        onClick={() => document.getElementById('company-logo-cert-input').click()}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        {companyLogo ? 'Ganti Logo' : 'Upload Logo'}
-                      </button>
-                      {companyLogo && (
-                        <button type="button"
-                          style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #fee2e2', background: '#fff5f5', color: '#ef4444', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                          onClick={() => updateCompanyLogo(null)}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                          Hapus
-                        </button>
-                      )}
-                    </div>
-                    <input id="company-logo-cert-input" type="file" accept="image/*" style={{ display: 'none' }}
-                      onChange={async (e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        await updateCompanyLogo(file);
-                        toast.success('Logo perusahaan berhasil disimpan!');
-                      }}
-                    />
-                    <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '6px' }}>Format: JPG, PNG · Rasio landscape direkomendasikan</div>
-                  </div>
-                </div>
-              )}
+
 
               {/* HRIS SYNC INTEGRATION - ENTERPRISE LOCKED */}
               <div className="card" style={{ padding: '24px', position: 'relative', overflow: 'hidden', border: '1px solid var(--border)' }}>

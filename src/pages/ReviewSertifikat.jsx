@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
+import { PLANS } from '../utils/featureGates';
 
 const STATUS_META = {
   pending:       { label: 'Menunggu Supervisor', color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
@@ -421,6 +422,26 @@ export const ReviewSertifikat = () => {
 
   const mc = MODAL_CONFIG[actionModal.type] || {};
   const canConfirm = !mc.needNote || modalNote.trim().length > 0;
+
+  if (tenant?.plan === PLANS.STARTER) {
+    return (
+      <div className="content">
+        <div style={{ marginBottom: '18px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text1)', marginBottom: '4px' }}>Sertifikat</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text3)' }}>Kelola sertifikat kelulusan karyawan</p>
+        </div>
+        <div style={{ padding: '60px 20px', textAlign: 'center', background: '#fff', borderRadius: '12px', border: '1px solid var(--border)' }}>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 16px' }}>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text1)', marginBottom: '12px' }}>Fitur Sertifikat Terkunci</h3>
+          <p style={{ fontSize: '14px', color: 'var(--text3)', maxWidth: '400px', margin: '0 auto' }}>
+            Fitur Sertifikat tidak tersedia di paket Starter. Upgrade ke Business atau Enterprise sekarang untuk menerbitkan sertifikat otomatis!
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="content">
