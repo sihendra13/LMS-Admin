@@ -318,7 +318,7 @@ export const ReviewSertifikat = () => {
             </button>
           )}
           {actions && (() => {
-            const isPending = !escalated && (!sub.certStatus || sub.certStatus === 'pending' || sub.certStatus === 'remedial');
+            const isPending = !escalated && (sub.certStatus === 'remedial' || (enableSpvRole && (!sub.certStatus || sub.certStatus === 'pending')));
             return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
