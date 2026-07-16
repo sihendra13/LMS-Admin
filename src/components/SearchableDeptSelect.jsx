@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = false, disabled = false, align = 'left' }) => {
+const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = false, disabled = false, align = 'left', placeholder = 'Cari departemen...', allLabel = 'Semua Departemen' }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef(null);
@@ -17,7 +17,7 @@ const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = fa
     return d.toLowerCase().includes(search.toLowerCase());
   });
 
-  const label = value === '' ? 'Semua Departemen' : (value || departments[0] || 'Pilih...');
+  const label = value === '' ? allLabel : (value || departments[0] || 'Pilih...');
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%' }}>
@@ -35,7 +35,7 @@ const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = fa
               autoFocus
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Cari departemen..."
+              placeholder={placeholder}
               style={{ width: '100%', padding: '6px 10px', fontSize: '12px', border: '1px solid var(--border)', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
@@ -48,7 +48,7 @@ const SearchableDeptSelect = ({ value, onChange, departments, showAllOption = fa
                 onMouseEnter={e => { if (value !== d) e.currentTarget.style.background = 'var(--surface2)'; }}
                 onMouseLeave={e => { if (value !== d) e.currentTarget.style.background = 'transparent'; }}
               >
-                {d === '' ? 'Semua Departemen' : d}
+                {d === '' ? allLabel : d}
               </div>
             ))}
             {filtered.length === 0 && (

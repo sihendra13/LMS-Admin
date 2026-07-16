@@ -169,6 +169,10 @@ export const TenantProvider = ({ children, authUser }) => {
   const DEFAULT_DEPTS = ['Sales', 'HRD', 'Operasional', 'Finance', 'CS', 'IT'];
   const [departments, setDepartments] = useState(DEFAULT_DEPTS);
 
+  const DEFAULT_JABATAN = ['Staff', 'Supervisor', 'Manager', 'General Manager', 'Direktur', 'HRD Admin'];
+  const [jobTitles, setJobTitles] = useState(DEFAULT_JABATAN);
+  const [cities, setCities] = useState([]);
+
   // Fetch supervisors & pending invitations dari Supabase
   useEffect(() => {
     if (!authUser?.tenant_id) return;
@@ -201,7 +205,7 @@ export const TenantProvider = ({ children, authUser }) => {
   useEffect(() => {
     if (!authUser?.tenant_id) return;
     
-    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months', 'departments_list', `demo_plan_${authUser.tenant_id}`])
+    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months', 'departments_list', 'jabatan_list', 'cabang_list', `demo_plan_${authUser.tenant_id}`])
       .then(({ data }) => {
         if (!data) return;
         data.forEach(row => {
@@ -217,6 +221,18 @@ export const TenantProvider = ({ children, authUser }) => {
                 const merged = [...new Set([...prev, ...saved])];
                 return merged;
               });
+            } catch {}
+          }
+          if (row.key === 'jabatan_list') {
+            try {
+              const saved = JSON.parse(row.value);
+              setJobTitles(prev => [...new Set([...prev, ...saved])]);
+            } catch {}
+          }
+          if (row.key === 'cabang_list') {
+            try {
+              const saved = JSON.parse(row.value);
+              setCities(prev => [...new Set([...prev, ...saved])]);
             } catch {}
           }
         });
@@ -295,6 +311,56 @@ export const TenantProvider = ({ children, authUser }) => {
     saveDepartments(departments.filter(d => d !== name));
   };
 
+  const saveJobTitles = (next) => {
+    setJobTitles(next);
+    supabase.from('app_settings').upsert(
+      { key: 'jabatan_list', value: JSON.stringify(next), updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+  };
+
+  const addJobTitle = (name) => {
+    const trimmed = name.trim();
+    if (!trimmed || jobTitles.includes(trimmed)) return false;
+    saveJobTitles([...jobTitles, trimmed]);
+    return true;
+  };
+
+  const addJobTitlesBatch = (names) => {
+    const newOnes = [...new Set(names.map(n => n.trim()).filter(n => n && !jobTitles.includes(n)))];
+    if (newOnes.length === 0) return;
+    saveJobTitles([...jobTitles, ...newOnes]);
+  };
+
+  const deleteJobTitle = (name) => {
+    saveJobTitles(jobTitles.filter(j => j !== name));
+  };
+
+  const saveCities = (next) => {
+    setCities(next);
+    supabase.from('app_settings').upsert(
+      { key: 'cabang_list', value: JSON.stringify(next), updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+  };
+
+  const addCity = (name) => {
+    const trimmed = name.trim();
+    if (!trimmed || cities.includes(trimmed)) return false;
+    saveCities([...cities, trimmed]);
+    return true;
+  };
+
+  const addCitiesBatch = (names) => {
+    const newOnes = [...new Set(names.map(n => n.trim()).filter(n => n && !cities.includes(n)))];
+    if (newOnes.length === 0) return;
+    saveCities([...cities, ...newOnes]);
+  };
+
+  const deleteCity = (name) => {
+    saveCities(cities.filter(c => c !== name));
+  };
+
   const defaultEmployees = [
     { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', role: 'employee', dept: 'Sales', city: 'Jakarta', score: 18 },
     { id: 2, name: 'Budi Pratama', email: 'budi.p@majubersama.com', role: 'employee', dept: 'Finance', city: 'Surabaya', score: 15 },
@@ -327,18 +393,30 @@ export const TenantProvider = ({ children, authUser }) => {
             email: row.email,
             dept: row.dept,
             city: row.city || '',
+            jabatan: row.jabatan || '',
+            nik: row.nik || '',
             role: local?.role || 'employee',
             score: local?.score ?? 0,
           };
         }));
 
-        // Merge dept names dari employees ke departments state
-        // Ini memastikan semua dept dari Excel import selalu muncul di dropdown
+        // Merge dept/jabatan/city dari employees ke dropdown states
+        // Ini memastikan semua nilai dari Excel import selalu muncul di dropdown
         const fromEmployees = [...new Set(data.map(r => r.dept).filter(Boolean))];
         setDepartments(prev => {
           const merged = [...new Set([...prev, ...fromEmployees])].sort();
           return merged;
         });
+
+        const jabatanFromEmployees = [...new Set(data.map(r => r.jabatan).filter(Boolean))];
+        if (jabatanFromEmployees.length > 0) {
+          setJobTitles(prev => [...new Set([...prev, ...jabatanFromEmployees])]);
+        }
+
+        const cityFromEmployees = [...new Set(data.map(r => r.city).filter(Boolean))];
+        if (cityFromEmployees.length > 0) {
+          setCities(prev => [...new Set([...prev, ...cityFromEmployees])].sort());
+        }
       }
     };
 
@@ -630,6 +708,8 @@ export const TenantProvider = ({ children, authUser }) => {
         email: newEmp.email,
         dept: newEmp.dept,
         city: newEmp.city || '',
+        jabatan: newEmp.jabatan || '',
+        nik: newEmp.nik || '',
         status: 'Aktif',
         deleted_at: null
       }, { onConflict: 'email' });
@@ -652,7 +732,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const emp = employees.find(e => e.id === id);
     setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...fields } : e));
     if (emp?.email || fields.email) {
-      supabase.from('employees').update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city }).eq('email', emp?.email || fields.email);
+      supabase.from('employees').update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city, jabatan: fields.jabatan, nik: fields.nik }).eq('email', emp?.email || fields.email);
     }
     const newAct = { id: Date.now(), text: `Data karyawan <strong>${fields.name}</strong> diperbarui`, time: 'Baru saja', type: 'blue' };
     setActivities(prev => [newAct, ...prev]);
@@ -862,6 +942,14 @@ export const TenantProvider = ({ children, authUser }) => {
       addDepartment,
       addDepartmentsBatch,
       deleteDepartment,
+      jobTitles,
+      addJobTitle,
+      addJobTitlesBatch,
+      deleteJobTitle,
+      cities,
+      addCity,
+      addCitiesBatch,
+      deleteCity,
       exportDBString,
       importDBString,
       updateTenantLogo,

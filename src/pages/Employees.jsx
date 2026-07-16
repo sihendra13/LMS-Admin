@@ -18,13 +18,15 @@ const DEPT_COLORS = [
 ];
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch } = useTenant();
+  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch, jobTitles, addJobTitlesBatch, cities, addCitiesBatch } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [dept, setDept] = useState(isSupervisor ? currentUser.dept : (departments[0] || 'Sales'));
-  const [city, setCity] = useState('Jakarta');
+  const [city, setCity] = useState(cities[0] || 'Jakarta');
+  const [jabatan, setJabatan] = useState(jobTitles[0] || 'Staff');
+  const [nik, setNik] = useState('');
 
   const [editEmp, setEditEmp] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -110,6 +112,8 @@ export const Employees = () => {
       'Email': e.email || '-',
       'Departemen': e.dept,
       'Cabang / Kota': e.city || '-',
+      'Jabatan': e.jabatan || '-',
+      'NIK': e.nik || '-',
       'SOP Selesai': e.score || 0,
     }));
     const wb = XLSX.utils.book_new();
@@ -122,12 +126,12 @@ export const Employees = () => {
   // --- Existing handlers ---
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
-      ['Nama Lengkap', 'Email', 'Departemen', 'Cabang/Kota'],
-      ['Budi Santoso', 'budi.s@perusahaan.com', 'Sales', 'Jakarta'],
-      ['Siti Rahayu', 'siti.r@perusahaan.com', 'HRD', 'Bandung'],
-      ['Agus Wijaya', 'agus.w@perusahaan.com', 'Operasional', 'Surabaya'],
+      ['Nama Lengkap', 'Email', 'Departemen', 'Cabang/Kota', 'Jabatan', 'NIK'],
+      ['Budi Santoso', 'budi.s@perusahaan.com', 'Sales', 'Jakarta', 'Staff', '1001'],
+      ['Siti Rahayu', 'siti.r@perusahaan.com', 'HRD', 'Bandung', 'Manager', '1002'],
+      ['Agus Wijaya', 'agus.w@perusahaan.com', 'Operasional', 'Surabaya', 'Supervisor', '1003'],
     ]);
-    ws['!cols'] = [{ wch: 30 }, { wch: 32 }, { wch: 20 }, { wch: 20 }];
+    ws['!cols'] = [{ wch: 30 }, { wch: 32 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 16 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Karyawan');
     XLSX.writeFile(wb, 'Template_Import_Karyawan.xlsx');
@@ -146,14 +150,16 @@ export const Employees = () => {
         const rows = raw.slice(1)
           .filter(r => r[0] && String(r[0]).trim())
           .map((r, idx) => {
-            const empName  = String(r[0] || '').trim();
-            const empEmail = String(r[1] || '').trim();
-            const empDept  = String(r[2] || '').trim();
-            const empCity  = String(r[3] || 'Jakarta').trim();
+            const empName    = String(r[0] || '').trim();
+            const empEmail   = String(r[1] || '').trim();
+            const empDept    = String(r[2] || '').trim();
+            const empCity    = String(r[3] || 'Jakarta').trim();
+            const empJabatan = String(r[4] || '').trim();
+            const empNik     = String(r[5] || '').trim();
             const validDept = empDept || departments[0] || 'Sales';
             const errors = [];
             if (!empName) errors.push('Nama kosong');
-            return { _idx: idx + 2, name: empName, email: empEmail, dept: validDept, city: empCity, errors };
+            return { _idx: idx + 2, name: empName, email: empEmail, dept: validDept, city: empCity, jabatan: empJabatan, nik: empNik, errors };
           });
         if (!rows.length) { setImportError('File kosong atau format tidak sesuai template.'); return; }
         setImportRows(rows);
@@ -190,7 +196,11 @@ export const Employees = () => {
   const doImport = (rows) => {
     const uniqueDepts = [...new Set(rows.map(r => r.dept).filter(Boolean))];
     addDepartmentsBatch(uniqueDepts);
-    rows.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, score: 0 }));
+    const uniqueJabatan = [...new Set(rows.map(r => r.jabatan).filter(Boolean))];
+    if (uniqueJabatan.length > 0) addJobTitlesBatch(uniqueJabatan);
+    const uniqueCities = [...new Set(rows.map(r => r.city).filter(Boolean))];
+    if (uniqueCities.length > 0) addCitiesBatch(uniqueCities);
+    rows.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, jabatan: r.jabatan || '', nik: r.nik || '', score: 0 }));
     setShowImport(false);
     setImportRows([]);
     toast.success(`${rows.length} karyawan berhasil diimport!`);
@@ -288,9 +298,10 @@ export const Employees = () => {
       setShowUpgrade(true);
       return;
     }
-    addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, score: 0 });
+    addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, jabatan, nik: nik.trim(), score: 0 });
     setName('');
     setEmail('');
+    setNik('');
     toast.success('Karyawan baru berhasil ditambahkan!');
   };
 
@@ -417,6 +428,8 @@ export const Employees = () => {
                       </th>
                     )}
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Nama Karyawan</th>
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>NIK</th>
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Jabatan</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang / Kota</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'right' }}>SOP Selesai</th>
@@ -439,6 +452,8 @@ export const Employees = () => {
                           </td>
                         )}
                         <td style={{ padding: '14px 20px', fontWeight: '500' }}>{emp.name}</td>
+                        <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.nik || '-'}</td>
+                        <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.jabatan || '-'}</td>
                         <td style={{ padding: '14px 20px' }}>
                           {(() => {
                             const idx = departments.indexOf(emp.dept);
@@ -476,7 +491,7 @@ export const Employees = () => {
                               <button
                                 type="button"
                                 title="Edit karyawan"
-                                onClick={() => { setEditEmp(emp); setEditForm({ name: emp.name, email: emp.email || '', dept: emp.dept, city: emp.city || '' }); }}
+                                onClick={() => { setEditEmp(emp); setEditForm({ name: emp.name, email: emp.email || '', dept: emp.dept, city: emp.city || '', jabatan: emp.jabatan || '', nik: emp.nik || '' }); }}
                                 style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: 'var(--text3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                               >
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -593,7 +608,31 @@ export const Employees = () => {
               </div>
               <div className="form-group">
                 <label className="form-label">Cabang / Kota</label>
-                <input type="text" className="form-input" placeholder="Contoh: Jakarta" value={city} onChange={e => setCity(e.target.value)} disabled={isFull || isSupervisor} />
+                <SearchableDeptSelect
+                  value={city}
+                  onChange={setCity}
+                  departments={cities}
+                  disabled={isFull || isSupervisor}
+                  align="right"
+                  placeholder="Cari cabang/kota..."
+                  allLabel="Pilih Cabang/Kota"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Jabatan</label>
+                <SearchableDeptSelect
+                  value={jabatan}
+                  onChange={setJabatan}
+                  departments={jobTitles}
+                  disabled={isFull || isSupervisor}
+                  align="right"
+                  placeholder="Cari jabatan..."
+                  allLabel="Pilih Jabatan"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">NIK (Nomor Induk Karyawan)</label>
+                <input type="text" className="form-input" placeholder="Contoh: 1001" value={nik} onChange={e => setNik(e.target.value)} disabled={isFull || isSupervisor} />
               </div>
               <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={isFull || isSupervisor}>
                 {isSupervisor ? '🔒 Hanya HRD Admin' : isFull ? '🔒 Kuota Karyawan Penuh' : 'Daftarkan Karyawan'}
@@ -771,6 +810,8 @@ export const Employees = () => {
                 { label: 'Email', key: 'email', placeholder: 'email@perusahaan.com', type: 'email' },
                 { label: 'Departemen', key: 'dept', placeholder: 'Contoh: Sales, HR, IT' },
                 { label: 'Cabang / Kota', key: 'city', placeholder: 'Contoh: Jakarta, Surabaya' },
+                { label: 'Jabatan', key: 'jabatan', placeholder: 'Contoh: Staff, Manager' },
+                { label: 'NIK', key: 'nik', placeholder: 'Nomor Induk Karyawan' },
               ].map(({ label, key, placeholder, type }) => (
                 <div key={key}>
                   <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text2)', display: 'block', marginBottom: '6px' }}>{label}</label>
