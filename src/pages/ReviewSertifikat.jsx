@@ -11,7 +11,7 @@ const STATUS_META = {
 };
 
 export const ReviewSertifikat = () => {
-  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES, enableSpvRole } = useTenant();
+  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES, enableSpvRole, companyLogo } = useTenant();
   const isHRD = currentUser.role === 'admin';
 
   const [activeTab, setActiveTab] = useState(isHRD ? 'ready' : 'need_review');
@@ -813,9 +813,9 @@ export const ReviewSertifikat = () => {
                   <div style={{ position: 'absolute', top: '-20px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
                   <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
 
-                  {tenant?.logo ? (
+                  {companyLogo ? (
                     <div style={{ marginBottom: '14px' }}>
-                      <img src={tenant.logo} alt={tenant?.name} style={{ maxHeight: '48px', maxWidth: '160px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+                      <img src={companyLogo} alt={tenant?.name} style={{ maxHeight: '48px', maxWidth: '160px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
                     </div>
                   ) : (
                     <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '16px' }}>
@@ -840,6 +840,7 @@ export const ReviewSertifikat = () => {
                     <div style={{ textAlign: 'center', minWidth: '140px' }}>
                       <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '16px', color: '#1e3a5f', marginBottom: '4px' }}>{sub.approvedBy || currentUser.name}</div>
                       <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>HR Manager, {tenant?.name || tenant.name}</div>
+                      <div style={{ marginTop: '6px', fontSize: '7.5px', color: '#cbd5e1' }}>Dikeluarkan oleh myAxara</div>
                     </div>
                   </div>
                 </div>
