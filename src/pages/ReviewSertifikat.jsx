@@ -819,7 +819,7 @@ export const ReviewSertifikat = () => {
                     </div>
                   ) : (
                     <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '16px' }}>
-                      🏢 {tenant?.name || tenant.name} · Corporate LMS
+                      {tenant?.name || tenant.name} · CORPORATE LMS
                     </div>
                   )}
 
