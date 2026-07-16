@@ -437,8 +437,15 @@ export const TenantProvider = ({ children, authUser }) => {
   }, []);
 
   // Actions
-  const changePlan = (newPlan) => {
+  const changePlan = async (newPlan) => {
     setTenant(prev => ({ ...prev, plan: newPlan }));
+    if (authUser?.tenant_id) {
+      try {
+        await supabase.from('tenants').update({ plan: newPlan }).eq('id', authUser.tenant_id);
+      } catch (err) {
+        console.error('Failed to sync plan to DB:', err);
+      }
+    }
   };
 
   const updateTenantLogo = (logoBase64) => {
