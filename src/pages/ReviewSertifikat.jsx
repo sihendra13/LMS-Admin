@@ -867,8 +867,16 @@ export const ReviewSertifikat = () => {
             </div>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
-              <button className="btn-sec" onClick={() => setPreviewCert(null)}>Tutup</button>
-              <button className="btn-primary" style={{ background: '#002D72' }} onClick={() => window.print()}>
+              <button 
+                onClick={() => setPreviewCert(null)}
+                style={{ background: '#fff', color: 'var(--text2)', border: '1px solid var(--border)', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
+              >
+                Tutup
+              </button>
+              <button 
+                onClick={() => window.print()}
+                style={{ background: '#002D72', color: '#fff', border: '1px solid #002D72', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+              >
                 Download Sertifikat
               </button>
             </div>
