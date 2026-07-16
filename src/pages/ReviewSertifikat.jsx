@@ -863,7 +863,7 @@ export const ReviewSertifikat = () => {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
               <button className="btn-sec" onClick={() => setPreviewCert(null)}>Tutup</button>
               <button className="btn-primary" style={{ background: '#002D72' }} onClick={() => window.print()}>
-                🖨️ Download Sertifikat
+                Download Sertifikat
               </button>
             </div>
           </div>
