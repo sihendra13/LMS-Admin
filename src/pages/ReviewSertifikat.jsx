@@ -848,7 +848,7 @@ export const ReviewSertifikat = () => {
 
               <div style={{ padding: '12px 24px 20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <button onClick={() => setPreviewCert(null)} className="btn-sec">Tutup</button>
-                <button onClick={() => window.print()} className="btn-primary">🖨️ Cetak / Simpan PDF</button>
+                <button onClick={() => window.print()} className="btn-primary">🖨️ Download Sertifikat</button>
               </div>
             </div>
           </div>
