@@ -191,12 +191,15 @@ export const TenantProvider = ({ children, authUser }) => {
   }, [authUser?.tenant_id]);
 
   useEffect(() => {
-    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months', 'departments_list'])
+    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months', 'departments_list', 'demo_plan'])
       .then(({ data }) => {
         if (!data) return;
         data.forEach(row => {
           if (row.key === 'passing_score') setPassingScore(Number(row.value));
           if (row.key === 'validity_months') setValidityMonths(Number(row.value));
+          if (row.key === 'demo_plan') {
+            setTenant(prev => ({ ...prev, plan: row.value }));
+          }
           if (row.key === 'departments_list') {
             try {
               const saved = JSON.parse(row.value);
@@ -441,6 +444,12 @@ export const TenantProvider = ({ children, authUser }) => {
     setTenant(prev => ({ ...prev, plan: newPlan }));
     if (authUser?.tenant_id) {
       try {
+        // Fallback: save to app_settings because RLS on tenants might block plan updates
+        await supabase.from('app_settings').upsert({ 
+          key: 'demo_plan', 
+          value: newPlan, 
+          tenant_id: authUser.tenant_id 
+        });
         await supabase.from('tenants').update({ plan: newPlan }).eq('id', authUser.tenant_id);
       } catch (err) {
         console.error('Failed to sync plan to DB:', err);
