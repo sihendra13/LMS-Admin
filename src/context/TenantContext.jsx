@@ -103,6 +103,14 @@ export const TenantProvider = ({ children, authUser }) => {
             avatar: (data.name || prev.name).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
           }));
           if (data.company_logo) setCompanyLogo(data.company_logo);
+          
+          // Upsert to app_settings so Learners can read it bypassing RLS on tenants
+          if (data.name) {
+            supabase.from('app_settings')
+              .upsert({ key: `tenant_name_${authUser.tenant_id}`, value: data.name }, { onConflict: 'key' })
+              .then(() => {})
+              .catch(() => {});
+          }
         }
       })
       .catch(() => {});
