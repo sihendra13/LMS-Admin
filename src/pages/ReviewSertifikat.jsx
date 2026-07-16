@@ -799,16 +799,22 @@ export const ReviewSertifikat = () => {
           return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
         })();
         return (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '20px' }}>
-            <div style={{ background: '#fff', borderRadius: '16px', maxWidth: '640px', width: '100%', boxShadow: '0 25px 60px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
-              {/* modal header */}
-              <div style={{ padding: '14px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Preview Sertifikat</span>
-                <button onClick={() => setPreviewCert(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--text3)', lineHeight: 1 }}>✕</button>
-              </div>
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999
+          }}>
+            <div style={{
+              background: '#ffffff', padding: '32px', borderRadius: '16px',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '750px',
+              maxWidth: '95vw', position: 'relative'
+            }} onClick={e => e.stopPropagation()}>
+              <button
+                style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text3)' }}
+                onClick={() => setPreviewCert(null)}
+              >✕</button>
 
-              {/* certificate body */}
-            <div className="print-area" style={{
+              <div className="print-area" style={{
               border: '8px double #0f172a',
               padding: '30px', textAlign: 'center', background: '#fefefe',
               borderRadius: '8px', fontFamily: "'Plus Jakarta Sans', serif",
