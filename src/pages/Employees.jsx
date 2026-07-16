@@ -822,7 +822,16 @@ export const Employees = () => {
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button onClick={() => setEditEmp(null)} style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'var(--text2)' }}>Batal</button>
-              <button onClick={() => { updateEmployee(editEmp.id, editForm); setEditEmp(null); }} disabled={!editForm.name?.trim()}
+              <button onClick={async () => {
+                  const id = editEmp.id;
+                  try {
+                    await updateEmployee(id, editForm);
+                    setEditEmp(null);
+                    toast.success('Data karyawan berhasil diperbarui!');
+                  } catch (err) {
+                    toast.error(err.message || 'Gagal menyimpan perubahan.');
+                  }
+                }} disabled={!editForm.name?.trim()}
                 style={{ padding: '8px 20px', background: 'var(--accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: '#fff', opacity: !editForm.name?.trim() ? 0.5 : 1 }}>
                 Simpan
               </button>

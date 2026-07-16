@@ -728,11 +728,17 @@ export const TenantProvider = ({ children, authUser }) => {
     setActivities(prev => [newAct, ...prev]);
   };
 
-  const updateEmployee = (id, fields) => {
+  const updateEmployee = async (id, fields) => {
     const emp = employees.find(e => e.id === id);
     setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...fields } : e));
     if (emp?.email || fields.email) {
-      supabase.from('employees').update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city, jabatan: fields.jabatan, nik: fields.nik }).eq('email', emp?.email || fields.email);
+      const { error } = await supabase.from('employees')
+        .update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city, jabatan: fields.jabatan, nik: fields.nik })
+        .eq('email', emp?.email || fields.email);
+      if (error) {
+        console.error('Gagal update karyawan:', error.message);
+        throw new Error('Gagal menyimpan perubahan: ' + error.message);
+      }
     }
     const newAct = { id: Date.now(), text: `Data karyawan <strong>${fields.name}</strong> diperbarui`, time: 'Baru saja', type: 'blue' };
     setActivities(prev => [newAct, ...prev]);
