@@ -813,7 +813,7 @@ export const ReviewSertifikat = () => {
                   <div style={{ position: 'absolute', top: '-20px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
                   <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
 
-                  {companyLogo ? (
+                  {tenant?.plan === PLANS.ENTERPRISE && companyLogo ? (
                     <div style={{ marginBottom: '14px' }}>
                       <img src={companyLogo} alt={tenant?.name} style={{ maxHeight: '48px', maxWidth: '160px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
                     </div>
