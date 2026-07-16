@@ -149,8 +149,8 @@ export const Settings = () => {
                     marginBottom: '14px',
                     overflow: 'hidden',
                   }}>
-                    {tenant.plan === PLANS.ENTERPRISE && tenant.logo ? (
-                      <img src={tenant.logo} alt="Logo Perusahaan" style={{ maxWidth: '240px', maxHeight: '64px', objectFit: 'contain' }} />
+                    {tenant.plan === PLANS.ENTERPRISE && companyLogo ? (
+                      <img src={companyLogo} alt="Logo Perusahaan" style={{ maxWidth: '240px', maxHeight: '64px', objectFit: 'contain' }} />
                     ) : (
                       <img src="/myaxara-logo.svg" alt="myAxara" style={{ maxWidth: '200px', height: 'auto', maxHeight: '50px', objectFit: 'contain' }} />
                     )}
@@ -164,12 +164,12 @@ export const Settings = () => {
                           style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', background: '#ffffff', color: 'var(--text2)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
                           onClick={() => document.getElementById('company-logo-input').click()}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                          {tenant.logo ? 'Ganti Logo' : 'Pilih File Gambar'}
+                          {companyLogo ? 'Ganti Logo' : 'Pilih File Gambar'}
                         </button>
-                        {tenant.logo && logoStatus === 'idle' && (
+                        {companyLogo && logoStatus === 'idle' && (
                           <button type="button"
                             style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #fee2e2', background: '#fff5f5', color: '#ef4444', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                            onClick={() => updateTenantLogo(null)}>
+                            onClick={() => updateCompanyLogo(null)}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             Hapus Logo
                           </button>
@@ -191,21 +191,17 @@ export const Settings = () => {
                       id="company-logo-input"
                       type="file"
                       accept="image/*"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files[0];
                         if (!file) return;
                         setLogoStatus('processing');
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                           if (reader.error || !reader.result) {
-                             setLogoStatus('error');
-                             return;
-                           }
-                           updateTenantLogo(reader.result);
-                           setLogoStatus('saved');
-                           setTimeout(() => setLogoStatus('idle'), 3000);
-                        };
-                        reader.readAsDataURL(file);
+                        try {
+                          await updateCompanyLogo(file);
+                          setLogoStatus('saved');
+                        } catch (err) {
+                          setLogoStatus('error');
+                        }
+                        setTimeout(() => setLogoStatus('idle'), 3000);
                       }}
                       style={{ display: 'none' }}
                     />

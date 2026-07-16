@@ -486,7 +486,7 @@ export const TenantProvider = ({ children, authUser }) => {
       const { error: uploadError } = await supabase.storage
         .from('public-assets')
         .upload(path, file, { upsert: true, contentType: file.type });
-      if (uploadError) { console.warn('Upload gagal:', uploadError.message); return; }
+      if (uploadError) { throw new Error('Upload gagal: ' + uploadError.message); }
       const { data: urlData } = supabase.storage.from('public-assets').getPublicUrl(path);
       const logoUrl = urlData.publicUrl + '?t=' + Date.now();
       await supabase.from('tenants').update({ company_logo: logoUrl }).eq('id', authUser.tenant_id);
