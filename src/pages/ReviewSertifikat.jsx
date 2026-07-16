@@ -799,7 +799,7 @@ export const ReviewSertifikat = () => {
           return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
         })();
         return (
-          <div style={{
+          <div className="cert-modal-overlay" style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
             background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
             display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999

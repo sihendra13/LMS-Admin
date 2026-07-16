@@ -989,5 +989,10 @@ nav { padding: 16px 0; flex: 1; overflow-y: auto; }
     top: 0;
     width: 100%;
   }
+  .cert-modal-overlay {
+    position: static !important;
+    background: none !important;
+    backdrop-filter: none !important;
+  }
 }
 
