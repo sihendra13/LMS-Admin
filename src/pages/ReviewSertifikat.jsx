@@ -808,49 +808,65 @@ export const ReviewSertifikat = () => {
               </div>
 
               {/* certificate body */}
-              <div style={{ padding: '24px' }}>
-                <div style={{ border: '2px solid #1e3a5f', borderRadius: '12px', padding: '32px 36px', position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
-                  <div style={{ position: 'absolute', top: '-20px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
-                  <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5 }} />
-
-                  {tenant?.plan === PLANS.ENTERPRISE && companyLogo ? (
-                    <div style={{ marginBottom: '14px' }}>
-                      <img src={companyLogo} alt={tenant?.name} style={{ maxHeight: '48px', maxWidth: '160px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '16px' }}>
-                      {tenant?.name || tenant.name}
-                    </div>
-                  )}
-
-                  <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px', letterSpacing: '1px' }}>SERTIFIKAT KELULUSAN</h1>
-                  <div style={{ width: '40px', height: '2px', background: '#1e3a5f', margin: '0 auto 16px' }} />
-                  <p style={{ fontStyle: 'italic', color: '#64748b', fontSize: '12px', margin: '0 0 12px' }}>Dengan ini secara resmi menyatakan dan menganugerahkan penghargaan kepada:</p>
-                  <div style={{ fontSize: '22px', fontWeight: '700', color: '#0f172a', textDecoration: 'underline', marginBottom: '10px' }}>{sub.employeeName}</div>
-                  <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 6px' }}>Atas kelulusan luar biasa dan kompetensi penuh yang ditunjukkan dalam menyelesaikan pelatihan materi video standar perusahaan:</p>
-                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#2563eb', marginBottom: '20px' }}>{sub.videoTitle}</div>
-
-                  <div style={{ display: 'flex', gap: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '16px', textAlign: 'left' }}>
-                    <div style={{ flex: 1, fontSize: '12px', color: '#64748b', borderRight: '1px solid #e5e7eb', paddingRight: '20px' }}>
-                      <div><strong>ID Sertifikat:</strong> {certId}</div>
-                      <div><strong>Tanggal Terbit:</strong> {issueDate}</div>
-                      <div><strong>Masa Berlaku:</strong> {expiryDate}</div>
-                      <div><strong>Skor Kuis:</strong> <span style={{ color: '#16a34a', fontWeight: '700' }}>{sub.postScore}%</span></div>
-                    </div>
-                    <div style={{ textAlign: 'center', minWidth: '140px' }}>
-                      <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '16px', color: '#1e3a5f', marginBottom: '4px' }}>{sub.approvedBy || currentUser.name}</div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>HR Manager, {tenant?.name || tenant.name}</div>
-                      <div style={{ marginTop: '6px', fontSize: '7.5px', color: '#cbd5e1' }}>Dikeluarkan oleh myAxara</div>
-                    </div>
+            <div className="print-area" style={{
+              border: '8px double #0f172a',
+              padding: '30px', textAlign: 'center', background: '#fefefe',
+              borderRadius: '8px', fontFamily: "'Plus Jakarta Sans', serif",
+              position: 'relative', overflow: 'hidden'
+            }}>
+              <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: '#eff6ff', opacity: 0.5, zIndex: 1 }} />
+              {tenant?.plan === PLANS.ENTERPRISE && companyLogo ? (
+                <div style={{ marginBottom: '16px', textAlign: 'center' }}>
+                  <img src={companyLogo} alt={tenant?.name} style={{ maxHeight: '52px', maxWidth: '180px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+                </div>
+              ) : (
+                <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text3)', marginBottom: '20px', textAlign: 'center' }}>
+                  {tenant?.name || tenant.name}
+                </div>
+              )}
+              <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '26px', fontWeight: '700', color: '#0f172a', margin: '0 0 10px 0', letterSpacing: '1px' }}>
+                SERTIFIKAT KELULUSAN
+              </h1>
+              <div style={{ width: '60px', height: '2px', background: '#0f172a', margin: '0 auto 24px auto' }} />
+              <p style={{ fontSize: '12px', color: 'var(--text3)', margin: '0 0 20px 0', fontStyle: 'italic' }}>
+                Dengan ini secara resmi menyatakan dan menganugerahkan penghargaan kepada:
+              </p>
+              <h2 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text1)', margin: '10px 0', textDecoration: 'underline' }}>
+                {sub.employeeName}
+              </h2>
+              <p style={{ fontSize: '12px', color: 'var(--text3)', margin: '15px auto', maxWidth: '480px', lineHeight: '1.6' }}>
+                Atas kelulusan luar biasa dan kompetensi penuh yang ditunjukkan dalam menyelesaikan pelatihan materi video standar perusahaan:
+              </p>
+              <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)', margin: '10px 0 30px 0' }}>
+                {sub.videoTitle}
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginTop: '40px', alignItems: 'end', position: 'relative', zIndex: 2 }}>
+                <div style={{ textAlign: 'left', fontSize: '11px', color: 'var(--text2)', borderRight: '1px solid var(--border)', paddingRight: '20px' }}>
+                  <div style={{ marginBottom: '4px' }}><strong>ID Sertifikat:</strong> {certId}</div>
+                  <div style={{ marginBottom: '4px' }}><strong>Tanggal Terbit:</strong> {issueDate}</div>
+                  <div style={{ marginBottom: '4px' }}><strong>Masa Berlaku:</strong> {expiryDate}</div>
+                  <div><strong>Skor Kuis:</strong> <span style={{ color: 'var(--green)', fontWeight: '600' }}>{sub.postScore}%</span></div>
+                  <div style={{ marginTop: '6px', fontSize: '7.5px', color: '#cbd5e1' }}>Dikeluarkan oleh myAxara</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'cursive', fontSize: '20px', color: '#1e3a8a', height: '35px', lineHeight: '35px' }}>
+                    {sub.approvedBy || currentUser.name}
+                  </div>
+                  <div style={{ width: '120px', height: '1px', background: 'var(--border)', margin: '4px auto' }} />
+                  <div style={{ fontSize: '10px', color: 'var(--text3)', fontWeight: '600', textTransform: 'uppercase' }}>
+                    HR Manager, {tenant?.name || tenant.name}
                   </div>
                 </div>
               </div>
-
-              <div style={{ padding: '12px 24px 20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button onClick={() => setPreviewCert(null)} className="btn-sec">Tutup</button>
-                <button onClick={() => window.print()} className="btn-primary">🖨️ Download Sertifikat</button>
-              </div>
             </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button className="btn-sec" onClick={() => setPreviewCert(null)}>Tutup</button>
+              <button className="btn-primary" style={{ background: '#002D72' }} onClick={() => window.print()}>
+                🖨️ Download Sertifikat
+              </button>
+            </div>
+          </div>
           </div>
         );
       })()}
