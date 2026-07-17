@@ -339,7 +339,7 @@ export const UploadSOP = () => {
         const parseStandardSheet = (sheetName, targetArray) => {
           const ws = wb.Sheets[sheetName];
           if (!ws) return;
-          const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
           const rows = raw.slice(1).filter(r => r[1] && String(r[1]).trim());
           for (let r of rows) {
             const question = String(r[1] || '').trim();
@@ -360,7 +360,7 @@ export const UploadSOP = () => {
           const ws = wb.Sheets['Kuis Pemicu'];
           if (!ws) return;
           let hasFormatError = false;
-          const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+          const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
           const rows = raw.slice(1).filter(r => r[2] && String(r[2]).trim());
           for (let r of rows) {
             const pemicuRaw = String(r[1] || '').trim();
@@ -400,7 +400,7 @@ export const UploadSOP = () => {
 
         const oldFormatSheet = wb.Sheets['Template Kuis SOP'];
         if (oldFormatSheet) {
-          const raw = XLSX.utils.sheet_to_json(oldFormatSheet, { header: 1 });
+          const raw = XLSX.utils.sheet_to_json(oldFormatSheet, { header: 1, raw: false });
           const rows = raw.slice(1).filter(r => r[0] && String(r[0]).trim());
           for (let r of rows) {
             const tipe = String(r[0] || '').trim().toLowerCase();
