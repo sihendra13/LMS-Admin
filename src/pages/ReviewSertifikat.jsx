@@ -7,7 +7,7 @@ const STATUS_META = {
   supervisor_ok: { label: 'Siap Diterbitkan',    color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
   remedial:      { label: 'Perlu Remedial',       color: '#b45309', bg: '#fff7ed', border: '#fed7aa' },
   approved:      { label: 'Sertifikat Aktif',     color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
-  rejected:      { label: 'Ditolak Final',        color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
+  rejected:      { label: 'Tidak Lulus',        color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
 };
 
 export const ReviewSertifikat = () => {
@@ -381,7 +381,7 @@ export const ReviewSertifikat = () => {
   // ── HRD action config ────────────────────────────────────────────────
   const hrdActions = [
     { type: 'approve', label: '✓ Terbitkan',   color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
-    { type: 'reject',  label: '✕ Tolak Final', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
+    { type: 'reject',  label: '✕ Tidak Lulus', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
   ];
   const supActions = [
     { type: 'sup_ok',  label: '✓ Rekomendasikan Lulus', color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd' },
@@ -405,7 +405,7 @@ export const ReviewSertifikat = () => {
     { key: 'ready',       label: `Siap Diterbitkan (${readySubs.length})` },
     { key: 'in_progress', label: `${enableSpvRole ? 'Dalam Proses' : 'Sedang Remedial'} (${inProgressSubs.length})` },
     { key: 'approved',    label: `Diterbitkan (${approvedSubs.length})` },
-    { key: 'rejected',    label: `Ditolak (${rejectedSubs.length})` },
+    { key: 'rejected',    label: `Tidak Lulus (${rejectedSubs.length})` },
   ] : [
     { key: 'need_review',  label: `Perlu Review (${needReviewSubs.length})` },
     { key: 'remedial',     label: `Sedang Remedial (${remedialSubs.length})` },
@@ -415,7 +415,7 @@ export const ReviewSertifikat = () => {
   // ── modal config ─────────────────────────────────────────────────────
   const MODAL_CONFIG = {
     approve:  { title: 'Terbitkan Sertifikat?', color: '#15803d', btnLabel: 'Ya, Terbitkan',   btnBg: '#16a34a', needNote: false, placeholder: 'Pesan untuk karyawan (opsional) — contoh: Selamat! Sertifikat Anda telah diterbitkan.' },
-    reject:   { title: 'Tolak Final?',           color: '#b91c1c', btnLabel: 'Ya, Tolak Final', btnBg: '#ef4444', needNote: true, placeholder: 'Contoh: Skor tidak memenuhi standar, atau karyawan masih dalam masa percobaan.' },
+    reject:   { title: 'Tetapkan Tidak Lulus?',           color: '#b91c1c', btnLabel: 'Ya, Tidak Lulus', btnBg: '#ef4444', needNote: true, placeholder: 'Contoh: Skor tidak memenuhi standar, atau karyawan masih dalam masa percobaan.' },
     sup_ok:   { title: 'Rekomendasikan Sertifikat?', color: '#1d4ed8', btnLabel: 'Ya, Rekomendasikan', btnBg: '#2563eb', needNote: false, placeholder: 'Catatan tambahan untuk HRD (opsional)' },
     sup_rem:  { title: 'Minta Karyawan Mengulang?',  color: '#b45309', btnLabel: 'Ya, Minta Ulang',    btnBg: '#f59e0b', needNote: true, placeholder: 'Tuliskan alasan & bagian mana yang perlu dipelajari ulang. Catatan ini akan dilihat karyawan.' },
   };
@@ -500,7 +500,7 @@ export const ReviewSertifikat = () => {
               </div>
               <div className="stat-label">Ditolak</div>
               <div className="stat-value" style={{ color: '#ef4444' }}>{rejectedSubs.length}</div>
-              <div className="stat-change down" style={{ color: '#f87171' }}>Ditolak Final</div>
+              <div className="stat-change down" style={{ color: '#f87171' }}>Tidak Lulus</div>
             </div>
           </>
         ) : (
@@ -676,11 +676,11 @@ export const ReviewSertifikat = () => {
                         ? [{ type: 'approve', label: '✓ Terbitkan Sertifikat', color: '#15803d', bg: '#f0fdf4', border: '#86efac' }]
                         : [{ type: 'sup_rem', label: '↩ Minta Remedial',       color: '#b45309', bg: '#fff7ed', border: '#fed7aa' }]
                       ),
-                      { type: 'reject', label: '✕ Tolak Final', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
+                      { type: 'reject', label: '✕ Tidak Lulus', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
                     ]
                   : [
                       { type: 'approve', label: '✓ Terbitkan', color: '#15803d', bg: '#f0fdf4', border: '#86efac' },
-                      { type: 'reject',  label: '✕ Tolak Final', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
+                      { type: 'reject',  label: '✕ Tidak Lulus', color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
                     ];
                 return <Card key={sub.id} sub={sub} actions={actions} escalated={isEscalated} />;
               })
