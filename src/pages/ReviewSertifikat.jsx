@@ -326,13 +326,15 @@ export const ReviewSertifikat = () => {
                 {actions.map(a => {
                     const isApprove = a.type === 'approve' || a.type === 'sup_ok';
                     const isFailing = sub.postScore == null || sub.postScore < passingScore;
-                    const isDisabled = isPending || (isApprove && isFailing);
-                    
+                    const isDisabled = isPending || (isApprove && isFailing) || (!isApprove && !isFailing);
+
                     let title = '';
                     if (isPending) {
                       title = sub.certStatus === 'remedial' ? 'Karyawan sedang mengerjakan ulang kuis' : 'Menunggu supervisor review terlebih dahulu';
                     } else if (isApprove && isFailing) {
                       title = 'Nilai belum memenuhi standar kelulusan. Tidak dapat diterbitkan.';
+                    } else if (!isApprove && !isFailing) {
+                      title = 'Nilai sudah memenuhi standar kelulusan. Gunakan Terbitkan.';
                     }
 
                     return (
