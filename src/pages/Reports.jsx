@@ -236,6 +236,10 @@ export const Reports = () => {
         'Deadline': video?.deadline || '-',
         'Status Deadline': deadlineStatus,
         'Dikonfirmasi Karyawan': sub.acknowledged ? 'Ya' : 'Tidak',
+        'Waktu Konfirmasi': sub.acknowledgedAt
+          ? new Date(sub.acknowledgedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+            + ' ' + new Date(sub.acknowledgedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+          : '-',
         'Skor Pre-Test (%)': sub.preScore,
         'Skor Post-Test (%)': sub.postScore,
         'Peningkatan (%)': sub.postScore - sub.preScore,
