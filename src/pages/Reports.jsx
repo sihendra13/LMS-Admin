@@ -759,10 +759,10 @@ export const Reports = () => {
                         <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                           {sub.acknowledged ? (
                             <span
-                              title={ackTime ? `Dikonfirmasi: ${ackTime}` : 'Dikonfirmasi karyawan'}
-                              style={{ fontSize: '11px', background: '#ecfdf5', color: 'var(--green)', padding: '2px 8px', borderRadius: '4px', fontWeight: '600', cursor: ackTime ? 'help' : 'default' }}
+                              title={ackTime ? `Dikonfirmasi: ${ackTime}` : 'Dikonfirmasi karyawan (timestamp tidak tersedia)'}
+                              style={{ fontSize: '11px', background: '#ecfdf5', color: 'var(--green)', padding: '2px 8px', borderRadius: '4px', fontWeight: '600', cursor: 'help' }}
                             >
-                              ✓ Ya{ackTime ? ' ⓘ' : ''}
+                              ✓ Ya ⓘ
                             </span>
                           ) : (
                             <span style={{ fontSize: '11px', color: 'var(--text3)' }}>—</span>
