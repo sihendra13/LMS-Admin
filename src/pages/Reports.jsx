@@ -728,12 +728,13 @@ export const Reports = () => {
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textAlign: 'center' }}>PRE-TEST</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textAlign: 'center' }}>POST-TEST</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textAlign: 'center' }}>PROGRESS</th>
+                    <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textAlign: 'center' }}>KONFIRMASI</th>
                     <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textAlign: 'right' }}>STATUS</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedSubs.length === 0 ? (
-                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--text3)', fontSize: '13px' }}>
+                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '32px', color: 'var(--text3)', fontSize: '13px' }}>
                       Belum ada data untuk periode {selectedLabel}.
                     </td></tr>
                   ) : paginatedSubs.map(sub => {
@@ -742,6 +743,10 @@ export const Reports = () => {
                     const progressColor = imp > 0 ? 'var(--green)' : imp < 0 ? 'var(--red)' : 'var(--text3)';
                     const progressBg    = imp > 0 ? '#ecfdf5'      : imp < 0 ? '#fef2f2'    : '#f8fafc';
                     const certLabel = getCertLabel(sub);
+                    const ackTime = sub.acknowledgedAt
+                      ? new Date(sub.acknowledgedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                        + ' · ' + new Date(sub.acknowledgedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                      : null;
                     return (
                       <tr key={sub.id} style={{ borderBottom: '1px solid var(--border)' }}>
                         <td style={{ padding: '14px 16px', fontWeight: '500' }}>{sub.employeeName}</td>
@@ -750,6 +755,18 @@ export const Reports = () => {
                         <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: '600' }}>{sub.postScore}%</td>
                         <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                           <span style={{ fontSize: '11px', background: progressBg, color: progressColor, padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>{progressLabel}</span>
+                        </td>
+                        <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                          {sub.acknowledged ? (
+                            <span
+                              title={ackTime ? `Dikonfirmasi: ${ackTime}` : 'Dikonfirmasi karyawan'}
+                              style={{ fontSize: '11px', background: '#ecfdf5', color: 'var(--green)', padding: '2px 8px', borderRadius: '4px', fontWeight: '600', cursor: ackTime ? 'help' : 'default' }}
+                            >
+                              ✓ Ya{ackTime ? ' ⓘ' : ''}
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>—</span>
+                          )}
                         </td>
                         <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '600', color: certLabel.color }}>{certLabel.text}</td>
                       </tr>
