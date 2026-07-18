@@ -101,6 +101,7 @@ export const TenantProvider = ({ children, authUser }) => {
           }
           if (row.key === logoKey && row.value) {
             setCompanyLogo(row.value);
+            setTenant(prev => ({ ...prev, logo: row.value }));
           }
         });
       })
@@ -592,6 +593,7 @@ export const TenantProvider = ({ children, authUser }) => {
         { onConflict: 'key' }
       );
       setCompanyLogo(logoUrl);
+      setTenant(prev => ({ ...prev, logo: logoUrl }));
     } else {
       await supabase.from('tenants').update({ company_logo: null }).eq('id', authUser.tenant_id);
       await supabase.from('app_settings').upsert(
@@ -599,6 +601,7 @@ export const TenantProvider = ({ children, authUser }) => {
         { onConflict: 'key' }
       );
       setCompanyLogo(null);
+      setTenant(prev => ({ ...prev, logo: null }));
     }
   };
 
