@@ -80,10 +80,10 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const [tenant, setTenant] = useState({
     name: storedDB.tenant?.name || 'Perusahaan Anda',
-    plan: (storedDB.tenant?.plan && storedDB.tenant?.plan !== PLANS.STARTER) ? storedDB.tenant?.plan : PLANS.BUSINESS,
+    plan: PLANS.BUSINESS,
     status: storedDB.tenant?.status || 'Aktif',
     avatar: storedDB.tenant?.avatar || 'MB',
-    logo: localStorage.getItem(LOGO_KEY) || storedDB.tenant?.logo || null,
+    logo: null,
   });
 
   useEffect(() => {
