@@ -89,13 +89,20 @@ export const TenantProvider = ({ children, authUser }) => {
   useEffect(() => {
     if (!authUser?.tenant_id) return;
 
-    // Read plan from app_settings first (bypasses RLS on tenants table)
+    // Read plan + logo from app_settings (bypasses RLS on tenants table)
     const demoPlanKey = `demo_plan_${authUser.tenant_id}`;
-    supabase.from('app_settings').select('value').eq('key', demoPlanKey).maybeSingle()
-      .then(({ data: planData }) => {
-        if (planData?.value) {
-          setTenant(prev => ({ ...prev, plan: planData.value }));
-        }
+    const logoKey = `company_logo_${authUser.tenant_id}`;
+    supabase.from('app_settings').select('key, value').in('key', [demoPlanKey, logoKey])
+      .then(({ data: settingsData }) => {
+        if (!settingsData) return;
+        settingsData.forEach(row => {
+          if (row.key === demoPlanKey && row.value) {
+            setTenant(prev => ({ ...prev, plan: row.value }));
+          }
+          if (row.key === logoKey && row.value) {
+            setCompanyLogo(row.value);
+          }
+        });
       })
       .catch(() => {});
 
@@ -580,9 +587,17 @@ export const TenantProvider = ({ children, authUser }) => {
       const { data: urlData } = supabase.storage.from('public-assets').getPublicUrl(path);
       const logoUrl = urlData.publicUrl + '?t=' + Date.now();
       await supabase.from('tenants').update({ company_logo: logoUrl }).eq('id', authUser.tenant_id);
+      await supabase.from('app_settings').upsert(
+        { key: `company_logo_${authUser.tenant_id}`, value: logoUrl },
+        { onConflict: 'key' }
+      );
       setCompanyLogo(logoUrl);
     } else {
       await supabase.from('tenants').update({ company_logo: null }).eq('id', authUser.tenant_id);
+      await supabase.from('app_settings').upsert(
+        { key: `company_logo_${authUser.tenant_id}`, value: '' },
+        { onConflict: 'key' }
+      );
       setCompanyLogo(null);
     }
   };
