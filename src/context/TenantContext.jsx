@@ -88,6 +88,17 @@ export const TenantProvider = ({ children, authUser }) => {
 
   useEffect(() => {
     if (!authUser?.tenant_id) return;
+
+    // Read plan from app_settings first (bypasses RLS on tenants table)
+    const demoPlanKey = `demo_plan_${authUser.tenant_id}`;
+    supabase.from('app_settings').select('value').eq('key', demoPlanKey).maybeSingle()
+      .then(({ data: planData }) => {
+        if (planData?.value) {
+          setTenant(prev => ({ ...prev, plan: planData.value }));
+        }
+      })
+      .catch(() => {});
+
     supabase.from('tenants').select('name, plan, status, company_logo').eq('id', authUser.tenant_id).single()
       .then(({ data, error }) => {
         if (error) {
@@ -98,12 +109,13 @@ export const TenantProvider = ({ children, authUser }) => {
           setTenant(prev => ({
             ...prev,
             name: data.name || prev.name,
-            plan: data.plan || prev.plan,
+            // plan from app_settings takes priority (already set above); fallback to tenants.plan
+            plan: prev.plan !== PLANS.BUSINESS ? prev.plan : (data.plan || prev.plan),
             status: data.status || prev.status,
             avatar: (data.name || prev.name).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
           }));
           if (data.company_logo) setCompanyLogo(data.company_logo);
-          
+
           // Upsert to app_settings so Learners can read it bypassing RLS on tenants
           if (data.name) {
             supabase.from('app_settings')
