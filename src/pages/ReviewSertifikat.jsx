@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { PLANS } from '../utils/featureGates';
+import { useToast } from '../components/Toast';
 
 const STATUS_META = {
   pending:       { label: 'Menunggu Supervisor', color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
@@ -12,6 +13,7 @@ const STATUS_META = {
 
 export const ReviewSertifikat = () => {
   const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES, enableSpvRole, companyLogo } = useTenant();
+  const toast = useToast();
   const isHRD = currentUser.role === 'admin';
 
   const [activeTab, setActiveTab] = useState(isHRD ? 'ready' : 'need_review');
@@ -48,14 +50,18 @@ export const ReviewSertifikat = () => {
   const openModal = (type, sub) => { setActionModal({ open: true, type, sub }); setModalNote(''); };
   const closeModal = () => setActionModal({ open: false, type: null, sub: null });
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const { type, sub } = actionModal;
     if (!sub) return;
-    if (type === 'approve')   approveCertificate(sub.id, currentUser.name, modalNote);
-    if (type === 'reject')    rejectCertificate(sub.id, modalNote);
-    if (type === 'sup_ok')    supervisorRecommend(sub.id, 'ok', modalNote);
-    if (type === 'sup_rem')   supervisorRecommend(sub.id, 'remedial', modalNote);
     closeModal();
+    try {
+      if (type === 'approve')   await approveCertificate(sub.id, currentUser.name, modalNote);
+      if (type === 'reject')    await rejectCertificate(sub.id, modalNote);
+      if (type === 'sup_ok')    await supervisorRecommend(sub.id, 'ok', modalNote);
+      if (type === 'sup_rem')   await supervisorRecommend(sub.id, 'remedial', modalNote);
+    } catch (err) {
+      toast.error(`Gagal menyimpan: ${err.message}`);
+    }
   };
 
   const scoreColor = (s) => {

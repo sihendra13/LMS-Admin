@@ -818,12 +818,13 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const approveCertificate = async (submissionId, approverName, note) => {
     const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-    await supabase.from('quiz_submissions').update({
+    const { error } = await supabase.from('quiz_submissions').update({
       cert_status: 'approved',
       approved_by: approverName,
       approved_date: today,
       approval_note: note || '',
     }).eq('id', submissionId);
+    if (error) { console.error('approveCertificate error:', error); throw new Error(error.message); }
     // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
       s.id === submissionId ? { ...s, certStatus: 'approved', approvedBy: approverName, approvedDate: today, approvalNote: note || '' } : s
@@ -834,10 +835,11 @@ export const TenantProvider = ({ children, authUser }) => {
   };
 
   const rejectCertificate = async (submissionId, note) => {
-    await supabase.from('quiz_submissions').update({
+    const { error } = await supabase.from('quiz_submissions').update({
       cert_status: 'rejected',
       rejection_note: note || '',
     }).eq('id', submissionId);
+    if (error) { console.error('rejectCertificate error:', error); throw new Error(error.message); }
     // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
       s.id === submissionId ? { ...s, certStatus: 'rejected', rejectionNote: note || '' } : s
