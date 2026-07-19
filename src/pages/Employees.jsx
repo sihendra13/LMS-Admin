@@ -427,13 +427,13 @@ export const Employees = () => {
                         />
                       </th>
                     )}
-                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Nama Karyawan</th>
-                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>NIK</th>
-                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Jabatan</th>
-                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
-                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang / Kota</th>
-                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'right' }}>SOP Selesai</th>
-                    {!isSupervisor && <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'right' }}>Aksi</th>}
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', width: '25%' }}>Nama Karyawan</th>
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', width: '10%' }}>NIK</th>
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', width: '10%' }}>Jabatan</th>
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', width: '12%' }}>Departemen</th>
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', width: '12%' }}>Cabang / Kota</th>
+                    <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', width: '10%', textAlign: 'right' }}>SOP Selesai</th>
+                    {!isSupervisor && <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', width: '80px', textAlign: 'right' }}>Aksi</th>}
                   </tr>
                 </thead>
                 <tbody>
