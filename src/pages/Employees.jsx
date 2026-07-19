@@ -433,7 +433,7 @@ export const Employees = () => {
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Departemen</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Cabang / Kota</th>
                     <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'right' }}>SOP Selesai</th>
-                    {!isSupervisor && <th style={{ padding: '12px 20px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'center' }}>Aksi</th>}
+                    {!isSupervisor && <th style={{ padding: '12px 16px', fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase', textAlign: 'right' }}>Aksi</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -451,7 +451,10 @@ export const Employees = () => {
                             />
                           </td>
                         )}
-                        <td style={{ padding: '14px 20px', fontWeight: '500' }}>{emp.name}</td>
+                        <td style={{ padding: '14px 20px' }}>
+                          <div style={{ fontWeight: '500', lineHeight: '1.3' }}>{emp.name}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>{emp.email || '-'}</div>
+                        </td>
                         <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.nik || '-'}</td>
                         <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.jabatan || '-'}</td>
                         <td style={{ padding: '14px 20px' }}>
@@ -486,8 +489,8 @@ export const Employees = () => {
                         <td style={{ padding: '14px 20px', color: 'var(--text2)' }}>{emp.city}</td>
                         <td style={{ padding: '14px 20px', fontWeight: '600', color: 'var(--accent)', textAlign: 'right' }}>{emp.score} SOP</td>
                         {!isSupervisor && (
-                          <td style={{ padding: '14px 20px', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                          <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                               <button
                                 type="button"
                                 title="Edit karyawan"
