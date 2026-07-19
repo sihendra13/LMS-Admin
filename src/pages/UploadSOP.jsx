@@ -19,7 +19,7 @@ export const UploadSOP = () => {
   const [title, setTitle] = useState(editVideo?.title || '');
   const [dept, setDept] = useState(editVideo?.dept || 'Sales');
   const [deadline, setDeadline] = useState(editVideo?.deadline || '');
-  const [duration, setDuration] = useState(editVideo?.duration || '5:00');
+  const [duration, setDuration] = useState(editVideo?.duration || '00:00');
   const [videoFile, setVideoFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [pptFile, setPptFile] = useState(null);
@@ -300,11 +300,16 @@ export const UploadSOP = () => {
     ]);
     wsPre['!cols'] = [{ wch: 5 }, { wch: 50 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
 
+    const isVideo = contentType === 'video';
+    const triggerHeader = isVideo ? 'Waktu Pemicu (contoh: 01:30)' : 'Slide Pemicu (contoh: 3)';
+    const triggerEx1 = isVideo ? '01:30' : '3';
+    const triggerEx2 = isVideo ? '02:45' : '5';
+
     // Sheet 2: Kuis Pemicu
     const wsMid = XLSX.utils.aoa_to_sheet([
-      ['No', 'Waktu / Slide Pemicu (contoh: Menit 01:30, atau Slide 3)', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar (A/B/C/D)'],
-      ['1', 'Menit 01:30', 'Apa yang harus dilakukan jika terjadi kebakaran?', 'Lari', 'Gunakan APAR', 'Sembunyi', 'Diam', 'B'],
-      ['2', 'Slide 3', 'Siapa yang bertanggung jawab atas APAR?', 'Satpam', 'Semua Karyawan', 'Tim K3', 'HRD', 'C']
+      ['No', triggerHeader, 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar (A/B/C/D)'],
+      ['1', triggerEx1, 'Apa yang harus dilakukan jika terjadi kebakaran?', 'Lari', 'Gunakan APAR', 'Sembunyi', 'Diam', 'B'],
+      ['2', triggerEx2, 'Siapa yang bertanggung jawab atas APAR?', 'Satpam', 'Semua Karyawan', 'Tim K3', 'HRD', 'C']
     ]);
     wsMid['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 50 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
 
@@ -375,24 +380,23 @@ export const UploadSOP = () => {
             const options = [opsiA, opsiB, opsiC, opsiD];
 
             if (contentType === 'video') {
-              const timeStr = pemicuRaw.replace(/[^0-9:\.]/g, '');
-              if (!timeStr || (!timeStr.includes(':') && !timeStr.includes('.'))) {
-                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: Menit 01:30)');
+              if (pemicuRaw && !pemicuRaw.includes(':') && !pemicuRaw.includes('.')) {
+                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
                 hasFormatError = true;
                 return true;
               }
-              const normalizedPemicu = timeStr.replace('.', ':');
+              const normalizedPemicu = pemicuRaw.replace('.', ':');
               const parts = normalizedPemicu.split(':');
               const min = parts[0] || '0';
               const sec = parts[1] || '0';
               newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
             } else if (contentType === 'ppt') {
-              const slideNum = pemicuRaw.replace(/\D/g, '');
-              if (!slideNum || pemicuRaw.toLowerCase().includes('menit') || pemicuRaw.includes(':') || pemicuRaw.includes('.')) {
-                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: Slide 3)');
+              if (pemicuRaw && (pemicuRaw.includes(':') || pemicuRaw.includes('.'))) {
+                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, pastikan sel formatnya "Text/General" dan hanya masukkan angka (contoh: 3).');
                 hasFormatError = true;
                 return true;
               }
+              const slideNum = pemicuRaw.replace(/\D/g, '') || '2';
               newTrigger.push({ question, type: 'multiple', options, answer, triggerSlide: slideNum });
             }
           }
@@ -978,7 +982,7 @@ export const UploadSOP = () => {
                     <button
                       type="button"
                       style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #fee2e2', background: '#fff5f5', color: '#ef4444', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                      onClick={() => { setPptFile(null); setSlideCount(0); setDuration('5:00'); pptInputRef.current.value = ''; }}
+                      onClick={() => { setPptFile(null); setSlideCount(0); setDuration('00:00'); pptInputRef.current.value = ''; }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
