@@ -302,9 +302,9 @@ export const UploadSOP = () => {
 
     // Sheet 2: Kuis Pemicu
     const wsMid = XLSX.utils.aoa_to_sheet([
-      ['No', 'Waktu / Slide Pemicu (contoh Video: 01:30, PPT: 3)', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar (A/B/C/D)'],
-      ['1', '01:30', 'Apa yang harus dilakukan jika terjadi kebakaran?', 'Lari', 'Gunakan APAR', 'Sembunyi', 'Diam', 'B'],
-      ['2', '3', 'Siapa yang bertanggung jawab atas APAR?', 'Satpam', 'Semua Karyawan', 'Tim K3', 'HRD', 'C']
+      ['No', 'Waktu / Slide Pemicu (contoh: Menit 01:30, atau Slide 3)', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar (A/B/C/D)'],
+      ['1', 'Menit 01:30', 'Apa yang harus dilakukan jika terjadi kebakaran?', 'Lari', 'Gunakan APAR', 'Sembunyi', 'Diam', 'B'],
+      ['2', 'Slide 3', 'Siapa yang bertanggung jawab atas APAR?', 'Satpam', 'Semua Karyawan', 'Tim K3', 'HRD', 'C']
     ]);
     wsMid['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 50 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 20 }];
 
@@ -375,23 +375,24 @@ export const UploadSOP = () => {
             const options = [opsiA, opsiB, opsiC, opsiD];
 
             if (contentType === 'video') {
-              if (pemicuRaw && !pemicuRaw.includes(':') && !pemicuRaw.includes('.')) {
-                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: 01:30)');
+              const timeStr = pemicuRaw.replace(/[^0-9:\.]/g, '');
+              if (!timeStr || (!timeStr.includes(':') && !timeStr.includes('.'))) {
+                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk PPT. Untuk SOP Video, gunakan format MM:SS (contoh: Menit 01:30)');
                 hasFormatError = true;
                 return true;
               }
-              const normalizedPemicu = pemicuRaw.replace('.', ':');
+              const normalizedPemicu = timeStr.replace('.', ':');
               const parts = normalizedPemicu.split(':');
               const min = parts[0] || '0';
               const sec = parts[1] || '0';
               newVideoTrigger.push({ question, type: 'multiple', options, answer, triggerMin: min, triggerSec: sec });
             } else if (contentType === 'ppt') {
-              if (pemicuRaw && (pemicuRaw.includes(':') || pemicuRaw.includes('.'))) {
-                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: 3)');
+              const slideNum = pemicuRaw.replace(/\D/g, '');
+              if (!slideNum || pemicuRaw.toLowerCase().includes('menit') || pemicuRaw.includes(':') || pemicuRaw.includes('.')) {
+                toast.error('Format pertanyaan kuis pemicu salah! File ini sepertinya untuk Video. Untuk SOP PPT, gunakan angka urutan slide (contoh: Slide 3)');
                 hasFormatError = true;
                 return true;
               }
-              const slideNum = pemicuRaw.replace(/\D/g, '') || '2';
               newTrigger.push({ question, type: 'multiple', options, answer, triggerSlide: slideNum });
             }
           }
