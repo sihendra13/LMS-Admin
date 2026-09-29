@@ -675,6 +675,14 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const [editingVideoId, setEditingVideoId] = useState(null);
 
+  // Email karyawan unik di seluruh sistem — cek dulu agar karyawan tenant lain tidak ikut "dipindahkan"
+  const findEmailsInOtherTenants = async (emails) => {
+    const list = [...new Set(emails.filter(Boolean).flatMap(e => [e.trim(), e.trim().toLowerCase()]))];
+    if (list.length === 0) return new Set();
+    const { data } = await supabase.from('employees').select('email, tenant_id').in('email', list).neq('tenant_id', tenantId);
+    return new Set((data || []).map(r => r.email.toLowerCase()));
+  };
+
   const addEmployee = async (newEmp) => {
     setEmployees(prev => [newEmp, ...prev]);
     const newAct = {
@@ -912,6 +920,7 @@ export const TenantProvider = ({ children, authUser }) => {
       setActivePage,
       employees,
       addEmployee,
+      findEmailsInOtherTenants,
       deleteEmployee,
       updateEmployee,
       videos,

@@ -18,7 +18,7 @@ const DEPT_COLORS = [
 ];
 
 export const Employees = () => {
-  const { tenant, isTrial, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch, jobTitles, addJobTitlesBatch, cities, addCitiesBatch } = useTenant();
+  const { tenant, isTrial, employees, addEmployee, findEmailsInOtherTenants, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch, jobTitles, addJobTitlesBatch, cities, addCitiesBatch } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
@@ -194,7 +194,17 @@ export const Employees = () => {
     doImport(validRows.slice(0, remaining));
   };
 
-  const doImport = (rows) => {
+  const doImport = async (allRows) => {
+    const taken = await findEmailsInOtherTenants(allRows.map(r => r.email));
+    const rows = allRows.filter(r => !r.email || !taken.has(r.email.trim().toLowerCase()));
+    if (taken.size > 0) {
+      toast.error(`${allRows.length - rows.length} karyawan dilewati karena emailnya sudah terdaftar di perusahaan lain: ${[...taken].join(', ')}`);
+    }
+    if (rows.length === 0) {
+      setShowImport(false);
+      setImportRows([]);
+      return;
+    }
     const uniqueDepts = [...new Set(rows.map(r => r.dept).filter(Boolean))];
     addDepartmentsBatch(uniqueDepts);
     const uniqueJabatan = [...new Set(rows.map(r => r.jabatan).filter(Boolean))];
@@ -289,9 +299,13 @@ export const Employees = () => {
     setUpgradeSent(true);
   };
 
-  const handleAddEmployee = (e) => {
+  const handleAddEmployee = async (e) => {
     e.preventDefault();
     if (!name.trim()) return toast.error('Nama karyawan tidak boleh kosong!');
+    if (email.trim()) {
+      const taken = await findEmailsInOtherTenants([email]);
+      if (taken.size > 0) return toast.error('Email ini sudah terdaftar di perusahaan lain. Gunakan email lain.');
+    }
     if (isFull) {
       setUpgradeData({ added: 0, skipped: 1, totalNeeded: totalCount + 1 });
       setUpgradeSent(false);
