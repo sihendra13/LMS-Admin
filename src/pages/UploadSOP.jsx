@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import JSZip from 'jszip';
 import * as XLSX from 'xlsx';
 import { useTenant } from '../context/TenantContext';
-import { canUploadSOP, canUploadPPT, getPPTLimit, hasDeadlineReminder } from '../utils/featureGates';
+import { canUploadSOP, canUploadPPT, getPPTLimit, hasDeadlineReminder, TRIAL_SOP_LIMIT } from '../utils/featureGates';
 import { supabase } from '../utils/supabase';
 import SearchableDeptSelect from '../components/SearchableDeptSelect';
 import { useToast } from '../components/Toast';
@@ -10,7 +10,7 @@ import { useToast } from '../components/Toast';
 const BACKEND_URL = 'https://axara-lms-backend.onrender.com';
 
 export const UploadSOP = () => {
-  const { tenant, addSOP, updateSOP, setActivePage, videos, editingVideoId, setEditingVideoId, departments } = useTenant();
+  const { tenant, addSOP, updateSOP, setActivePage, videos, editingVideoId, setEditingVideoId, departments, isTrial } = useTenant();
   const toast = useToast();
   const editVideo = editingVideoId ? videos.find(v => v.id === editingVideoId) : null;
   const isEditMode = !!editVideo;
@@ -499,6 +499,10 @@ export const UploadSOP = () => {
 
   const handleConfirmPublish = async (isDraftSubmit = false) => {
     setShowPublishConfirm(false);
+    if (isTrial && !editVideo && videos.length >= TRIAL_SOP_LIMIT) {
+      toast.error(`Akun trial maksimal ${TRIAL_SOP_LIMIT} SOP. Hapus SOP lama atau hubungi Axara untuk berlangganan.`);
+      return;
+    }
     let videoUrl = null;
     let filePath = null;
     let slideImages = null;
@@ -840,6 +844,24 @@ export const UploadSOP = () => {
           </div>
           <button className="btn-primary" onClick={() => setActivePage('dashboard')}>
             Kembali ke Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isTrial && !editVideo && videos.length >= TRIAL_SOP_LIMIT) {
+    return (
+      <div className="content">
+        <div className="disabled-feature-overlay">
+          <div className="disabled-badge">Batas Trial</div>
+          <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Kuota SOP Trial Sudah Penuh</h2>
+          <p style={{ color: 'var(--text2)', maxWidth: '480px', margin: '0 auto 20px', lineHeight: '1.5' }}>
+            Selama masa trial Anda dapat mengunggah maksimal <strong>{TRIAL_SOP_LIMIT} SOP</strong> (video atau PPT). Hapus SOP yang tidak dipakai untuk mencoba materi lain,
+            atau hubungi tim <strong>Axara</strong> untuk berlangganan — semua SOP yang sudah diunggah tetap tersimpan.
+          </p>
+          <button className="btn-primary" onClick={() => setActivePage('sop')}>
+            Lihat Daftar SOP
           </button>
         </div>
       </div>

@@ -59,3 +59,6 @@ export const hasDeadlineReminder = (plan) => {
 export const hasAuditReport = (plan) => {
   return plan === PLANS.BUSINESS || plan === PLANS.ENTERPRISE;
 };
+
+// Akun trial dibatasi agar pemakaian storage & bandwidth tetap di free tier Supabase
+export const TRIAL_SOP_LIMIT = 5;

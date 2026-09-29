@@ -21,8 +21,29 @@ import { ReviewSertifikat } from './pages/ReviewSertifikat';
 import { AcceptInvitation } from './pages/AcceptInvitation';
 
 
+const TrialExpired = ({ tenantName, onLogout }) => (
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg, #f8fafc)', padding: '16px' }}>
+    <div style={{ maxWidth: '440px', width: '100%', background: '#fff', borderRadius: '16px', padding: '32px', boxShadow: '0 10px 30px rgba(15,23,42,0.08)', textAlign: 'center' }}>
+      <div style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Masa trial telah berakhir</div>
+      <div style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6, marginBottom: '24px' }}>
+        Masa trial 7 hari untuk <strong>{tenantName}</strong> sudah selesai. Semua data Anda (SOP, karyawan, hasil kuis) tetap tersimpan.
+        Hubungi tim Axara untuk melanjutkan berlangganan dan mengaktifkan kembali akun Anda.
+      </div>
+      <button onClick={onLogout} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', fontWeight: 600 }}>
+        Keluar
+      </button>
+    </div>
+  </div>
+);
+
+const TrialBanner = ({ daysLeft }) => (
+  <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', color: '#9a3412', borderRadius: '10px', padding: '10px 14px', margin: '16px 28px 0', fontSize: '13px', flexShrink: 0 }}>
+    <strong>Akun Trial</strong> — tersisa {daysLeft} hari. Data yang Anda buat akan tetap tersimpan saat berlangganan.
+  </div>
+);
+
 const AppContent = ({ onLogout }) => {
-  const { activePage } = useTenant();
+  const { activePage, tenant, isTrial, trialExpired, trialDaysLeft } = useTenant();
   const mainRef = React.useRef(null);
 
   useEffect(() => {
@@ -46,14 +67,19 @@ const AppContent = ({ onLogout }) => {
     }
   };
 
+  if (trialExpired) {
+    return <TrialExpired tenantName={tenant.name} onLogout={onLogout} />;
+  }
+
   return (
     <>
       <Sidebar onLogout={onLogout} />
       <main className="main" ref={mainRef}>
         <Topbar />
+        {isTrial && <TrialBanner daysLeft={trialDaysLeft} />}
         {renderActivePage()}
       </main>
-      <PlanSwitcher />
+      {tenant.isDemo && <PlanSwitcher />}
     </>
   );
 };

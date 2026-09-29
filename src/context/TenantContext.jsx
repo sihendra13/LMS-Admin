@@ -5,8 +5,9 @@ import { supabase } from '../utils/supabase';
 const TenantContext = createContext();
 
 // Convert camelCase video object → Supabase snake_case row
-const toDbRow = (v) => ({
+const toDbRow = (v, tenantId) => ({
   id: v.id,
+  ...(tenantId && { tenant_id: tenantId }),
   title: v.title,
   dept: v.dept,
   duration: v.duration,
@@ -54,6 +55,41 @@ const fromDbRow = (row) => ({
   isDraft: row.is_draft || false,
 });
 
+// Data contoh — hanya ditampilkan untuk tenant demo (presentasi)
+const DEMO_PENDING_ESSAYS = [
+  { 
+    id: 101, 
+    employeeName: 'Budi Pratama', 
+    dept: 'Finance', 
+    videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', 
+    date: 'Hari ini',
+    questions: [
+      { id: 1, question: 'Mengapa kuitansi fotokopi tidak dapat diklaim?', answer: 'Kuitansi fotokopi tidak dapat diklaim karena regulasi perpajakan mewajibkan bukti fisik asli untuk diaudit, serta mencegah klaim ganda.', score: 85 },
+      { id: 2, question: 'Apa batas maksimum tanggal penyerahan kwitansi reimbursement setiap bulannya?', answer: 'Klaim reimbursement harus diserahkan selambat-lambatnya tanggal 25 setiap bulannya kepada bagian tim finance.', score: 90 },
+      { id: 3, question: 'Siapa yang berwenang memberikan persetujuan jika nominal reimburse di atas Rp 5.000.000?', answer: 'Untuk nominal di atas 5 juta rupiah, wajib mendapatkan persetujuan langsung (tanda tangan) dari Direktur Keuangan.', score: null }
+    ]
+  },
+  { 
+    id: 102, 
+    employeeName: 'Nina Putri', 
+    dept: 'CS', 
+    videoTitle: 'SOP Customer Service: Handling Komplain', 
+    date: '1 hari lalu',
+    questions: [
+      { id: 1, question: 'Bagaimana langkah awal menangani pelanggan marah?', answer: 'Pertama-tama saya akan mendengarkan keluhan dengan empati tanpa memotong pembicaraannya, lalu memvalidasi emosinya dan menawarkan maaf atas ketidaknyamanan tersebut.', score: null },
+      { id: 2, question: 'Apa batas waktu maksimal eskalasi tiket jika komplain tidak selesai di tingkat pertama?', answer: 'Eskalasi tiket harus dilakukan dalam waktu maksimal 2 jam setelah komplain pertama kali diterima dari nasabah.', score: null }
+    ]
+  }
+];
+
+const DEMO_ACTIVITIES = [
+  { id: 1, text: '<strong>Rini W.</strong> menyelesaikan SOP Sales Onboarding', time: '5 menit lalu', type: 'green' },
+  { id: 2, text: 'Video baru <strong>SOP IT Security</strong> diunggah', time: '32 menit lalu', type: 'blue' },
+  { id: 3, text: '<strong>12 karyawan</strong> mendapat sertifikat Finance', time: '1 jam lalu', type: 'purple' },
+  { id: 4, text: '<strong>SOP K3 Gudang</strong> deadline besok — 38 belum nonton', time: '2 jam lalu', type: 'amber' },
+  { id: 5, text: '<strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95', time: '3 jam lalu', type: 'cyan' },
+];
+
 export const useTenant = () => {
   const context = useContext(TenantContext);
   if (!context) {
@@ -84,7 +120,12 @@ export const TenantProvider = ({ children, authUser }) => {
     status: storedDB.tenant?.status || 'Aktif',
     avatar: storedDB.tenant?.avatar || 'MB',
     logo: null,
+    isDemo: false,
+    trialEndsAt: null,
   });
+  const tenantId = authUser?.tenant_id || null;
+  const [activities, setActivities] = useState(storedDB.activities || []);
+  const [pendingEssays, setPendingEssays] = useState(storedDB.pendingEssays || []);
 
   useEffect(() => {
     if (!authUser?.tenant_id) return;
@@ -96,9 +137,6 @@ export const TenantProvider = ({ children, authUser }) => {
       .then(({ data: settingsData }) => {
         if (!settingsData) return;
         settingsData.forEach(row => {
-          if (row.key === demoPlanKey && row.value) {
-            setTenant(prev => ({ ...prev, plan: row.value }));
-          }
           if (row.key === logoKey && row.value) {
             setCompanyLogo(row.value);
             setTenant(prev => ({ ...prev, logo: row.value }));
@@ -107,7 +145,7 @@ export const TenantProvider = ({ children, authUser }) => {
       })
       .catch(() => {});
 
-    supabase.from('tenants').select('name, plan, status, company_logo').eq('id', authUser.tenant_id).single()
+    supabase.from('tenants').select('name, plan, status, company_logo, is_demo, trial_ends_at').eq('id', authUser.tenant_id).single()
       .then(({ data, error }) => {
         if (error) {
           console.warn('Gagal fetch tenant:', error.message);
@@ -117,11 +155,23 @@ export const TenantProvider = ({ children, authUser }) => {
           setTenant(prev => ({
             ...prev,
             name: data.name || prev.name,
-            // plan from app_settings takes priority (already set above); fallback to tenants.plan
-            plan: prev.plan !== PLANS.BUSINESS ? prev.plan : (data.plan || prev.plan),
+            plan: data.plan || prev.plan,
             status: data.status || prev.status,
             avatar: (data.name || prev.name).split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+            isDemo: !!data.is_demo,
+            trialEndsAt: data.trial_ends_at || null,
+            // Dihitung saat data dimuat (bukan saat render) — cukup akurat untuk masa trial harian
+            trialMsLeft: data.trial_ends_at ? new Date(data.trial_ends_at).getTime() - Date.now() : null,
           }));
+          // Hanya tenant demo yang memakai paket simulasi (switcher) dan data contoh
+          if (data.is_demo) {
+            setActivities(prev => prev.length ? prev : DEMO_ACTIVITIES);
+            setPendingEssays(prev => prev.length ? prev : DEMO_PENDING_ESSAYS);
+            supabase.from('app_settings').select('value').eq('key', demoPlanKey).maybeSingle()
+              .then(({ data: planRow }) => {
+                if (planRow?.value) setTenant(prev => ({ ...prev, plan: planRow.value }));
+              });
+          }
           if (data.company_logo) setCompanyLogo(data.company_logo);
 
           // Upsert to app_settings so Learners can read it bypassing RLS on tenants
@@ -156,31 +206,6 @@ export const TenantProvider = ({ children, authUser }) => {
   const [supervisors, setSupervisors] = useState([]);
   const [invitations, setInvitations] = useState([]);
 
-  const [pendingEssays, setPendingEssays] = useState(storedDB.pendingEssays || [
-    { 
-      id: 101, 
-      employeeName: 'Budi Pratama', 
-      dept: 'Finance', 
-      videoTitle: 'SOP Finance: Proses Reimbursement Karyawan', 
-      date: 'Hari ini',
-      questions: [
-        { id: 1, question: 'Mengapa kuitansi fotokopi tidak dapat diklaim?', answer: 'Kuitansi fotokopi tidak dapat diklaim karena regulasi perpajakan mewajibkan bukti fisik asli untuk diaudit, serta mencegah klaim ganda.', score: 85 },
-        { id: 2, question: 'Apa batas maksimum tanggal penyerahan kwitansi reimbursement setiap bulannya?', answer: 'Klaim reimbursement harus diserahkan selambat-lambatnya tanggal 25 setiap bulannya kepada bagian tim finance.', score: 90 },
-        { id: 3, question: 'Siapa yang berwenang memberikan persetujuan jika nominal reimburse di atas Rp 5.000.000?', answer: 'Untuk nominal di atas 5 juta rupiah, wajib mendapatkan persetujuan langsung (tanda tangan) dari Direktur Keuangan.', score: null }
-      ]
-    },
-    { 
-      id: 102, 
-      employeeName: 'Nina Putri', 
-      dept: 'CS', 
-      videoTitle: 'SOP Customer Service: Handling Komplain', 
-      date: '1 hari lalu',
-      questions: [
-        { id: 1, question: 'Bagaimana langkah awal menangani pelanggan marah?', answer: 'Pertama-tama saya akan mendengarkan keluhan dengan empati tanpa memotong pembicaraannya, lalu memvalidasi emosinya dan menawarkan maaf atas ketidaknyamanan tersebut.', score: null },
-        { id: 2, question: 'Apa batas waktu maksimal eskalasi tiket jika komplain tidak selesai di tingkat pertama?', answer: 'Eskalasi tiket harus dilakukan dalam waktu maksimal 2 jam setelah komplain pertama kali diterima dari nasabah.', score: null }
-      ]
-    }
-  ]);
 
   const [passingScore, setPassingScore] = useState(storedDB.passingScore || 80);
   const [validityMonths, setValidityMonths] = useState(storedDB.validityMonths || 12);
@@ -222,96 +247,44 @@ export const TenantProvider = ({ children, authUser }) => {
       });
   }, [authUser?.tenant_id]);
 
+  // Pengaturan & daftar dropdown disimpan per tenant di tenant_settings
   useEffect(() => {
-    if (!authUser?.tenant_id) return;
-    
-    supabase.from('app_settings').select('key, value').in('key', ['passing_score', 'validity_months', 'departments_list', 'jabatan_list', 'cabang_list', `demo_plan_${authUser.tenant_id}`])
+    if (!tenantId) return;
+    supabase.from('tenant_settings')
+      .select('passing_score, validity_months, departments, job_titles, cities')
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
-        data.forEach(row => {
-          if (row.key === 'passing_score') setPassingScore(Number(row.value));
-          if (row.key === 'validity_months') setValidityMonths(Number(row.value));
-          if (row.key === `demo_plan_${authUser.tenant_id}`) {
-            setTenant(prev => ({ ...prev, plan: row.value }));
-          }
-          if (row.key === 'departments_list') {
-            try {
-              const saved = JSON.parse(row.value);
-              setDepartments(prev => {
-                const merged = [...new Set([...prev, ...saved])];
-                return merged;
-              });
-            } catch {}
-          }
-          if (row.key === 'jabatan_list') {
-            try {
-              const saved = JSON.parse(row.value);
-              setJobTitles(prev => [...new Set([...prev, ...saved])]);
-            } catch {}
-          }
-          if (row.key === 'cabang_list') {
-            try {
-              const saved = JSON.parse(row.value);
-              setCities(prev => [...new Set([...prev, ...saved])]);
-            } catch {}
-          }
-        });
-        
-        // Load per-tenant settings to override defaults
-        if (authUser?.tenant_id) {
-          supabase.from('tenant_settings').select('passing_score, validity_months').eq('tenant_id', authUser.tenant_id).single()
-            .then(({ data: tenantData }) => {
-              if (tenantData) {
-                if (tenantData.passing_score != null) setPassingScore(tenantData.passing_score);
-                if (tenantData.validity_months != null) setValidityMonths(tenantData.validity_months);
-              }
-            })
-            .catch(() => {}); // ignore error if row doesn't exist yet
-        }
+        if (data.passing_score != null) setPassingScore(data.passing_score);
+        if (data.validity_months != null) setValidityMonths(data.validity_months);
+        if (Array.isArray(data.departments)) setDepartments(prev => [...new Set([...prev, ...data.departments])]);
+        if (Array.isArray(data.job_titles)) setJobTitles(prev => [...new Set([...prev, ...data.job_titles])]);
+        if (Array.isArray(data.cities)) setCities(prev => [...new Set([...prev, ...data.cities])]);
       });
-  }, [authUser?.tenant_id]);
+  }, [tenantId]);
+
+  const saveTenantSettings = (fields) => {
+    if (!tenantId) return Promise.resolve();
+    return supabase.from('tenant_settings').upsert(
+      { tenant_id: tenantId, ...fields, updated_at: new Date().toISOString() },
+      { onConflict: 'tenant_id' }
+    );
+  };
 
   const updatePassingScore = async (val) => {
     setPassingScore(val);
-    
-    // Update global app_settings as fallback for demo
-    await supabase.from('app_settings').update({ value: val.toString() }).eq('key', 'passing_score');
-    
-    // Update tenant_settings
-    if (authUser?.tenant_id) {
-      await supabase.from('tenant_settings').upsert({
-        tenant_id: authUser.tenant_id,
-        passing_score: val,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'tenant_id' });
-    }
+    await saveTenantSettings({ passing_score: val });
   };
 
   const updateValidityMonths = async (val) => {
     setValidityMonths(val);
-    
-    // Update global app_settings as fallback for demo
-    await supabase.from('app_settings').upsert(
-      { key: 'validity_months', value: val.toString(), updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    );
-    
-    // Update tenant_settings
-    if (authUser?.tenant_id) {
-      await supabase.from('tenant_settings').upsert({
-        tenant_id: authUser.tenant_id,
-        validity_months: val,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'tenant_id' });
-    }
+    await saveTenantSettings({ validity_months: val });
   };
 
   const saveDepartments = (next) => {
     setDepartments(next);
-    supabase.from('app_settings').upsert(
-      { key: 'departments_list', value: JSON.stringify(next), updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    );
+    saveTenantSettings({ departments: next });
   };
 
   const addDepartment = (name) => {
@@ -333,10 +306,7 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const saveJobTitles = (next) => {
     setJobTitles(next);
-    supabase.from('app_settings').upsert(
-      { key: 'jabatan_list', value: JSON.stringify(next), updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    );
+    saveTenantSettings({ job_titles: next });
   };
 
   const addJobTitle = (name) => {
@@ -358,10 +328,7 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const saveCities = (next) => {
     setCities(next);
-    supabase.from('app_settings').upsert(
-      { key: 'cabang_list', value: JSON.stringify(next), updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    );
+    saveTenantSettings({ cities: next });
   };
 
   const addCity = (name) => {
@@ -381,28 +348,17 @@ export const TenantProvider = ({ children, authUser }) => {
     saveCities(cities.filter(c => c !== name));
   };
 
-  const defaultEmployees = [
-    { id: 1, name: 'Rini Wulandari', email: 'rini.w@majubersama.com', role: 'employee', dept: 'Sales', city: 'Jakarta', score: 18 },
-    { id: 2, name: 'Budi Pratama', email: 'budi.p@majubersama.com', role: 'employee', dept: 'Finance', city: 'Surabaya', score: 15 },
-    { id: 3, name: 'Sari Anggraeni', email: 'sari.a@majubersama.com', role: 'employee', dept: 'HRD', city: 'Bandung', score: 14 },
-    { id: 4, name: 'Dika Kurniawan', email: 'dika.k@majubersama.com', role: 'employee', dept: 'IT', city: 'Jakarta', score: 12 },
-    { id: 5, name: 'Nina Putri', email: 'nina.p@majubersama.com', role: 'employee', dept: 'CS', city: 'Medan', score: 11 },
-  ];
+  const [employees, setEmployees] = useState(storedDB.employees || []);
 
-  const [employees, setEmployees] = useState(storedDB.employees || defaultEmployees);
-
-  // Sync employees: fetch from Supabase on mount, seed defaults jika Supabase kosong
+  // Sync employees milik tenant ini dari Supabase
   useEffect(() => {
+    if (!tenantId) return;
     const syncEmployees = async () => {
-      const { data } = await supabase.from('employees').select('*').is('deleted_at', null).order('created_at', { ascending: true });
+      const { data } = await supabase.from('employees').select('*').eq('tenant_id', tenantId).is('deleted_at', null).order('created_at', { ascending: true });
       if (!data) return;
 
       if (data.length === 0) {
-        // Supabase kosong → seed default employees
-        const toUpsert = defaultEmployees.filter(e => e.email).map(e => ({
-          email: e.email, name: e.name, dept: e.dept, city: e.city || '', status: 'Aktif',
-        }));
-        await supabase.from('employees').upsert(toUpsert, { onConflict: 'email' });
+        setEmployees([]);
       } else {
         // Supabase punya data → merge dengan local (preserve score)
         setEmployees(prev => data.map(row => {
@@ -442,24 +398,17 @@ export const TenantProvider = ({ children, authUser }) => {
 
     const channel = supabase
       .channel('admin_employees')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, () => syncEmployees())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees', filter: `tenant_id=eq.${tenantId}` }, () => syncEmployees())
       .subscribe();
 
     syncEmployees();
     return () => supabase.removeChannel(channel);
-  }, []);
+  }, [tenantId]);
 
   const [videos, setVideos] = useState([]);
 
   const [quizSubmissions, setQuizSubmissions] = useState([]);
 
-  const [activities, setActivities] = useState(storedDB.activities || [
-    { id: 1, text: '<strong>Rini W.</strong> menyelesaikan SOP Sales Onboarding', time: '5 menit lalu', type: 'green' },
-    { id: 2, text: 'Video baru <strong>SOP IT Security</strong> diunggah', time: '32 menit lalu', type: 'blue' },
-    { id: 3, text: '<strong>12 karyawan</strong> mendapat sertifikat Finance', time: '1 jam lalu', type: 'purple' },
-    { id: 4, text: '<strong>SOP K3 Gudang</strong> deadline besok — 38 belum nonton', time: '2 jam lalu', type: 'amber' },
-    { id: 5, text: '<strong>Dika K.</strong> lulus quiz SOP IT dengan skor 95', time: '3 jam lalu', type: 'cyan' },
-  ]);
 
 
   // Sync state with localstorage (videos & quizSubmissions live in Supabase, not here)
@@ -510,10 +459,12 @@ export const TenantProvider = ({ children, authUser }) => {
   });
 
   useEffect(() => {
+    if (!tenantId) return;
     const fetchSubmissions = async () => {
       const { data } = await supabase
         .from('quiz_submissions')
         .select('*')
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
       if (data) setQuizSubmissions(data.map(mapRow));
     };
@@ -522,18 +473,20 @@ export const TenantProvider = ({ children, authUser }) => {
 
     const channel = supabase
       .channel('admin_quiz_submissions')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_submissions' }, fetchSubmissions)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_submissions', filter: `tenant_id=eq.${tenantId}` }, fetchSubmissions)
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, []);
+  }, [tenantId]);
 
-  // Supabase: fetch all SOP videos (video & PPT) + realtime sync
+  // Supabase: fetch SOP videos (video & PPT) milik tenant ini + realtime sync
   useEffect(() => {
+    if (!tenantId) return;
     const fetchVideos = async () => {
       const { data } = await supabase
         .from('sop_videos')
         .select('*')
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
       if (data) setVideos(data.map(fromDbRow));
     };
@@ -542,24 +495,24 @@ export const TenantProvider = ({ children, authUser }) => {
 
     const channel = supabase
       .channel('admin_sop_videos')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'sop_videos' }, fetchVideos)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sop_videos', filter: `tenant_id=eq.${tenantId}` }, fetchVideos)
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, []);
+  }, [tenantId]);
 
   // Actions
+  // Simulasi paket — hanya untuk tenant demo (presentasi). Paket klien diatur Axara.
   const changePlan = async (newPlan) => {
+    if (!tenant.isDemo) return;
     setTenant(prev => ({ ...prev, plan: newPlan }));
     if (authUser?.tenant_id) {
       try {
-        // Fallback: save to app_settings because RLS on tenants might block plan updates
         // app_settings doesn't have a tenant_id column, so we embed it in the key
         await supabase.from('app_settings').upsert({ 
           key: `demo_plan_${authUser.tenant_id}`, 
           value: newPlan 
         }, { onConflict: 'key' });
-        await supabase.from('tenants').update({ plan: newPlan }).eq('id', authUser.tenant_id);
       } catch (err) {
         console.error('Failed to sync plan to DB:', err);
       }
@@ -610,7 +563,7 @@ export const TenantProvider = ({ children, authUser }) => {
     setVideos(prev => [newVideo, ...prev]); // optimistic update
     let saved = false;
     try {
-      const { error } = await supabase.from('sop_videos').insert(toDbRow(newVideo));
+      const { error } = await supabase.from('sop_videos').insert(toDbRow(newVideo, tenantId));
       if (error) throw error;
       saved = true;
     } catch (err) {
@@ -656,7 +609,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const video = videos.find(v => v.id === id);
     setVideos(prev => prev.filter(v => v.id !== id)); // optimistic update
     try {
-      const { error } = await supabase.from('sop_videos').delete().eq('id', id);
+      const { error } = await supabase.from('sop_videos').delete().eq('id', id).eq('tenant_id', tenantId);
       if (error) throw error;
     } catch (err) {
       console.error('Gagal hapus SOP:', err?.message);
@@ -686,7 +639,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const video = videos.find(v => v.id === id);
     setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: true } : v)); // optimistic update
     try {
-      const { error } = await supabase.from('sop_videos').update({ archived: true }).eq('id', id);
+      const { error } = await supabase.from('sop_videos').update({ archived: true }).eq('id', id).eq('tenant_id', tenantId);
       if (error) throw error;
     } catch (err) {
       console.error('Gagal arsipkan SOP:', err?.message);
@@ -699,7 +652,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const video = videos.find(v => v.id === id);
     setVideos(prev => prev.map(v => v.id === id ? { ...v, archived: false } : v)); // optimistic update
     try {
-      const { error } = await supabase.from('sop_videos').update({ archived: false }).eq('id', id);
+      const { error } = await supabase.from('sop_videos').update({ archived: false }).eq('id', id).eq('tenant_id', tenantId);
       if (error) throw error;
     } catch (err) {
       console.error('Gagal pulihkan SOP:', err?.message);
@@ -713,7 +666,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const merged = { ...current, ...fields };
     setVideos(prev => prev.map(v => v.id === id ? merged : v)); // optimistic update
     try {
-      const { error } = await supabase.from('sop_videos').update(toDbRow(merged)).eq('id', id);
+      const { error } = await supabase.from('sop_videos').update(toDbRow(merged, tenantId)).eq('id', id).eq('tenant_id', tenantId);
       if (error) throw error;
     } catch (err) {
       console.error('Gagal update SOP:', err?.message);
@@ -734,7 +687,7 @@ export const TenantProvider = ({ children, authUser }) => {
     // Sync to Supabase for email reminders
     if (newEmp.email) {
       await supabase.from('employees').upsert({
-        tenant_id: authUser?.tenant_id,
+        tenant_id: tenantId,
         name: newEmp.name,
         email: newEmp.email,
         dept: newEmp.dept,
@@ -751,9 +704,9 @@ export const TenantProvider = ({ children, authUser }) => {
     const emp = employees.find(e => e.id === id);
     setEmployees(prev => prev.filter(e => e.id !== id));
     if (emp?.email) {
-      await supabase.from('employees').update({ deleted_at: new Date().toISOString() }).eq('email', emp.email);
+      await supabase.from('employees').update({ deleted_at: new Date().toISOString() }).eq('email', emp.email).eq('tenant_id', tenantId);
     } else {
-      await supabase.from('employees').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      await supabase.from('employees').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('tenant_id', tenantId);
     }
     const newAct = { id: Date.now(), text: `Karyawan <strong>${emp?.name}</strong> dihapus (dinonaktifkan)`, time: 'Baru saja', type: 'amber' };
     setActivities(prev => [newAct, ...prev]);
@@ -765,7 +718,8 @@ export const TenantProvider = ({ children, authUser }) => {
     if (emp?.email || fields.email) {
       const { error } = await supabase.from('employees')
         .update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city, jabatan: fields.jabatan, nik: fields.nik })
-        .eq('email', emp?.email || fields.email);
+        .eq('email', emp?.email || fields.email)
+        .eq('tenant_id', tenantId);
       if (error) {
         console.error('Gagal update karyawan:', error.message);
         throw new Error('Gagal menyimpan perubahan: ' + error.message);
@@ -823,7 +777,7 @@ export const TenantProvider = ({ children, authUser }) => {
       approved_by: approverName,
       approved_date: today,
       approval_note: note || '',
-    }).eq('id', submissionId);
+    }).eq('id', submissionId).eq('tenant_id', tenantId);
     if (error) { console.error('approveCertificate error:', error); throw new Error(error.message); }
     // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
@@ -838,7 +792,7 @@ export const TenantProvider = ({ children, authUser }) => {
     const { error } = await supabase.from('quiz_submissions').update({
       cert_status: 'rejected',
       rejection_note: note || '',
-    }).eq('id', submissionId);
+    }).eq('id', submissionId).eq('tenant_id', tenantId);
     if (error) { console.error('rejectCertificate error:', error); throw new Error(error.message); }
     // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
@@ -860,7 +814,7 @@ export const TenantProvider = ({ children, authUser }) => {
       supervisor_note: note || '',
       supervisor_name: currentUser.name,
       supervisor_date: today,
-    }).eq('id', submissionId);
+    }).eq('id', submissionId).eq('tenant_id', tenantId);
     // Optimistic update
     setQuizSubmissions(prev => prev.map(s =>
       s.id === submissionId ? {
@@ -895,7 +849,8 @@ export const TenantProvider = ({ children, authUser }) => {
         essay_graded_date: today,
       })
       .eq('employee_name', essay.employeeName)
-      .eq('video_title', essay.videoTitle);
+      .eq('video_title', essay.videoTitle)
+      .eq('tenant_id', tenantId);
 
     setPendingEssays(prev => prev.filter(e => e.id !== id));
 
@@ -941,9 +896,17 @@ export const TenantProvider = ({ children, authUser }) => {
     }
   };
 
+  // Masa trial: tenant dengan trial_ends_at terisi adalah akun trial
+  const isTrial = !!tenant.trialEndsAt;
+  const trialExpired = isTrial && tenant.trialMsLeft <= 0;
+  const trialDaysLeft = isTrial ? Math.max(0, Math.ceil(tenant.trialMsLeft / 86400000)) : null;
+
   return (
     <TenantContext.Provider value={{
       tenant,
+      isTrial,
+      trialExpired,
+      trialDaysLeft,
       changePlan,
       activePage,
       setActivePage,
