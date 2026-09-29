@@ -3,7 +3,7 @@ import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
 export const Dashboard = () => {
-  const { tenant, employees, videos, activities, setActivePage, currentUser, quizSubmissions, passingScore } = useTenant();
+  const { tenant, isTrial, employees, videos, activities, setActivePage, currentUser, quizSubmissions, passingScore } = useTenant();
 
   const isSupervisor = currentUser.role !== 'admin';
 
@@ -646,7 +646,7 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
   // Calculate stats dynamically based on mock data
   const totalSOPs = displayVideos.length;
   const activeEmployees = displayEmployees.length;
-  const employeeLimit = getEmployeeLimit(tenant.plan);
+  const employeeLimit = getEmployeeLimit(tenant.plan, isTrial);
 
   return (
     <>

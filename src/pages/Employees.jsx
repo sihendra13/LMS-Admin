@@ -18,7 +18,7 @@ const DEPT_COLORS = [
 ];
 
 export const Employees = () => {
-  const { tenant, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch, jobTitles, addJobTitlesBatch, cities, addCitiesBatch } = useTenant();
+  const { tenant, isTrial, employees, addEmployee, deleteEmployee, updateEmployee, currentUser, departments, addDepartmentsBatch, jobTitles, addJobTitlesBatch, cities, addCitiesBatch } = useTenant();
   const isSupervisor = currentUser.role !== 'admin';
 
   const [name, setName] = useState('');
@@ -74,7 +74,8 @@ export const Employees = () => {
     return list;
   })();
 
-  const limit      = getEmployeeLimit(tenant.plan);
+  const limit      = getEmployeeLimit(tenant.plan, isTrial);
+  const planLabel  = isTrial ? 'Trial' : `Paket ${tenant.plan.toUpperCase()}`;
   const totalCount = employees.length;
   const isFull     = totalCount >= limit;
 
@@ -577,7 +578,7 @@ export const Employees = () => {
               <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', color: 'var(--red)' }}>
                 <div style={{ fontWeight: '600', fontSize: '13px', marginBottom: '4px' }}>⚠️ Kuota Paket Penuh!</div>
                 <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                  Jumlah karyawan telah mencapai limit {limit} orang untuk Paket {tenant.plan.toUpperCase()}. Upgrade paket untuk menambah lebih banyak akun karyawan.
+                  Jumlah karyawan telah mencapai limit {limit} orang untuk {planLabel}. {isTrial ? 'Hubungi tim Axara untuk berlangganan dan menambah karyawan.' : 'Upgrade paket untuk menambah lebih banyak akun karyawan.'}
                 </div>
               </div>
             ) : (
@@ -732,7 +733,7 @@ export const Employees = () => {
                       File Excel Anda membutuhkan {upgradeData.totalNeeded} slot karyawan
                     </div>
                     <div style={{ fontSize: '12px', color: '#a16207' }}>
-                      Paket {tenant.plan.toUpperCase()} saat ini hanya mendukung maksimal {limit} karyawan. Upgrade ke paket Enterprise untuk kapasitas tak terbatas.
+                      {planLabel} saat ini hanya mendukung maksimal {limit} karyawan. {isTrial ? 'Berlangganan untuk menambah kapasitas karyawan.' : 'Upgrade ke paket Enterprise untuk kapasitas tak terbatas.'}
                     </div>
                   </div>
 
@@ -741,7 +742,7 @@ export const Employees = () => {
                       { label: 'Nama Admin', value: currentUser.name },
                       { label: 'Perusahaan', value: tenant.name },
                       { label: 'Jumlah Karyawan Dibutuhkan', value: `${upgradeData.totalNeeded} karyawan` },
-                      { label: 'Paket Saat Ini', value: `${tenant.plan.toUpperCase()} (maks ${limit})` },
+                      { label: 'Paket Saat Ini', value: `${isTrial ? 'TRIAL' : tenant.plan.toUpperCase()} (maks ${limit})` },
                     ].map(f => (
                       <div key={f.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--surface2)', borderRadius: '8px' }}>
                         <span style={{ fontSize: '12px', color: 'var(--text3)' }}>{f.label}</span>

@@ -12,7 +12,8 @@ export const canUploadSOP = (plan) => {
 };
 
 // Check employee count limit
-export const getEmployeeLimit = (plan) => {
+export const getEmployeeLimit = (plan, isTrial = false) => {
+  if (isTrial) return TRIAL_EMPLOYEE_LIMIT;
   if (plan === PLANS.STARTER) return 200;
   if (plan === PLANS.BUSINESS) return 500;
   return Infinity; // Enterprise has unlimited
@@ -62,3 +63,4 @@ export const hasAuditReport = (plan) => {
 
 // Akun trial dibatasi agar pemakaian storage & bandwidth tetap di free tier Supabase
 export const TRIAL_SOP_LIMIT = 5;
+export const TRIAL_EMPLOYEE_LIMIT = 20;
