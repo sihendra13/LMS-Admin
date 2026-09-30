@@ -140,7 +140,7 @@ export const ReviewSertifikat = () => {
             <div style={{ fontSize: '11px', color: 'var(--text3)', textAlign: 'right' }}>
               {sub.date}
               {sub.retakeCount > 0 && (
-                <div style={{ marginTop: '2px', fontWeight: '700', color: '#b45309' }}>Remedial ke-{sub.retakeCount} dari {MAX_RETAKES}</div>
+                <div style={{ marginTop: '2px', fontWeight: '700', color: '#b45309' }}>Remedial · sisa {Math.max(0, MAX_RETAKES - (sub.retakeCount || 0))} kesempatan</div>
               )}
             </div>
           </div>
@@ -271,7 +271,7 @@ export const ReviewSertifikat = () => {
             <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{sub.date}</span>
             {(sub.retakeCount > 0 || sub.certStatus === 'remedial') && (
               <span style={{ fontSize: '10px', fontWeight: '700', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', padding: '1px 7px', borderRadius: '10px' }}>
-                {sub.certStatus === 'remedial' ? `🔄 Remedial ke-${sub.retakeCount} dari ${MAX_RETAKES}` : `Remedial ke-${sub.retakeCount}`}
+                {sub.certStatus === 'remedial' ? `🔄 Remedial · sisa ${Math.max(0, MAX_RETAKES - (sub.retakeCount || 0))} kesempatan` : `Sudah mengulang ${sub.retakeCount || 0}x`}
               </span>
             )}
           </div>
@@ -764,7 +764,7 @@ export const ReviewSertifikat = () => {
               <strong>{actionModal.sub?.employeeName}</strong> — {actionModal.sub?.videoTitle}
               {actionModal.sub?.retakeCount > 0 && (
                 <span style={{ display: 'block', fontSize: '11px', color: '#b45309', marginTop: '4px' }}>
-                  Remedial ke-{actionModal.sub.retakeCount} dari {MAX_RETAKES}
+                  Remedial · sisa {Math.max(0, MAX_RETAKES - (actionModal.sub.retakeCount || 0))} kesempatan
                 </span>
               )}
             </p>

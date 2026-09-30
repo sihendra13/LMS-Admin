@@ -66,23 +66,35 @@ export const Reports = () => {
     return { text: sub.status || '-', color: 'var(--text2)' };
   };
 
+  // Kuis yang skornya di bawah passing grade tetap tersimpan dengan cert_status 'pending'
+  // (sama seperti Learner) — perlakukan sebagai remedial, bukan "Lulus (Menunggu Approval)"
+  const normalizedSubmissions = quizSubmissions.map(s =>
+    s.certStatus === 'pending' && s.postScore != null && Number(s.postScore) < passingScore
+      ? { ...s, certStatus: 'remedial' }
+      : s
+  );
+
   // --- All submissions (scoped by supervisor dept if needed) ---
   const displaySubmissions = isSupervisor
-    ? quizSubmissions.filter(sub => {
+    ? normalizedSubmissions.filter(sub => {
         const v = videos.find(v => v.title.toLowerCase() === sub.videoTitle.toLowerCase());
         return v && v.dept.toLowerCase() === currentUser.dept.toLowerCase();
       })
-    : quizSubmissions;
+    : normalizedSubmissions;
 
   const periodSubs    = displaySubmissions.filter(s => s.date?.startsWith(selectedPeriod));
   const prevPeriodSubs = displaySubmissions.filter(s => s.date?.startsWith(prevPeriod));
 
   // --- Dept list ---
+  // SOP untuk "Semua" berlaku bagi setiap departemen yang punya karyawan
+  const hasSOPForAll = videos.some(v => !v.archived && v.dept === 'Semua');
+  const explicitDepts = videos.filter(v => !v.archived && v.dept !== 'Semua').map(v => v.dept);
+  const employeeDepts = employees.map(e => e.dept).filter(Boolean);
   const activeDepts = isSupervisor
     ? [currentUser.dept]
-    : [...new Set(videos.filter(v => !v.archived && v.dept !== 'Semua').map(v => v.dept))].sort();
+    : [...new Set(hasSOPForAll ? [...explicitDepts, ...employeeDepts] : explicitDepts)].sort();
 
-  const deptsWithoutSOP = isSupervisor ? [] : departments.filter(d => !activeDepts.some(ad => ad.toLowerCase() === d.toLowerCase()));
+  const deptsWithoutSOP = isSupervisor || hasSOPForAll ? [] : departments.filter(d => !activeDepts.some(ad => ad.toLowerCase() === d.toLowerCase()));
 
   // --- Compliance matrix (KUMULATIF — pernah selesai kapanpun) ---
   const complianceMatrix = activeDepts.map(dept => {
