@@ -211,11 +211,18 @@ export const Employees = () => {
     if (uniqueJabatan.length > 0) addJobTitlesBatch(uniqueJabatan);
     const uniqueCities = [...new Set(rows.map(r => r.city).filter(Boolean))];
     if (uniqueCities.length > 0) addCitiesBatch(uniqueCities);
-    rows.forEach(r => addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, jabatan: r.jabatan || '', nik: r.nik || '', score: 0 }));
+    // Simpan satu per satu — hanya karyawan yang benar-benar tersimpan yang ditampilkan & bisa diundang
+    const saved = [];
+    const failed = [];
+    for (const r of rows) {
+      const res = await addEmployee({ id: Date.now() + Math.random(), name: r.name, email: r.email || '', dept: r.dept, city: r.city, jabatan: r.jabatan || '', nik: r.nik || '', score: 0 });
+      if (res.ok) saved.push(r); else failed.push(`${r.name} (${res.error})`);
+    }
     setShowImport(false);
     setImportRows([]);
-    toast.success(`${rows.length} karyawan berhasil diimport!`);
-    const withEmail = rows.filter(r => r.email);
+    if (saved.length > 0) toast.success(`${saved.length} karyawan berhasil diimport!`);
+    if (failed.length > 0) toast.error(`${failed.length} karyawan gagal disimpan: ${failed.join('; ')}`);
+    const withEmail = saved.filter(r => r.email);
     if (withEmail.length > 0) {
       setLastImportedRows(withEmail);
       setInviteSelected(new Set(withEmail.map((_, i) => i)));
@@ -313,7 +320,8 @@ export const Employees = () => {
       setShowUpgrade(true);
       return;
     }
-    addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, jabatan, nik: nik.trim(), score: 0 });
+    const res = await addEmployee({ id: Date.now(), name, email: email.trim(), dept: isSupervisor ? currentUser.dept : dept, city, jabatan, nik: nik.trim(), score: 0 });
+    if (!res.ok) return toast.error(`Karyawan gagal disimpan: ${res.error}`);
     setName('');
     setEmail('');
     setNik('');

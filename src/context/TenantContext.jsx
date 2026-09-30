@@ -686,7 +686,30 @@ export const TenantProvider = ({ children, authUser }) => {
     return new Set((data || []).map(r => r.email.toLowerCase()));
   };
 
+  // Simpan ke database DULU — karyawan hanya tampil di daftar (dan bisa diundang) jika tersimpan.
+  // Mengembalikan { ok, error } agar halaman bisa menampilkan alasan gagal.
   const addEmployee = async (newEmp) => {
+    if (newEmp.email) {
+      const { error } = await supabase.from('employees').upsert({
+        tenant_id: tenantId,
+        name: newEmp.name,
+        email: newEmp.email,
+        dept: newEmp.dept,
+        city: newEmp.city || '',
+        jabatan: newEmp.jabatan || '',
+        // NIK kosong = NULL: string kosong dianggap NIK yang sama oleh constraint unik per tenant
+        nik: newEmp.nik?.trim() || null,
+        status: 'Aktif',
+        deleted_at: null
+      }, { onConflict: 'email' });
+      if (error) {
+        console.error('Gagal simpan karyawan:', error);
+        const message = error.code === '23505' && /nik/i.test(error.message)
+          ? `NIK ${newEmp.nik} sudah dipakai karyawan lain.`
+          : error.message;
+        return { ok: false, error: message };
+      }
+    }
     setEmployees(prev => [newEmp, ...prev]);
     const newAct = {
       id: Date.now(),
@@ -695,20 +718,7 @@ export const TenantProvider = ({ children, authUser }) => {
       type: 'green'
     };
     setActivities(prev => [newAct, ...prev]);
-    // Sync to Supabase for email reminders
-    if (newEmp.email) {
-      await supabase.from('employees').upsert({
-        tenant_id: tenantId,
-        name: newEmp.name,
-        email: newEmp.email,
-        dept: newEmp.dept,
-        city: newEmp.city || '',
-        jabatan: newEmp.jabatan || '',
-        nik: newEmp.nik || '',
-        status: 'Aktif',
-        deleted_at: null
-      }, { onConflict: 'email' });
-    }
+    return { ok: true };
   };
 
   const deleteEmployee = async (id) => {
@@ -728,7 +738,7 @@ export const TenantProvider = ({ children, authUser }) => {
     setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...fields } : e));
     if (emp?.email || fields.email) {
       const { error } = await supabase.from('employees')
-        .update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city, jabatan: fields.jabatan, nik: fields.nik })
+        .update({ name: fields.name, email: fields.email, dept: fields.dept, city: fields.city, jabatan: fields.jabatan, nik: fields.nik?.trim() || null })
         .eq('email', emp?.email || fields.email)
         .eq('tenant_id', tenantId);
       if (error) {
