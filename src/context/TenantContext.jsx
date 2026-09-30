@@ -53,6 +53,7 @@ const fromDbRow = (row) => ({
   slideNarasi: row.slide_narasi || null,
   archived: row.archived || false,
   isDraft: row.is_draft || false,
+  createdAt: row.created_at || null,
 });
 
 // Data contoh — hanya ditampilkan untuk tenant demo (presentasi)
@@ -456,6 +457,7 @@ export const TenantProvider = ({ children, authUser }) => {
     essayGradedDate: row.essay_graded_date || '',
     acknowledged: row.acknowledged ?? false,
     acknowledgedAt: row.acknowledged_at || null,
+    createdAt: row.created_at || null,
   });
 
   useEffect(() => {

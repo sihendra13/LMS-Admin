@@ -2,6 +2,80 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTenant } from '../context/TenantContext';
 import { getEmployeeLimit } from '../utils/featureGates';
 
+const DEMO_WEEK_BARS = [
+  { label: 'Sen', height: 38, color: '#dbeafe' },
+  { label: 'Sel', height: 55, color: '#93c5fd' },
+  { label: 'Rab', height: 42, color: '#93c5fd' },
+  { label: 'Kam', height: 70, color: '#3b82f6' },
+  { label: 'Jum', height: 60, color: '#2F7BFF' },
+  { label: 'Sab', height: 28, color: '#dbeafe' },
+  { label: 'Min', height: 18, color: '#dbeafe' },
+];
+
+const DEPT_COLORS = ['#2F7BFF', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ef4444'];
+
+// Statistik dashboard dari data asli tenant (dipakai untuk semua tenant selain demo)
+const computeRealStats = ({ employees, videos, quizSubmissions }) => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfWeek = new Date(now);
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7)); // Senin
+
+  const activeVideos = videos.filter(v => !v.archived && !v.isDraft);
+  const empNames = new Set(employees.map(e => e.name));
+  const subs = quizSubmissions.filter(s => empNames.has(s.employeeName));
+  const passedSubs = subs.filter(s => s.status === 'Lulus');
+  const passedByEmp = new Map();
+  passedSubs.forEach(s => {
+    if (!passedByEmp.has(s.employeeName)) passedByEmp.set(s.employeeName, new Set());
+    passedByEmp.get(s.employeeName).add(s.videoTitle);
+  });
+
+  const possible = employees.length * activeVideos.length;
+  const passedPairs = [...passedByEmp.values()].reduce((n, set) => n + set.size, 0);
+  const approved = subs.filter(s => s.certStatus === 'approved');
+  const scores = subs.map(s => Number(s.postScore)).filter(n => !Number.isNaN(n));
+
+  const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+  subs.forEach(s => {
+    if (!s.createdAt) return;
+    const d = new Date(s.createdAt);
+    if (d >= startOfWeek) dayCounts[(d.getDay() + 6) % 7]++;
+  });
+  const maxDay = Math.max(...dayCounts, 1);
+  const weekTotal = dayCounts.reduce((a, b) => a + b, 0);
+  const daysElapsed = ((now.getDay() + 6) % 7) + 1;
+
+  const depts = [...new Set(employees.map(e => e.dept).filter(Boolean))];
+  const deptCompletion = passedSubs.length === 0 ? [] : depts.map(dept => {
+    const members = employees.filter(e => e.dept === dept);
+    const passedMembers = members.filter(e => passedByEmp.has(e.name)).length;
+    return { dept, pct: Math.round((passedMembers / members.length) * 100) };
+  }).sort((a, b) => b.pct - a.pct);
+
+  return {
+    newSOPsThisMonth: videos.filter(v => v.createdAt && new Date(v.createdAt) >= startOfMonth).length,
+    completion: possible ? Math.min(100, Math.round((passedPairs / possible) * 100)) : 0,
+    certificates: approved.length,
+    certificatesThisWeek: approved.filter(s => s.createdAt && new Date(s.createdAt) >= startOfWeek).length,
+    passed: passedByEmp.size,
+    notPassed: employees.filter(e => !passedByEmp.has(e.name)).length,
+    avgScore: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
+    weekBars: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((label, i) => ({
+      label,
+      height: dayCounts[i] ? Math.max(8, Math.round((dayCounts[i] / maxDay) * 70)) : 4,
+      color: dayCounts[i] === maxDay && dayCounts[i] > 0 ? '#2F7BFF' : '#dbeafe',
+    })),
+    weekTotal,
+    weekAvg: Math.round(weekTotal / daysElapsed),
+    deptCompletion,
+    leaderboard: employees
+      .map(e => ({ ...e, score: passedByEmp.get(e.name)?.size || 0 }))
+      .sort((a, b) => b.score - a.score),
+  };
+};
+
 export const Dashboard = () => {
   const { tenant, isTrial, employees, videos, activities, setActivePage, currentUser, quizSubmissions, passingScore } = useTenant();
 
@@ -648,6 +722,10 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
   const activeEmployees = displayEmployees.length;
   const employeeLimit = getEmployeeLimit(tenant.plan, isTrial);
 
+  // Tenant demo menampilkan angka contoh untuk presentasi; tenant klien memakai data asli
+  const isDemo = tenant.isDemo;
+  const stats = computeRealStats({ employees: displayEmployees, videos: displayVideos, quizSubmissions });
+
   return (
     <>
       <div className="content">
@@ -661,7 +739,7 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
           <div className="stat-value">{totalSOPs}</div>
           <div className="stat-change info">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
-            +6 materi baru bulan ini
+            {isDemo ? '+6' : `+${stats.newSOPsThisMonth}`} materi baru bulan ini
           </div>
         </div>
         <div className="stat-card green">
@@ -685,10 +763,10 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
           <div className="stat-label">Rata-rata Completion</div>
-          <div className="stat-value">78%</div>
+          <div className="stat-value">{isDemo ? 78 : stats.completion}%</div>
           <div className="stat-change up">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
-            +12% vs bulan lalu
+            {isDemo ? '+12% vs bulan lalu' : 'karyawan lulus per SOP aktif'}
           </div>
         </div>
         <div className="stat-card purple">
@@ -696,10 +774,10 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
           </div>
           <div className="stat-label">Sertifikat Diterbitkan</div>
-          <div className="stat-value">186</div>
+          <div className="stat-value">{isDemo ? 186 : stats.certificates}</div>
           <div className="stat-change info">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg>
-            +24 minggu ini
+            {isDemo ? '+24' : `+${stats.certificatesThisWeek}`} minggu ini
           </div>
         </div>
       </div>
@@ -909,46 +987,24 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
               </div>
               <div className="chart-area">
                 <div className="chart-bars">
-                  <div className="bar-group">
-                    <div className="bar" style={{ height: '38px', background: '#dbeafe' }}></div>
-                    <div className="bar-label">Sen</div>
-                  </div>
-                  <div className="bar-group">
-                    <div className="bar" style={{ height: '55px', background: '#93c5fd' }}></div>
-                    <div className="bar-label">Sel</div>
-                  </div>
-                  <div className="bar-group">
-                    <div className="bar" style={{ height: '42px', background: '#93c5fd' }}></div>
-                    <div className="bar-label">Rab</div>
-                  </div>
-                  <div className="bar-group">
-                    <div className="bar" style={{ height: '70px', background: '#3b82f6' }}></div>
-                    <div className="bar-label">Kam</div>
-                  </div>
-                  <div className="bar-group">
-                    <div className="bar" style={{ height: '60px', background: '#2F7BFF' }}></div>
-                    <div className="bar-label">Jum</div>
-                  </div>
-                  <div className="bar-group">
-                    <div className="bar" style={{ height: '28px', background: '#dbeafe' }}></div>
-                    <div className="bar-label">Sab</div>
-                  </div>
-                  <div className="bar-group">
-                    <div className="bar" style={{ height: '18px', background: '#dbeafe' }}></div>
-                    <div className="bar-label">Min</div>
-                  </div>
+                  {(isDemo ? DEMO_WEEK_BARS : stats.weekBars).map(bar => (
+                    <div key={bar.label} className="bar-group">
+                      <div className="bar" style={{ height: `${bar.height}px`, background: bar.color }}></div>
+                      <div className="bar-label">{bar.label}</div>
+                    </div>
+                  ))}
                 </div>
                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Total minggu ini</div>
                     <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
-                      {isSupervisor ? 84 : 312} <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 400 }}>↑ 18%</span>
+                      {isDemo ? (isSupervisor ? 84 : 312) : stats.weekTotal} {isDemo && <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 400 }}>↑ 18%</span>}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '11px', color: 'var(--text3)' }}>Avg/hari</div>
                     <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", color: 'var(--text1)' }}>
-                      {isSupervisor ? 12 : 44}
+                      {isDemo ? (isSupervisor ? 12 : 44) : stats.weekAvg}
                     </div>
                   </div>
                 </div>
@@ -969,23 +1025,23 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
                 <div className="mini-stat">
                   <div className="mini-label">Belum selesai</div>
                   <div className="mini-val" style={{ color: 'var(--red)' }}>
-                    {isSupervisor ? displayEmployees.filter(e => e.score === 0).length : 54}
+                    {isDemo ? (isSupervisor ? displayEmployees.filter(e => e.score === 0).length : 54) : stats.notPassed}
                   </div>
                   <div className="mini-sub" style={{ color: 'var(--red)', fontSize: '11px' }}>karyawan</div>
                 </div>
                 <div className="mini-stat">
                   <div className="mini-label">Quiz lulus</div>
                   <div className="mini-val">
-                    {isSupervisor ? displayEmployees.filter(e => e.score > 0).length : 186}
+                    {isDemo ? (isSupervisor ? displayEmployees.filter(e => e.score > 0).length : 186) : stats.passed}
                   </div>
                   <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>
-                    {isSupervisor ? `dari ${displayEmployees.length}` : 'dari 248'}
+                    {isDemo ? (isSupervisor ? `dari ${displayEmployees.length}` : 'dari 248') : `dari ${displayEmployees.length}`}
                   </div>
                 </div>
                 <div className="mini-stat">
                   <div className="mini-label">Avg. skor quiz</div>
-                  <div className="mini-val">{isSupervisor ? 88 : 82}<span style={{ fontSize: '14px', fontWeight: 400 }}>%</span></div>
-                  <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>↑ baik</div>
+                  <div className="mini-val">{isDemo ? (isSupervisor ? 88 : 82) : stats.avgScore}<span style={{ fontSize: '14px', fontWeight: 400 }}>%</span></div>
+                  <div className="mini-sub" style={{ color: 'var(--green)', fontSize: '11px' }}>{isDemo ? '↑ baik' : 'skor post-test'}</div>
                 </div>
               </div>
             </div>
@@ -1279,7 +1335,7 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
                     </div>
                   ))
                 )
-              ) : (
+              ) : isDemo ? (
                 <>
                   <div className="dept-item">
                     <div className="dept-ic" style={{ background: '#eff6ff' }}>
@@ -1332,6 +1388,23 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
                     <div className="dept-num">70%</div>
                   </div>
                 </>
+              ) : stats.deptCompletion.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text3)' }}>
+                  Belum ada data. Progres per departemen muncul setelah karyawan menyelesaikan kuis SOP.
+                </div>
+              ) : (
+                stats.deptCompletion.map((d, i) => (
+                  <div key={d.dept} className="dept-item">
+                    <div className="dept-ic" style={{ background: DEPT_COLORS[i % DEPT_COLORS.length] + '1a' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={DEPT_COLORS[i % DEPT_COLORS.length]} strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div className="dept-label">
+                      <div className="dept-name">{d.dept}</div>
+                      <div className="dept-pbar"><div className="dept-pfill" style={{ width: `${d.pct}%`, background: DEPT_COLORS[i % DEPT_COLORS.length] }}></div></div>
+                    </div>
+                    <div className="dept-num">{d.pct}%</div>
+                  </div>
+                ))
               )}
             </div>
           </div>
@@ -1343,7 +1416,7 @@ Bisa buat laporan, analisis, rekomendasi, soal kuis. Kalau user sekedar menyapa,
               <div className="card-action" onClick={() => setActivePage('karyawan')}>Lihat semua</div>
             </div>
             <div className="card-body">
-              {displayEmployees.slice(0, 5).map((emp, i) => {
+              {(isDemo ? displayEmployees : stats.leaderboard).slice(0, 5).map((emp, i) => {
                 const ranks = ['🥇', '🥈', '🥉', '4', '5'];
                 const avColors = ['#d97706', '#64748b', '#2563eb', '#0891b2', '#7c3aed'];
                 const initials = emp.name.split(' ').map(n => n[0]).join('');
