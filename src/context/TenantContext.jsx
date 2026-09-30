@@ -267,10 +267,11 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const saveTenantSettings = (fields) => {
     if (!tenantId) return Promise.resolve();
+    // .then() memastikan query terkirim walau pemanggil tidak memakai await
     return supabase.from('tenant_settings').upsert(
       { tenant_id: tenantId, ...fields, updated_at: new Date().toISOString() },
       { onConflict: 'tenant_id' }
-    );
+    ).then(({ error }) => { if (error) console.error('Gagal simpan pengaturan tenant:', error.message); });
   };
 
   const updatePassingScore = async (val) => {

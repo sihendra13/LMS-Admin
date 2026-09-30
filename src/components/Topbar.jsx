@@ -132,7 +132,7 @@ export const Topbar = () => {
         user_id: currentUser.id,
         read_keys: keys,
         updated_at: new Date().toISOString(),
-      });
+      }).then(({ error }) => { if (error) console.error('Gagal simpan status notifikasi:', error.message); });
     }
   };
 
