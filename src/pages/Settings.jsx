@@ -5,7 +5,7 @@ import { supabase } from '../utils/supabase';
 import { useToast } from '../components/Toast';
 
 export const Settings = () => {
-  const { tenant, currentUser, changePlan, updateTenantLogo, companyLogo, updateCompanyLogo } = useTenant();
+  const { tenant, currentUser, changePlan, updateTenantLogo, companyLogo, updateCompanyLogo, certSigner, saveCertSigner, uploadCertSignature } = useTenant();
   const toast = useToast();
   
   const isHRDAdmin = currentUser.role === 'admin';
@@ -13,6 +13,40 @@ export const Settings = () => {
   // Branding/Integration states
   const [logoStatus, setLogoStatus] = useState('idle'); // 'idle' | 'processing' | 'saved' | 'error'
   const [avatarUrl, setAvatarUrl] = useState(() => localStorage.getItem('axara_avatar') || '');
+
+  // Tanda tangan sertifikat
+  const [signerForm, setSignerForm] = useState(null); // null = belum diedit → pakai nilai tersimpan
+  const signerName = signerForm?.name ?? certSigner.name;
+  const signerTitle = signerForm?.title ?? certSigner.title;
+  const [signerSaving, setSignerSaving] = useState(false);
+  const [signatureUploading, setSignatureUploading] = useState(false);
+
+  const handleSaveSigner = async () => {
+    setSignerSaving(true);
+    try {
+      await saveCertSigner({ name: signerName, title: signerTitle });
+      setSignerForm(null);
+      toast.success('Penanda tangan sertifikat disimpan.');
+    } catch (err) {
+      toast.error(`Gagal menyimpan: ${err.message}`);
+    } finally {
+      setSignerSaving(false);
+    }
+  };
+
+  const handleSignatureFile = async (file) => {
+    if (file && !/^image\/(png|jpe?g)$/.test(file.type)) return toast.error('Gunakan gambar PNG atau JPG.');
+    if (file && file.size > 1024 * 1024) return toast.error('Ukuran gambar maksimal 1 MB.');
+    setSignatureUploading(true);
+    try {
+      await uploadCertSignature(file);
+      toast.success(file ? 'Gambar tanda tangan disimpan.' : 'Gambar tanda tangan dihapus.');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSignatureUploading(false);
+    }
+  };
 
   const handleAvatarUpload = (e) => {
     const file = e.target.files?.[0];
@@ -232,7 +266,63 @@ export const Settings = () => {
 
               </div>
 
-              {/* COMPANY LOGO FOR CERTIFICATES */}
+              {/* CERTIFICATE SIGNER */}
+              <div className="card" style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ✍️ Tanda Tangan Sertifikat
+                </h3>
+                <p style={{ fontSize: '12px', color: 'var(--text3)', margin: '0 0 18px', lineHeight: 1.6 }}>
+                  Tampil di setiap sertifikat yang diterbitkan. Jika nama dikosongkan, sertifikat memakai nama HRD yang menerbitkan.
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text2)', marginBottom: '6px' }}>NAMA PENANDA TANGAN</label>
+                    <input value={signerName} placeholder={`Kosong = nama HRD penerbit (mis. ${currentUser.name})`}
+                      onChange={e => setSignerForm({ name: e.target.value, title: signerTitle })}
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text2)', marginBottom: '6px' }}>JABATAN</label>
+                    <input value={signerTitle} placeholder="HR Manager"
+                      onChange={e => setSignerForm({ name: signerName, title: e.target.value })}
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px' }} />
+                  </div>
+                </div>
+
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text2)', marginBottom: '6px' }}>GAMBAR TANDA TANGAN (OPSIONAL)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '18px' }}>
+                  <div style={{ width: '200px', height: '70px', background: '#fff', border: '1px dashed var(--border)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    {certSigner.signatureUrl
+                      ? <img src={certSigner.signatureUrl} alt="Tanda tangan" style={{ maxWidth: '180px', maxHeight: '60px', objectFit: 'contain' }} />
+                      : <span style={{ fontFamily: "'Times New Roman', serif", fontStyle: 'italic', fontSize: '18px', color: '#1e3a8a' }}>{signerName || currentUser.name}</span>}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button type="button" disabled={signatureUploading} onClick={() => document.getElementById('signature-input').click()}
+                        style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid var(--border)', background: '#fff', color: 'var(--text2)', cursor: 'pointer' }}>
+                        {signatureUploading ? 'Mengunggah...' : certSigner.signatureUrl ? 'Ganti Gambar' : 'Upload Gambar'}
+                      </button>
+                      {certSigner.signatureUrl && !signatureUploading && (
+                        <button type="button" onClick={() => handleSignatureFile(null)}
+                          style={{ padding: '7px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: '1px solid #fee2e2', background: '#fff5f5', color: '#ef4444', cursor: 'pointer' }}>
+                          Hapus
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text3)' }}>PNG/JPG maks. 1 MB · latar putih/transparan · tanpa gambar = nama ditulis miring</div>
+                  </div>
+                  <input id="signature-input" type="file" accept="image/png,image/jpeg" style={{ display: 'none' }}
+                    onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleSignatureFile(f); }} />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button type="button" className="btn-primary" disabled={signerSaving || !signerForm} onClick={handleSaveSigner}
+                    style={{ padding: '9px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', opacity: (signerSaving || !signerForm) ? 0.6 : 1 }}>
+                    {signerSaving ? 'Menyimpan...' : 'Simpan Nama & Jabatan'}
+                  </button>
+                </div>
+              </div>
 
 
               {/* HRIS SYNC INTEGRATION - ENTERPRISE LOCKED */}

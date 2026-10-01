@@ -32,7 +32,7 @@ const formatSubDate = (value) => {
 };
 
 export const ReviewSertifikat = () => {
-  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES, enableSpvRole, companyLogo } = useTenant();
+  const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES, enableSpvRole, companyLogo, certSigner } = useTenant();
   const toast = useToast();
   const isHRD = currentUser.role === 'admin';
 
@@ -51,6 +51,7 @@ export const ReviewSertifikat = () => {
       await downloadCertificatePdf(cert, {
         tenantName: tenant?.name || '',
         logoUrl: tenant?.plan === PLANS.ENTERPRISE ? companyLogo : null,
+        signer: certSigner,
       });
     } catch (err) {
       console.error('Gagal membuat PDF sertifikat:', err);
@@ -859,6 +860,9 @@ export const ReviewSertifikat = () => {
           issueDate: issuedAt ? longDate(issuedAt) : (issuedRaw || '-'),
           expiryDate: validityMonths === 999 ? 'Selamanya' : (issuedAt ? (() => { const d = new Date(issuedAt); d.setMonth(d.getMonth() + (validityMonths || 12)); return longDate(d); })() : '-'),
           approvedBy: sub.approvedBy || currentUser.name,
+          // Untuk pratinjau — PDF menghitung nilai yang sama dari opsi signer
+          signerName: certSigner.name || sub.approvedBy || currentUser.name,
+          signerTitle: certSigner.title || 'HR Manager',
         };
         return (
           <div className="cert-modal-overlay" style={{
@@ -917,12 +921,22 @@ export const ReviewSertifikat = () => {
                   <div style={{ marginTop: '6px', fontSize: '7.5px', color: '#cbd5e1' }}>Dikeluarkan oleh myAxara</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'cursive', fontSize: '20px', color: '#1e3a8a', height: '35px', lineHeight: '35px' }}>
-                    {sub.approvedBy || currentUser.name}
-                  </div>
+                  {certSigner.signatureUrl ? (
+                    <img src={certSigner.signatureUrl} alt="Tanda tangan" style={{ height: '35px', maxWidth: '140px', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+                  ) : (
+                    <div style={{ fontFamily: 'cursive', fontSize: '20px', color: '#1e3a8a', height: '35px', lineHeight: '35px' }}>
+                      {pdfCert.signerName}
+                    </div>
+                  )}
                   <div style={{ width: '120px', height: '1px', background: 'var(--border)', margin: '4px auto' }} />
+                  {certSigner.signatureUrl && (
+                    <div style={{ fontSize: '11px', color: 'var(--text1)', fontWeight: '700' }}>{pdfCert.signerName}</div>
+                  )}
                   <div style={{ fontSize: '10px', color: 'var(--text3)', fontWeight: '600', textTransform: 'uppercase' }}>
-                    HR Manager, {tenant?.name || tenant.name}
+                    {pdfCert.signerTitle}
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--text3)', textTransform: 'uppercase' }}>
+                    {tenant?.name}
                   </div>
                 </div>
               </div>

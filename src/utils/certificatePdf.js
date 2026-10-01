@@ -11,7 +11,7 @@ const GREEN = [22, 163, 74];
 
 // Logo perusahaan (paket Enterprise) → data URL agar bisa ditempel di PDF. Gagal = tanpa logo.
 const loadImage = (url) => new Promise((resolve) => {
-  if (!url) return resolve(null);
+  if (!url || typeof Image === 'undefined') return resolve(null);
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
@@ -34,7 +34,9 @@ const loadImage = (url) => new Promise((resolve) => {
   img.src = url;
 });
 
-export const buildCertificatePdf = async (cert, { tenantName = '', logoUrl = null } = {}) => {
+// signer: { name, title, signatureUrl } dari Pengaturan → Tanda Tangan Sertifikat (semua opsional).
+// Nama kosong = nama HRD yang menerbitkan (cert.approvedBy); jabatan kosong = "HR Manager".
+export const buildCertificatePdf = async (cert, { tenantName = '', logoUrl = null, signer = {} } = {}) => {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true });
   const W = doc.internal.pageSize.getWidth();   // 297
   const H = doc.internal.pageSize.getHeight();  // 210
@@ -128,21 +130,50 @@ export const buildCertificatePdf = async (cert, { tenantName = '', logoUrl = nul
 
   // Tanda tangan (kanan)
   const sx = W - 80;
-  doc.setFont('times', 'italic');
-  doc.setFontSize(18);
-  doc.setTextColor(30, 58, 138);
-  doc.text(cert.approvedBy || 'HRD', sx, footY + 18, { align: 'center' });
+  const signerName = (signer.name || '').trim() || cert.approvedBy || 'HRD';
+  const signerTitle = ((signer.title || '').trim() || 'HR Manager').toUpperCase();
+  const company = (tenantName || '').toUpperCase();
+  const signature = await loadImage(signer.signatureUrl);
+  const lineY = footY + 19;
+  if (signature) {
+    // Gambar tanda tangan di atas garis
+    const maxW = 50, maxH = 15;
+    const ratio = signature.width / signature.height;
+    const w = Math.min(maxW, maxH * ratio);
+    const h = w / ratio;
+    doc.addImage(signature.dataUrl, 'JPEG', sx - w / 2, lineY - 1 - h, w, h);
+  } else {
+    doc.setFont('times', 'italic');
+    doc.setFontSize(18);
+    doc.setTextColor(30, 58, 138);
+    doc.text(signerName, sx, lineY - 4, { align: 'center' });
+  }
   doc.setDrawColor(...LIGHT);
-  doc.line(sx - 30, footY + 22, sx + 30, footY + 22);
+  doc.line(sx - 30, lineY, sx + 30, lineY);
+
+  // Di bawah garis: (nama bila ada gambar), jabatan, perusahaan — masing-masing satu baris
+  let ty = lineY + 5;
+  if (signature) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...NAVY);
+    doc.text(signerName, sx, ty, { align: 'center' });
+    ty += 4.5;
+  }
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(...MUTED);
-  doc.text(`HR MANAGER, ${(tenantName || '').toUpperCase()}`, sx, footY + 28, { align: 'center' });
+  doc.text(doc.splitTextToSize(signerTitle, 100)[0], sx, ty, { align: 'center' });
+  if (company) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(doc.splitTextToSize(company, 100)[0], sx, ty + 4, { align: 'center' });
+  }
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...LIGHT);
-  doc.text('Sertifikat ini diterbitkan melalui platform myAxara', cx, H - 18, { align: 'center' });
+  // Di kiri bawah (di bawah detail) agar tidak bertabrakan dengan jabatan penanda tangan
+  doc.text('Sertifikat ini diterbitkan melalui platform myAxara', 32, footY + 34);
 
   return doc;
 };

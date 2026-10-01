@@ -248,6 +248,9 @@ export const TenantProvider = ({ children, authUser }) => {
       });
   }, [authUser?.tenant_id]);
 
+  // Penanda tangan sertifikat (Pengaturan → Tanda Tangan Sertifikat)
+  const [certSigner, setCertSigner] = useState({ name: '', title: '', signatureUrl: '' });
+
   // Pengaturan & daftar dropdown disimpan per tenant di tenant_settings
   useEffect(() => {
     if (!tenantId) return;
@@ -263,7 +266,17 @@ export const TenantProvider = ({ children, authUser }) => {
         if (Array.isArray(data.job_titles)) setJobTitles(prev => [...new Set([...prev, ...data.job_titles])]);
         if (Array.isArray(data.cities)) setCities(prev => [...new Set([...prev, ...data.cities])]);
       });
+    // Query terpisah: kolom penanda tangan sertifikat tidak boleh menggagalkan pengaturan lain
+    supabase.from('tenant_settings')
+      .select('cert_signer_name, cert_signer_title, cert_signature_url')
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) { console.error('Gagal memuat penanda tangan sertifikat:', error.message); return; }
+        if (data) setCertSigner({ name: data.cert_signer_name || '', title: data.cert_signer_title || '', signatureUrl: data.cert_signature_url || '' });
+      });
   }, [tenantId]);
+
 
   const saveTenantSettings = (fields) => {
     if (!tenantId) return Promise.resolve();
@@ -271,7 +284,32 @@ export const TenantProvider = ({ children, authUser }) => {
     return supabase.from('tenant_settings').upsert(
       { tenant_id: tenantId, ...fields, updated_at: new Date().toISOString() },
       { onConflict: 'tenant_id' }
-    ).then(({ error }) => { if (error) console.error('Gagal simpan pengaturan tenant:', error.message); });
+    ).then(({ error }) => {
+      if (error) console.error('Gagal simpan pengaturan tenant:', error.message);
+      return { error };
+    });
+  };
+
+  const saveCertSigner = async ({ name, title }) => {
+    const { error } = await saveTenantSettings({ cert_signer_name: name?.trim() || null, cert_signer_title: title?.trim() || null });
+    if (error) throw new Error(error.message);
+    setCertSigner(prev => ({ ...prev, name: name?.trim() || '', title: title?.trim() || '' }));
+  };
+
+  // file = null → hapus gambar tanda tangan
+  const uploadCertSignature = async (file) => {
+    let url = null;
+    if (file) {
+      const ext = (file.name?.split('.').pop() || 'png').toLowerCase();
+      // Nama file unik agar gambar baru tidak tertahan cache browser
+      const path = `signatures/${tenantId}/signature-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from('public-assets').upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw new Error('Upload gagal: ' + uploadError.message);
+      url = supabase.storage.from('public-assets').getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await saveTenantSettings({ cert_signature_url: url });
+    if (error) throw new Error(error.message);
+    setCertSigner(prev => ({ ...prev, signatureUrl: url || '' }));
   };
 
   const updatePassingScore = async (val) => {
@@ -988,6 +1026,9 @@ export const TenantProvider = ({ children, authUser }) => {
       updateTenantLogo,
       companyLogo,
       updateCompanyLogo,
+      certSigner,
+      saveCertSigner,
+      uploadCertSignature,
       authUser,
       enableSpvRole: false // Feature flag for SPV role
     }}>
