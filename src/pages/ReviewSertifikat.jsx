@@ -11,6 +11,14 @@ const STATUS_META = {
   rejected:      { label: 'Tidak Lulus',        color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
 };
 
+// Tanggal hasil kuis tersimpan ISO ("2026-10-01T01:07:15.604Z") → "1 Okt 2026, 08:07"
+const formatSubDate = (value) => {
+  const d = value ? new Date(value) : null;
+  if (!d || isNaN(d.getTime())) return value || '-';
+  const date = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  return /T\d{2}:\d{2}/.test(String(value)) ? `${date}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : date;
+};
+
 export const ReviewSertifikat = () => {
   const { quizSubmissions, approveCertificate, rejectCertificate, supervisorRecommend, currentUser, passingScore, setPassingScore, tenant, validityMonths, setValidityMonths, MAX_RETAKES, enableSpvRole, companyLogo } = useTenant();
   const toast = useToast();
@@ -140,7 +148,7 @@ export const ReviewSertifikat = () => {
               <div style={{ fontSize: '12px', color: 'var(--text3)' }}>{sub.videoTitle}</div>
             </div>
             <div style={{ fontSize: '11px', color: 'var(--text3)', textAlign: 'right' }}>
-              {sub.date}
+              {formatSubDate(sub.date)}
               {sub.retakeCount > 0 && (
                 <div style={{ marginTop: '2px', fontWeight: '700', color: '#b45309' }}>Remedial · sisa {Math.max(0, MAX_RETAKES - (sub.retakeCount || 0))} kesempatan</div>
               )}
@@ -270,7 +278,7 @@ export const ReviewSertifikat = () => {
             {improvement !== null && improvement > 0 && (
               <span style={{ fontSize: '10px', fontWeight: '700', color: '#15803d', background: '#dcfce7', padding: '1px 6px', borderRadius: '8px' }}>↑{improvement}%</span>
             )}
-            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{sub.date}</span>
+            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>{formatSubDate(sub.date)}</span>
             {(sub.retakeCount > 0 || sub.certStatus === 'remedial') && (
               <span style={{ fontSize: '10px', fontWeight: '700', color: '#b45309', background: '#fff7ed', border: '1px solid #fed7aa', padding: '1px 7px', borderRadius: '10px' }}>
                 {sub.certStatus === 'remedial' ? `🔄 Remedial · sisa ${Math.max(0, MAX_RETAKES - (sub.retakeCount || 0))} kesempatan` : `Sudah mengulang ${sub.retakeCount || 0}x`}
@@ -486,9 +494,9 @@ export const ReviewSertifikat = () => {
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
-              <div className="stat-label">Dalam Proses</div>
+              <div className="stat-label">{enableSpvRole ? 'Dalam Proses' : 'Sedang Remedial'}</div>
               <div className="stat-value">{inProgressSubs.length}</div>
-              <div className="stat-change up">Menunggu Review</div>
+              <div className="stat-change up">{enableSpvRole ? 'Menunggu Review' : 'Karyawan mengulang kuis'}</div>
             </div>
             {/* HRD Card 3 */}
             <div className="stat-card green">
