@@ -879,7 +879,17 @@ export const Employees = () => {
                 <button onClick={() => { setShowInviteResult(false); setLastImportedRows([]); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: 'var(--text3)' }}>×</button>
               </div>
 
-              {!inviteResult ? (
+              {!inviteResult && inviteLoading ? (
+                <div style={{ textAlign: 'center', padding: '28px 0 32px' }}>
+                  <div style={{ width: '36px', height: '36px', border: '3px solid #e2e8f0', borderTopColor: 'var(--accent)', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text1)', marginBottom: '6px' }}>
+                    Mengirim undangan ke {inviteSelected.size} karyawan...
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text3)', lineHeight: '1.6' }}>
+                    Mohon tunggu, jangan tutup halaman ini.<br />Proses bisa memakan waktu hingga 1 menit.
+                  </div>
+                </div>
+              ) : !inviteResult ? (
                 (() => {
                   const filtered = lastImportedRows.map((r, i) => ({ ...r, _i: i })).filter(r =>
                     !inviteSearch || r.name.toLowerCase().includes(inviteSearch.toLowerCase()) || r.email.toLowerCase().includes(inviteSearch.toLowerCase())
