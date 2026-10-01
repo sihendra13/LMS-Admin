@@ -11,6 +11,18 @@ const STATUS_META = {
   rejected:      { label: 'Tidak Lulus',        color: '#b91c1c', bg: '#fff5f5', border: '#fecaca' },
 };
 
+// Tanggal persetujuan tersimpan sebagai teks Indonesia ("01 Okt 2026"), hasil kuis sebagai ISO
+const MONTHS_ID = { jan: 0, feb: 1, mar: 2, apr: 3, mei: 4, jun: 5, jul: 6, agu: 7, agt: 7, sep: 8, okt: 9, nov: 10, des: 11 };
+const parseCertDate = (value) => {
+  if (!value) return null;
+  const m = String(value).trim().match(/^(\d{1,2})\s+([A-Za-z]+)\.?\s+(\d{4})$/);
+  if (m && MONTHS_ID[m[2].slice(0, 3).toLowerCase()] !== undefined) {
+    return new Date(Number(m[3]), MONTHS_ID[m[2].slice(0, 3).toLowerCase()], Number(m[1]));
+  }
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+};
+
 // Tanggal hasil kuis tersimpan ISO ("2026-10-01T01:07:15.604Z") → "1 Okt 2026, 08:07"
 const formatSubDate = (value) => {
   const d = value ? new Date(value) : null;
@@ -809,11 +821,14 @@ export const ReviewSertifikat = () => {
 
       {/* CERTIFICATE PREVIEW MODAL */}
       {previewCert && (() => {
-        const { sub, idx } = previewCert;
-        const certId = `CERT-${new Date().getFullYear()}${100 + idx}`;
-        const issueDate = sub.approvedDate || sub.date || '—';
+        const { sub } = previewCert;
+        const issuedRaw = sub.approvedDate || sub.date;
+        const issuedAt = parseCertDate(issuedRaw);
+        const certId = `CERT-${(issuedAt || new Date()).getFullYear()}-${String(sub.id || '').replace(/-/g, '').slice(0, 8).toUpperCase() || '00000000'}`;
+        const issueDate = issuedAt ? issuedAt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : (issuedRaw || '—');
         const expiryDate = validityMonths === 999 ? 'Selamanya' : (() => {
-          const d = new Date(issueDate); d.setMonth(d.getMonth() + (validityMonths || 12));
+          if (!issuedAt) return '—';
+          const d = new Date(issuedAt); d.setMonth(d.getMonth() + (validityMonths || 12));
           return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
         })();
         return (
