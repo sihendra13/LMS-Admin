@@ -918,7 +918,7 @@ export const ReviewSertifikat = () => {
                   <div style={{ marginBottom: '4px' }}><strong>Tanggal Terbit:</strong> {issueDate}</div>
                   <div style={{ marginBottom: '4px' }}><strong>Masa Berlaku:</strong> {expiryDate}</div>
                   <div><strong>Skor Kuis:</strong> <span style={{ color: 'var(--green)', fontWeight: '600' }}>{sub.postScore}%</span></div>
-                  <div style={{ marginTop: '6px', fontSize: '7.5px', color: '#cbd5e1' }}>Dikeluarkan oleh myAxara</div>
+                  <div style={{ marginTop: '6px', fontSize: '7.5px', color: '#cbd5e1' }}>Sertifikat ini diterbitkan melalui platform myAxara</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   {certSigner.signatureUrl ? (
