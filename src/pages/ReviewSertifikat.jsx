@@ -41,6 +41,24 @@ export const ReviewSertifikat = () => {
   const [modalNote, setModalNote] = useState('');
   const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('rev-banner-dismissed') === '1');
   const [previewCert, setPreviewCert] = useState(null);
+  const [downloadingCert, setDownloadingCert] = useState(false);
+  // PDF sertifikat sama persis dengan yang diunduh karyawan di LMS Learner
+  const handleDownloadCert = async (cert) => {
+    if (downloadingCert) return;
+    setDownloadingCert(true);
+    try {
+      const { downloadCertificatePdf } = await import('../utils/certificatePdf');
+      await downloadCertificatePdf(cert, {
+        tenantName: tenant?.name || '',
+        logoUrl: tenant?.plan === PLANS.ENTERPRISE ? companyLogo : null,
+      });
+    } catch (err) {
+      console.error('Gagal membuat PDF sertifikat:', err);
+      window.alert('Sertifikat gagal diunduh. Silakan coba lagi.');
+    } finally {
+      setDownloadingCert(false);
+    }
+  };
 
   // ── deduplicate: keep only latest submission per employee+video ──────
   const latestSubmissions = Object.values(
@@ -831,6 +849,17 @@ export const ReviewSertifikat = () => {
           const d = new Date(issuedAt); d.setMonth(d.getMonth() + (validityMonths || 12));
           return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
         })();
+        // Format panjang untuk PDF — sama dengan sertifikat di LMS Learner
+        const longDate = (d) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const pdfCert = {
+          id: certId,
+          employeeName: sub.employeeName,
+          videoTitle: sub.videoTitle,
+          score: sub.postScore,
+          issueDate: issuedAt ? longDate(issuedAt) : (issuedRaw || '-'),
+          expiryDate: validityMonths === 999 ? 'Selamanya' : (issuedAt ? (() => { const d = new Date(issuedAt); d.setMonth(d.getMonth() + (validityMonths || 12)); return longDate(d); })() : '-'),
+          approvedBy: sub.approvedBy || currentUser.name,
+        };
         return (
           <div className="cert-modal-overlay" style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
@@ -874,7 +903,7 @@ export const ReviewSertifikat = () => {
                 {sub.employeeName}
               </h2>
               <p style={{ fontSize: '12px', color: 'var(--text3)', margin: '15px auto', maxWidth: '480px', lineHeight: '1.6' }}>
-                Atas kelulusan luar biasa dan kompetensi penuh yang ditunjukkan dalam menyelesaikan pelatihan materi video standar perusahaan:
+                Atas kelulusan dan kompetensi penuh yang ditunjukkan dalam menyelesaikan pelatihan SOP standar perusahaan:
               </p>
               <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)', margin: '10px 0 30px 0' }}>
                 {sub.videoTitle}
@@ -907,10 +936,11 @@ export const ReviewSertifikat = () => {
                 Tutup
               </button>
               <button 
-                onClick={() => window.print()}
-                style={{ background: '#002D72', color: '#fff', border: '1px solid #002D72', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                onClick={() => handleDownloadCert(pdfCert)}
+                disabled={downloadingCert}
+                style={{ background: '#002D72', color: '#fff', border: '1px solid #002D72', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: downloadingCert ? 'wait' : 'pointer', opacity: downloadingCert ? 0.7 : 1 }}
               >
-                Download Sertifikat
+                {downloadingCert ? 'Membuat PDF...' : 'Download Sertifikat'}
               </button>
             </div>
           </div>
