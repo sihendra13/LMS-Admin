@@ -563,7 +563,7 @@ export const TenantProvider = ({ children, authUser }) => {
   };
 
   const addSOP = async (newVideo) => {
-    setVideos(prev => [newVideo, ...prev]); // optimistic update
+    setVideos(prev => [{ ...newVideo, createdAt: newVideo.createdAt || new Date().toISOString() }, ...prev]); // optimistic update
     let saved = false;
     try {
       const { error } = await supabase.from('sop_videos').insert(toDbRow(newVideo, tenantId));
@@ -826,6 +826,15 @@ export const TenantProvider = ({ children, authUser }) => {
 
   const MAX_RETAKES = 3;
 
+  // Kuis yang skornya di bawah standar kelulusan tersimpan dengan cert_status 'pending'
+  // (sama seperti kuis lulus). Perlakukan sebagai 'remedial' di semua halaman admin agar
+  // tidak masuk "Siap Diterbitkan" / badge Sertifikat / "Lulus (Menunggu Approval)".
+  const effectiveSubmissions = quizSubmissions.map(s =>
+    s.certStatus === 'pending' && s.postScore != null && Number(s.postScore) < passingScore
+      ? { ...s, certStatus: 'remedial' }
+      : s
+  );
+
   const supervisorRecommend = async (submissionId, decision, note) => {
     const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
     const sub = quizSubmissions.find(s => s.id === submissionId);
@@ -945,7 +954,7 @@ export const TenantProvider = ({ children, authUser }) => {
       archiveSOP,
       unarchiveSOP,
       activities,
-      quizSubmissions,
+      quizSubmissions: effectiveSubmissions,
       currentUser,
       setCurrentUser,
       supervisors,

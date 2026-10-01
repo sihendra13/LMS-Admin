@@ -37,9 +37,11 @@ export const ReviewSertifikat = () => {
 
   // HRD tabs
   const readySubs      = latestSubmissions.filter(s => enableSpvRole ? s.certStatus === 'supervisor_ok' : (!s.certStatus || s.certStatus === 'pending'));
-  const inProgressSubs = latestSubmissions.filter(s => enableSpvRole ? (!s.certStatus || s.certStatus === 'pending' || s.certStatus === 'remedial') : s.certStatus === 'remedial');
+  // Remedial yang sudah habis kesempatan (retake >= MAX_RETAKES) = Tidak Lulus
+  const isMaxedRemedial = (s) => s.certStatus === 'remedial' && (s.retakeCount || 0) >= MAX_RETAKES;
+  const inProgressSubs = latestSubmissions.filter(s => enableSpvRole ? (!s.certStatus || s.certStatus === 'pending' || (s.certStatus === 'remedial' && !isMaxedRemedial(s))) : (s.certStatus === 'remedial' && !isMaxedRemedial(s)));
   const approvedSubs   = latestSubmissions.filter(s => s.certStatus === 'approved');
-  const rejectedSubs   = latestSubmissions.filter(s => s.certStatus === 'rejected');
+  const rejectedSubs   = latestSubmissions.filter(s => s.certStatus === 'rejected' || isMaxedRemedial(s));
 
   // Supervisor tabs — hanya tampil divisi yg sama
   const needReviewSubs  = latestSubmissions.filter(s => forMe(s) && (!s.certStatus || s.certStatus === 'pending'));
